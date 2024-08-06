@@ -13,6 +13,9 @@
 
 # 除了
 !.gitignore
+# 工程generate脚本
 !generate_project.bat
 !project_1.tcl
+# 工程bin generate脚本
+!timing_generate_bin.bat
 # !README.md
