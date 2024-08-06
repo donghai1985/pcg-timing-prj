@@ -78,6 +78,8 @@
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/serial/encode_tx_drv.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/fast_shutter_ctrl.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/motor/fbc_sensor_process.v"
+#    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/motor/quad_sensor_process.v"
+#    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/motor/quad_bspi_ctrl.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/fpga_heart_beat.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/base/handshake.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/hmc7044_config.v"
@@ -157,6 +159,7 @@
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/tb_fast_shutter_ctrl.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/overload/aom_trig_overload.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/testbench/message_comm_tx.v"
+#    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/testbench/fbc_sensor_sim.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/testbench/tb_encode_align.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/testbench/pcie_sim/pcie_aurora_64b66b_rx.v"
 #    "D:/workspace/pcg-prj/pcg-timing-prj/project_src/sources_1/new/testbench/tb_bpsi_top_if_v2.v"
@@ -228,6 +231,8 @@ proc checkRequiredFiles { origin_dir} {
  "[file normalize "$origin_dir/project_src/sources_1/new/serial/encode_tx_drv.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/fast_shutter_ctrl.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/motor/fbc_sensor_process.v"]"\
+ "[file normalize "$origin_dir/project_src/sources_1/new/motor/quad_sensor_process.v"]"\
+ "[file normalize "$origin_dir/project_src/sources_1/new/motor/quad_bspi_ctrl.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/fpga_heart_beat.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/base/handshake.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/hmc7044_config.v"]"\
@@ -307,6 +312,7 @@ proc checkRequiredFiles { origin_dir} {
  "[file normalize "$origin_dir/project_src/sources_1/new/tb_fast_shutter_ctrl.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/overload/aom_trig_overload.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/testbench/message_comm_tx.v"]"\
+ "[file normalize "$origin_dir/project_src/sources_1/new/testbench/fbc_sensor_sim.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/testbench/tb_encode_align.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/testbench/pcie_sim/pcie_aurora_64b66b_rx.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/testbench/tb_bpsi_top_if_v2.v"]"\
@@ -497,6 +503,8 @@ set files [list \
  [file normalize "${origin_dir}/project_src/sources_1/new/serial/encode_tx_drv.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/fast_shutter_ctrl.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/motor/fbc_sensor_process.v"] \
+ [file normalize "${origin_dir}/project_src/sources_1/new/motor/quad_sensor_process.v"] \
+ [file normalize "${origin_dir}/project_src/sources_1/new/motor/quad_bspi_ctrl.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/fpga_heart_beat.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/base/handshake.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/hmc7044_config.v"] \
@@ -1057,6 +1065,7 @@ set files [list \
  [file normalize "${origin_dir}/project_src/sources_1/new/tb_fast_shutter_ctrl.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/overload/aom_trig_overload.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/testbench/message_comm_tx.v"] \
+ [file normalize "${origin_dir}/project_src/sources_1/new/testbench/fbc_sensor_sim.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/testbench/tb_encode_align.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/testbench/pcie_sim/pcie_aurora_64b66b_rx.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/testbench/tb_bpsi_top_if_v2.v"] \

@@ -27,13 +27,17 @@ module FBC_cache #(
     input   wire                            clk_i                       ,
     input   wire                            rst_i                       ,
 
+    input   wire                            cfg_QPD_enable_i            ,
     // FBC actual voltage
     input   wire                            FBCi_cache_vld_i            ,
     input   wire    [48-1:0]                FBCi_cache_data_i           ,
-    // input   wire                            FBCr1_cache_vld_i           ,
-    // input   wire    [48-1:0]                FBCr1_cache_data_i          ,
+    input   wire                            FBCr1_cache_vld_i           ,
+    input   wire    [48-1:0]                FBCr1_cache_data_i          ,
     input   wire                            FBCr2_cache_vld_i           ,
     input   wire    [48-1:0]                FBCr2_cache_data_i          ,
+
+    input   wire                            quad_cache_vld_i            ,
+    input   wire    [96-1:0]                quad_cache_data_i           ,
 
     // Enocde
     input   wire    [32-1:0]                encode_w_i                  ,
@@ -63,7 +67,7 @@ module FBC_cache #(
 // *********** Define Parameter Signal
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 genvar i;
-localparam              CACHE_NUM           = 3;
+localparam              CACHE_NUM           = 4;
 
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -87,6 +91,17 @@ reg     [256-1:0]       fbc_cache_data      = 'd0;
 // reg                     aurora_end_en_r3    = 'd0;
 reg                     fbc_vout_rd_seq     = 'd0;
 reg                     fbc_vout_rd_vld     = 'd0;
+
+reg     [18-1:0]        Wencode_sync            = 'd0;
+reg     [18-1:0]        Xencode_sync            = 'd0;
+reg     [48-1:0]        FBCi_cache_data_sync    = 'd0;
+reg     [48-1:0]        FBCr1_cache_data_sync   = 'd0;
+reg     [48-1:0]        FBCr2_cache_data_sync   = 'd0;
+reg     [96-1:0]        quad_cache_data_sync    = 'd0;
+
+reg                     FBCi_cache_ready        = 'd0;
+reg                     FBCr1_cache_ready       = 'd0;
+reg                     FBCr2_cache_ready       = 'd0;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -103,6 +118,7 @@ wire    [CACHE_NUM-1:0] cache_fifo_almost_empty ;
 wire                    fbc_up_start_pose       ;
 wire                    fbc_up_start_nege       ;
 
+wire                    cache_write_en          ;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -131,15 +147,67 @@ endgenerate
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 always @(posedge clk_i) pmt_scan_en_d <= #TCQ pmt_scan_en_i;
 always @(posedge clk_i) real_scan_flag_d <= #TCQ real_scan_flag_i;
-assign cache_fifo_din[0] = {1'b1,2'd0,11'd0,encode_w_i[17:0],encode_x_i[31:0]};
-assign cache_fifo_din[1] = {1'b1,2'd1,5'd0,FBCi_cache_data_i[47:24],8'd0,FBCi_cache_data_i[23:0]};
-// assign cache_fifo_din[2] = {1'b1,2'd2,5'd0,FBCr1_cache_data_i[47:24],8'd0,FBCr1_cache_data_i[23:0]};
-assign cache_fifo_din[2] = {1'b1,2'd3,5'd0,FBCr2_cache_data_i[47:24],8'd0,FBCr2_cache_data_i[23:0]};
 
-assign cache_fifo_wr[0]  = FBCi_cache_vld_i && real_scan_flag_d;
-assign cache_fifo_wr[1]  = FBCi_cache_vld_i && real_scan_flag_d;
-// assign cache_fifo_wr[2]  = FBCr1_cache_vld_i && real_scan_flag_d;
-assign cache_fifo_wr[2]  = FBCr2_cache_vld_i && real_scan_flag_d;
+
+always @(posedge clk_i) begin
+    if(cfg_QPD_enable_i)begin
+        if(quad_cache_vld_i)    Wencode_sync            <= #TCQ encode_w_i[17:0];
+        if(quad_cache_vld_i)    Xencode_sync            <= #TCQ encode_x_i[17:0];
+    end
+    else begin
+        if(FBCr2_cache_vld_i)    Wencode_sync            <= #TCQ encode_w_i[17:0];
+        if(FBCr2_cache_vld_i)    Xencode_sync            <= #TCQ encode_x_i[17:0];
+    end
+end
+
+always @(posedge clk_i) begin
+    if(FBCi_cache_vld_i)    FBCi_cache_data_sync    <= #TCQ FBCi_cache_data_i;
+    if(FBCr1_cache_vld_i)   FBCr1_cache_data_sync   <= #TCQ FBCr1_cache_data_i;
+    if(FBCr2_cache_vld_i)   FBCr2_cache_data_sync   <= #TCQ FBCr2_cache_data_i;
+    if(quad_cache_vld_i)    quad_cache_data_sync    <= #TCQ quad_cache_data_i;
+end
+
+
+always @(posedge clk_i) begin
+    if(FBCi_cache_vld_i && real_scan_flag_d)
+        FBCi_cache_ready <= #TCQ 'd1;
+    else if(cache_write_en)
+        FBCi_cache_ready <= #TCQ 'd0;
+
+    if(FBCr2_cache_vld_i && real_scan_flag_d)
+        FBCr2_cache_ready <= #TCQ 'd1;
+    else if(cache_write_en)
+        FBCr2_cache_ready <= #TCQ 'd0;
+end
+
+always @(posedge clk_i) begin
+    if(cfg_QPD_enable_i)begin
+        if(quad_cache_vld_i && real_scan_flag_d)
+            FBCr1_cache_ready <= #TCQ 'd1;
+        else if(cache_write_en)
+            FBCr1_cache_ready <= #TCQ 'd0;
+    end
+    else begin
+        if(FBCr1_cache_vld_i && real_scan_flag_d)
+            FBCr1_cache_ready <= #TCQ 'd1;
+        else if(cache_write_en)
+            FBCr1_cache_ready <= #TCQ 'd0;
+    end
+end
+
+
+assign cache_write_en = (FBCi_cache_ready && FBCr1_cache_ready && FBCr2_cache_ready) ;
+
+
+assign cache_fifo_din[0] = cfg_QPD_enable_i ?  {8'hff,6'd0,Wencode_sync[17:0],14'd0,Xencode_sync[17:0]}     : {1'b1,2'd0,11'd0,Wencode_sync[17:0],14'd0,Xencode_sync[17:0]};
+assign cache_fifo_din[1] = cfg_QPD_enable_i ?  {FBCi_cache_data_sync[47:0],FBCr2_cache_data_sync[47:32]}    : {1'b1,2'd1,5'd0,FBCi_cache_data_sync[47:24],8'd0,FBCi_cache_data_sync[23:0]};
+assign cache_fifo_din[2] = cfg_QPD_enable_i ?  {FBCr2_cache_data_sync[31:0],quad_cache_data_sync[95:64]}    : {1'b1,2'd2,5'd0,FBCr1_cache_data_sync[47:24],8'd0,FBCr1_cache_data_sync[23:0]};
+assign cache_fifo_din[3] = cfg_QPD_enable_i ?  {quad_cache_data_sync[63:0]}                                 : {1'b1,2'd3,5'd0,FBCr2_cache_data_sync[47:24],8'd0,FBCr2_cache_data_sync[23:0]};
+
+assign cache_fifo_wr[0]  = cache_write_en;
+assign cache_fifo_wr[1]  = cache_write_en;
+assign cache_fifo_wr[2]  = cache_write_en;
+assign cache_fifo_wr[3]  = cache_write_en;
 
 always @(posedge clk_i) begin
     if(real_scan_flag_i)
@@ -166,9 +234,8 @@ end
 always @(posedge clk_i) rd_en_d <= #TCQ rd_en;
 always @(posedge clk_i) fbc_cache_vld <= #TCQ rd_en_d;
 always @(posedge clk_i) fbc_cache_data <= #TCQ { 
-                                                //  cache_fifo_dout[3],
+                                                 cache_fifo_dout[3],
                                                  cache_fifo_dout[2],
-                                                 64'd0,
                                                  cache_fifo_dout[1],
                                                  cache_fifo_dout[0]
                                                 };
@@ -185,7 +252,6 @@ always @(posedge clk_i) begin
 end
 
 assign fbc_vout_rd_seq_o        = fbc_vout_rd_seq;
-// assign aurora_fbc_vout_end_o    = fbc_vout_end_i;
 assign aurora_fbc_vout_vld_o    = fbc_vout_rd_vld_i;
 assign aurora_fbc_vout_data_o   = fbc_vout_rd_data_i;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
