@@ -28,7 +28,7 @@ module trigger_generate #(
     input   wire                                            rst_i                   ,
     
     input   wire                                            motor_bias_vol_en_i     ,
-    input   wire        [4-1:0]                             motor_freq_i            , // motor close freq  0:100Hz 1:200Hz 2:300Hz
+    input   wire        [4-1:0]                             motor_freq_i            , // motor close freq  0:128Hz 1:256Hz 2:512Hz 3:1024Hz
     output  wire                                            motor_trigger_o         
 
 );
@@ -37,7 +37,10 @@ module trigger_generate #(
 //////////////////////////////////////////////////////////////////////////////////
 // *********** Define Parameter Signal
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
+localparam      [32-1:0]                    PID_FREQ_128Hz              = 'd781250 - 1;
+localparam      [32-1:0]                    PID_FREQ_256Hz              = 'd390625 - 1;
+localparam      [32-1:0]                    PID_FREQ_512Hz              = 'd195312 - 1;
+localparam      [32-1:0]                    PID_FREQ_1024Hz             = 'd97656 - 1;
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -84,7 +87,7 @@ always @(posedge clk_i)begin
         end
 `else
         'd0: begin
-            if(motor_set_trigger_cnt >= 'd999999) begin
+            if(motor_set_trigger_cnt >= PID_FREQ_128Hz) begin
                 motor_set_trigger        <= #TCQ    1'b1;
                 motor_set_trigger_cnt    <= #TCQ    'd0;
             end
@@ -95,7 +98,7 @@ always @(posedge clk_i)begin
         end
 `endif //SIMULATE
         'd1: begin
-            if(motor_set_trigger_cnt >= 'd499999) begin
+            if(motor_set_trigger_cnt >= PID_FREQ_256Hz) begin
                 motor_set_trigger        <= #TCQ    1'b1;
                 motor_set_trigger_cnt    <= #TCQ    'd0;
             end
@@ -105,7 +108,7 @@ always @(posedge clk_i)begin
             end
         end
         'd2: begin
-            if(motor_set_trigger_cnt >= 'd333332) begin
+            if(motor_set_trigger_cnt >= PID_FREQ_512Hz) begin
                 motor_set_trigger        <= #TCQ    1'b1;
                 motor_set_trigger_cnt    <= #TCQ    'd0;
             end
@@ -115,67 +118,7 @@ always @(posedge clk_i)begin
             end
         end
         'd3: begin
-            if(motor_set_trigger_cnt >= 'd250_000 - 1) begin
-                motor_set_trigger        <= #TCQ    1'b1;
-                motor_set_trigger_cnt    <= #TCQ    'd0;
-            end
-            else begin
-                motor_set_trigger        <= #TCQ    1'b0;
-                motor_set_trigger_cnt    <= #TCQ    motor_set_trigger_cnt + 1'd1;
-            end
-        end
-        'd4: begin
-            if(motor_set_trigger_cnt >= 'd200_000 - 1) begin           // 500Hz
-                motor_set_trigger        <= #TCQ    1'b1;
-                motor_set_trigger_cnt    <= #TCQ    'd0;
-            end
-            else begin
-                motor_set_trigger        <= #TCQ    1'b0;
-                motor_set_trigger_cnt    <= #TCQ    motor_set_trigger_cnt + 1'd1;
-            end
-        end
-        'd5: begin
-            if(motor_set_trigger_cnt >= 'd2000_000 - 1) begin         // 600Hz
-                motor_set_trigger        <= #TCQ    1'b1;
-                motor_set_trigger_cnt    <= #TCQ    'd0;
-            end
-            else begin
-                motor_set_trigger        <= #TCQ    1'b0;
-                motor_set_trigger_cnt    <= #TCQ    motor_set_trigger_cnt + 1'd1;
-            end
-        end
-        'd6: begin
-            if(motor_set_trigger_cnt >= 'd166_666 - 1) begin
-                motor_set_trigger        <= #TCQ    1'b1;
-                motor_set_trigger_cnt    <= #TCQ    'd0;
-            end
-            else begin
-                motor_set_trigger        <= #TCQ    1'b0;
-                motor_set_trigger_cnt    <= #TCQ    motor_set_trigger_cnt + 1'd1;
-            end
-        end
-        'd7: begin
-            if(motor_set_trigger_cnt >= 'd142_857 - 1) begin
-                motor_set_trigger        <= #TCQ    1'b1;
-                motor_set_trigger_cnt    <= #TCQ    'd0;
-            end
-            else begin
-                motor_set_trigger        <= #TCQ    1'b0;
-                motor_set_trigger_cnt    <= #TCQ    motor_set_trigger_cnt + 1'd1;
-            end
-        end
-        'd8: begin
-            if(motor_set_trigger_cnt >= 'd125_000 - 1) begin
-                motor_set_trigger        <= #TCQ    1'b1;
-                motor_set_trigger_cnt    <= #TCQ    'd0;
-            end
-            else begin
-                motor_set_trigger        <= #TCQ    1'b0;
-                motor_set_trigger_cnt    <= #TCQ    motor_set_trigger_cnt + 1'd1;
-            end
-        end
-        'd9: begin
-            if(motor_set_trigger_cnt >= 'd111_111 - 1) begin
+            if(motor_set_trigger_cnt >= PID_FREQ_1024Hz) begin
                 motor_set_trigger        <= #TCQ    1'b1;
                 motor_set_trigger_cnt    <= #TCQ    'd0;
             end
@@ -185,7 +128,7 @@ always @(posedge clk_i)begin
             end
         end
         default: begin
-            if(motor_set_trigger_cnt >= 'd999999) begin
+            if(motor_set_trigger_cnt >= PID_FREQ_128Hz) begin
                 motor_set_trigger        <= #TCQ    1'b1;
                 motor_set_trigger_cnt    <= #TCQ    'd0;
             end

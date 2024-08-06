@@ -268,16 +268,16 @@ end
 //     pid_operation_str_d0 <= divider_result_wait && divider_out_en;
 //     pid_operation_str_d1 <= pid_operation_str_d0;
 // end
-// proportional = position_pre - postion_actual 
-// integral     = Paim - postion_actual
-// derivative   = 2*position_pre - postion_actual - position_pre_pre
+// proportional = Paim - Pactual 
+// integral     = 2*Paim - position_actual - position_pre 
+// derivative   = position_pre - position_actual
 // delta_position delay 2 clk relative to divider_out
 // ΔΔP clk == ΔP clk
 always @(posedge clk_i) begin
     if(data_acq_en_i=='d2)begin
-        proportion_position <= {position_pre[POSITION_DATA],position_pre} - {position_actual[POSITION_DATA],position_actual};
-        integral_position   <= {position_aim_i[POSITION_DATA],position_aim_i} - {position_actual[POSITION_DATA],position_actual};
-        differ_position     <= {position_pre,1'b0} - {position_actual[POSITION_DATA],position_actual} - {position_pre_p[POSITION_DATA],position_pre_p};
+        proportion_position <= {position_aim_i[POSITION_DATA],position_aim_i} - {position_actual[POSITION_DATA],position_actual};
+        integral_position   <= {position_aim_i,1'b0} - {position_actual[POSITION_DATA],position_actual} - {position_pre[POSITION_DATA],position_pre};
+        differ_position     <= {position_pre[POSITION_DATA],position_pre} - {position_actual[POSITION_DATA],position_actual};
     end
     else begin
         proportion_position <= 'd0;

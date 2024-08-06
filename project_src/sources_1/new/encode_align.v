@@ -65,7 +65,7 @@ reg     [32-1:0]        encode_sim_w                = 'd0;
 reg     [32-1:0]        encode_sim_x                = 'd0;
 
 reg                     align_wr_en                 = 'd0;
-reg     [18-1:0]        align_wr_wencode            = 'd0;
+reg     [18-1:0]        align_wr_xencode            = 'd0;
 reg                     align_rd_en                 = 'd0;
 reg                     align_valid                 = 'd0;
 
@@ -98,7 +98,7 @@ wire    [36-1:0]        align_encode_data               ;
 encode_x_align_fifo encode_x_align_fifo_inst (
   .clk                          ( clk_i                     ),  // input wire clk
   .srst                         ( align_rst                 ),  // input wire srst
-  .din                          ( align_wr_wencode          ),  // input wire [18 : 0] din
+  .din                          ( align_wr_xencode          ),  // input wire [18 : 0] din
   .wr_en                        ( align_wr_en               ),  // input wire wr_en
   .rd_en                        ( align_rd_en               ),  // input wire rd_en
   .dout                         ( align_dout                ),  // output wire [18 : 0] dout
@@ -179,11 +179,11 @@ always @(posedge clk_i) begin
 end
 
 always @(posedge clk_i) begin
-    align_wr_wencode    <= #TCQ precise_encode_x_i;
+    align_wr_xencode    <= #TCQ precise_encode_x_i;
 end
 
 always @(posedge clk_i) begin
-    if(align_data_count >= 'd3498) // 35us
+    if(align_data_count >= 'd2998) // 30us
         align_rd_en <= #TCQ align_wr_en;
     else 
         align_rd_en <= #TCQ 'd0;

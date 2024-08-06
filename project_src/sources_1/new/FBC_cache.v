@@ -30,8 +30,8 @@ module FBC_cache #(
     // FBC actual voltage
     input   wire                            FBCi_cache_vld_i            ,
     input   wire    [48-1:0]                FBCi_cache_data_i           ,
-    input   wire                            FBCr1_cache_vld_i           ,
-    input   wire    [48-1:0]                FBCr1_cache_data_i          ,
+    // input   wire                            FBCr1_cache_vld_i           ,
+    // input   wire    [48-1:0]                FBCr1_cache_data_i          ,
     input   wire                            FBCr2_cache_vld_i           ,
     input   wire    [48-1:0]                FBCr2_cache_data_i          ,
 
@@ -55,9 +55,7 @@ module FBC_cache #(
     // aurora
     output  wire                            aurora_fbc_vout_vld_o       ,
     output  wire    [64-1:0]                aurora_fbc_vout_data_o      ,
-    input   wire                            aurora_fbc_almost_full_1_i  ,
-    input   wire                            aurora_fbc_almost_full_2_i  ,
-    input   wire                            aurora_fbc_almost_full_3_i  
+    input   wire    [3-1:0]                 aurora_fbc_almost_full_i    
 
 );
 
@@ -65,8 +63,7 @@ module FBC_cache #(
 // *********** Define Parameter Signal
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 genvar i;
-localparam              CACHE_NUM           = 4;
-
+localparam              CACHE_NUM           = 3;
 
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -136,13 +133,13 @@ always @(posedge clk_i) pmt_scan_en_d <= #TCQ pmt_scan_en_i;
 always @(posedge clk_i) real_scan_flag_d <= #TCQ real_scan_flag_i;
 assign cache_fifo_din[0] = {1'b1,2'd0,11'd0,encode_w_i[17:0],encode_x_i[31:0]};
 assign cache_fifo_din[1] = {1'b1,2'd1,5'd0,FBCi_cache_data_i[47:24],8'd0,FBCi_cache_data_i[23:0]};
-assign cache_fifo_din[2] = {1'b1,2'd2,5'd0,FBCr1_cache_data_i[47:24],8'd0,FBCr1_cache_data_i[23:0]};
-assign cache_fifo_din[3] = {1'b1,2'd3,5'd0,FBCr2_cache_data_i[47:24],8'd0,FBCr2_cache_data_i[23:0]};
+// assign cache_fifo_din[2] = {1'b1,2'd2,5'd0,FBCr1_cache_data_i[47:24],8'd0,FBCr1_cache_data_i[23:0]};
+assign cache_fifo_din[2] = {1'b1,2'd3,5'd0,FBCr2_cache_data_i[47:24],8'd0,FBCr2_cache_data_i[23:0]};
 
-assign cache_fifo_wr[0]  = FBCr2_cache_vld_i && real_scan_flag_d;
+assign cache_fifo_wr[0]  = FBCi_cache_vld_i && real_scan_flag_d;
 assign cache_fifo_wr[1]  = FBCi_cache_vld_i && real_scan_flag_d;
-assign cache_fifo_wr[2]  = FBCr1_cache_vld_i && real_scan_flag_d;
-assign cache_fifo_wr[3]  = FBCr2_cache_vld_i && real_scan_flag_d;
+// assign cache_fifo_wr[2]  = FBCr1_cache_vld_i && real_scan_flag_d;
+assign cache_fifo_wr[2]  = FBCr2_cache_vld_i && real_scan_flag_d;
 
 always @(posedge clk_i) begin
     if(real_scan_flag_i)
@@ -168,17 +165,20 @@ end
 
 always @(posedge clk_i) rd_en_d <= #TCQ rd_en;
 always @(posedge clk_i) fbc_cache_vld <= #TCQ rd_en_d;
-always @(posedge clk_i) fbc_cache_data <= #TCQ { cache_fifo_dout[3]
-                                                ,cache_fifo_dout[2]
-                                                ,cache_fifo_dout[1]
-                                                ,cache_fifo_dout[0]};
+always @(posedge clk_i) fbc_cache_data <= #TCQ { 
+                                                //  cache_fifo_dout[3],
+                                                 cache_fifo_dout[2],
+                                                 64'd0,
+                                                 cache_fifo_dout[1],
+                                                 cache_fifo_dout[0]
+                                                };
 
 assign fbc_scan_en_o    = pmt_scan_en_d && real_scan_flag_latch;
 assign fbc_cache_vld_o  = fbc_cache_vld;
 assign fbc_cache_data_o = fbc_cache_data;
 
 always @(posedge clk_i) begin
-    if(~fbc_vout_empty_i && ~(aurora_fbc_almost_full_1_i && aurora_fbc_almost_full_2_i && aurora_fbc_almost_full_3_i))
+    if(~fbc_vout_empty_i && (|aurora_fbc_almost_full_i))
         fbc_vout_rd_seq <= #TCQ 'd1;
     else 
         fbc_vout_rd_seq <= #TCQ 'd0;

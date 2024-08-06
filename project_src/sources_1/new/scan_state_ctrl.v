@@ -526,8 +526,8 @@ always @(posedge clk_i) begin
     if((state==ST_CLOSE_SHUTTER) && autocal_other_enable)
         scan_error_comm_flag <= #TCQ 'd11;  // autocal spindle moving too fast
 
-    if(state==ST_FAST_SHUTTER_WAIT && timeout_flag)
-        scan_error_comm_flag <= #TCQ 'd12;   // wait fast shutter encode timeout error
+    // if(state==ST_FAST_SHUTTER_WAIT && timeout_flag)
+    //     scan_error_comm_flag <= #TCQ 'd12;   // wait fast shutter encode timeout error
     // if((state==ST_SCAN) && aom_integral_trig_err_i)
     //     scan_error_comm_flag <= #TCQ 'd13;  // aom integral trigger timeout
 end

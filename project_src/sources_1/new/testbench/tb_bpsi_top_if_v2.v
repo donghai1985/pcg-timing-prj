@@ -60,19 +60,26 @@ wire    [32*5-1:0]  dbg_mem_rd_data                 ;
 wire                FBCi_cali_en              ;
 wire    [23:0]      FBCi_cali_a               ;
 wire    [23:0]      FBCi_cali_b               ;
-wire                FBCr1_cali_en             ;
-wire    [23:0]      FBCr1_cali_a              ;
-wire    [23:0]      FBCr1_cali_b              ;
+// wire                FBCr1_cali_en             ;
+// wire    [23:0]      FBCr1_cali_a              ;
+// wire    [23:0]      FBCr1_cali_b              ;
 wire                FBCr2_cali_en             ;
 wire    [23:0]      FBCr2_cali_a              ;
 wire    [23:0]      FBCr2_cali_b              ;
+// FBC cache data
+wire                FBCi_cache_vld                  ;
+wire    [48-1:0]    FBCi_cache_data                 ;
+// wire                FBCr1_cache_vld                 ;
+// wire    [48-1:0]    FBCr1_cache_data                ;
+wire                FBCr2_cache_vld                 ;
+wire    [48-1:0]    FBCr2_cache_data                ;
     // actual voltage
 wire                FBCi_out_en               ;
 wire    [23:0]      FBCi_out_a                ;
 wire    [23:0]      FBCi_out_b                ;
-wire                FBCr1_out_en              ;
-wire    [23:0]      FBCr1_out_a               ;
-wire    [23:0]      FBCr1_out_b               ;
+// wire                FBCr1_out_en              ;
+// wire    [23:0]      FBCr1_out_a               ;
+// wire    [23:0]      FBCr1_out_b               ;
 wire                FBCr2_out_en              ;
 wire    [23:0]      FBCr2_out_a               ;
 wire    [23:0]      FBCr2_out_b               ;
@@ -80,9 +87,9 @@ wire    [23:0]      FBCr2_out_b               ;
 wire                FBCi_bg_en                ;
 wire    [23:0]      FBCi_bg_a                 ;
 wire    [23:0]      FBCi_bg_b                 ;
-wire                FBCr1_bg_en               ;
-wire    [23:0]      FBCr1_bg_a                ;
-wire    [23:0]      FBCr1_bg_b                ;
+// wire                FBCr1_bg_en               ;
+// wire    [23:0]      FBCr1_bg_a                ;
+// wire    [23:0]      FBCr1_bg_b                ;
 wire                FBCr2_bg_en               ;
 wire    [23:0]      FBCr2_bg_a                ;
 wire    [23:0]      FBCr2_bg_b                ;
@@ -98,7 +105,11 @@ wire        FPGA_TO_SFPGA_RESERVE1;
 wire        FPGA_TO_SFPGA_RESERVE2;
 wire        FPGA_TO_SFPGA_RESERVE3;
 wire        FPGA_TO_SFPGA_RESERVE4;
-
+wire        FPGA_TO_SFPGA_RESERVE5;
+wire        FPGA_TO_SFPGA_RESERVE6;
+wire        FPGA_TO_SFPGA_RESERVE7;
+wire        FPGA_TO_SFPGA_RESERVE8;
+wire        FPGA_TO_SFPGA_RESERVE9;
 
 reg motor_data_out_en_sim = 'd0;
 reg [16-1:0] motor_data_out_sim = 'd0;
@@ -136,6 +147,7 @@ reg_delay #(
     .delay_data_o                   ( {motor_data_out_en,motor_data_out}    )
 );
 
+
 bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .clk_sys_i                      ( clk_100m                      ),
     .clk_h_i                        ( clk_300m                      ),
@@ -154,6 +166,8 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .motor_bias_vol_en_i            ( fbc_bias_vol_en               ),
     .fbc_bias_voltage_i             ( fbc_bias_voltage              ),
     .fbc_cali_uop_set_i             ( fbc_cali_uop_set              ),
+    .ascent_gradient_i              ( ascent_gradient               ),
+    .slow_ascent_period_i           ( slow_ascent_period            ),
 
     .position_pid_thr_i             ( position_pid_thr              ),
     .fbc_pose_err_thr_i             ( fbc_pose_err_thr              ),
@@ -173,51 +187,54 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .motor_data_in_o                ( motor_data_in                 ), // Uop to motor
     .delta_position_o               ( delta_position                ),
 
-    .dbg_mem_rd_en_i                ( dbg_mem_rd_en                 ),
-    .dbg_mem_start_i                ( dbg_mem_start                 ),
-    .dbg_mem_state_o                ( dbg_mem_state                 ),
-    .dbg_mem_rd_data_o              ( dbg_mem_rd_data               ),
     // calibrate voltage. dark current * R
     .FBCi_cali_en_o                 ( FBCi_cali_en                  ),
     .FBCi_cali_a_o                  ( FBCi_cali_a                   ),
     .FBCi_cali_b_o                  ( FBCi_cali_b                   ),
-    .FBCr1_cali_en_o                ( FBCr1_cali_en                 ),
-    .FBCr1_cali_a_o                 ( FBCr1_cali_a                  ),
-    .FBCr1_cali_b_o                 ( FBCr1_cali_b                  ),
+    // .FBCr1_cali_en_o                ( FBCr1_cali_en                 ),
+    // .FBCr1_cali_a_o                 ( FBCr1_cali_a                  ),
+    // .FBCr1_cali_b_o                 ( FBCr1_cali_b                  ),
     .FBCr2_cali_en_o                ( FBCr2_cali_en                 ),
     .FBCr2_cali_a_o                 ( FBCr2_cali_a                  ),
     .FBCr2_cali_b_o                 ( FBCr2_cali_b                  ),
     // actual voltage
-    .FBCi_out_en_o                  ( FBCi_out_en                   ),
-    .FBCi_out_a_o                   ( FBCi_out_a                    ),
-    .FBCi_out_b_o                   ( FBCi_out_b                    ),
-    .FBCr1_out_en_o                 ( FBCr1_out_en                  ),
-    .FBCr1_out_a_o                  ( FBCr1_out_a                   ),
-    .FBCr1_out_b_o                  ( FBCr1_out_b                   ),
-    .FBCr2_out_en_o                 ( FBCr2_out_en                  ),
-    .FBCr2_out_a_o                  ( FBCr2_out_a                   ),
-    .FBCr2_out_b_o                  ( FBCr2_out_b                   ),
+    // .FBCi_out_en_o                  ( FBCi_out_en                   ),
+    // .FBCi_out_a_o                   ( FBCi_out_a                    ),
+    // .FBCi_out_b_o                   ( FBCi_out_b                    ),
+    // .FBCr1_out_en_o                 ( FBCr1_out_en                  ),
+    // .FBCr1_out_a_o                  ( FBCr1_out_a                   ),
+    // .FBCr1_out_b_o                  ( FBCr1_out_b                   ),
+    // .FBCr2_out_en_o                 ( FBCr2_out_en                  ),
+    // .FBCr2_out_a_o                  ( FBCr2_out_a                   ),
+    // .FBCr2_out_b_o                  ( FBCr2_out_b                   ),
     // background voltage. dark current * R
     .FBCi_bg_en_o                   ( FBCi_bg_en                    ),
     .FBCi_bg_a_o                    ( FBCi_bg_a                     ),
     .FBCi_bg_b_o                    ( FBCi_bg_b                     ),
-    .FBCr1_bg_en_o                  ( FBCr1_bg_en                   ),
-    .FBCr1_bg_a_o                   ( FBCr1_bg_a                    ),
-    .FBCr1_bg_b_o                   ( FBCr1_bg_b                    ),
+    // .FBCr1_bg_en_o                  ( FBCr1_bg_en                   ),
+    // .FBCr1_bg_a_o                   ( FBCr1_bg_a                    ),
+    // .FBCr1_bg_b_o                   ( FBCr1_bg_b                    ),
     .FBCr2_bg_en_o                  ( FBCr2_bg_en                   ),
     .FBCr2_bg_a_o                   ( FBCr2_bg_a                    ),
     .FBCr2_bg_b_o                   ( FBCr2_bg_b                    ),
+
+    .FBCi_cache_vld_o               ( FBCi_cache_vld                ),
+    .FBCi_cache_data_o              ( FBCi_cache_data               ),
+    // .FBCr1_cache_vld_o              ( FBCr1_cache_vld               ),
+    // .FBCr1_cache_data_o             ( FBCr1_cache_data              ),
+    .FBCr2_cache_vld_o              ( FBCr2_cache_vld               ),
+    .FBCr2_cache_data_o             ( FBCr2_cache_data              ),
     // spi info
-    .FBCi_MCLK                      ( BPSi_MCLK                     ),
-    .FBCi_MOSI                      ( BPSi_MOSI                     ),
+    .FBCi_MCLK                      ( BPSi_MCLK_P                   ),
+    .FBCi_MOSI                      ( BPSi_MOSI_P                   ),
     .FBCi_SCLK                      ( BPSi_SCLK                     ),
     .FBCi_MISO                      ( BPSi_MISO                     ),
-    .FBCr1_MCLK                     ( BPSr1_MCLK                    ),
-    .FBCr1_MOSI                     ( BPSr1_MOSI                    ),
+    .FBCr1_MCLK                     ( BPSr1_MCLK_P                  ),
+    .FBCr1_MOSI                     ( BPSr1_MOSI_P                  ),
     .FBCr1_SCLK                     ( BPSr1_SCLK                    ),
     .FBCr1_MISO                     ( BPSr1_MISO                    ),
-    .FBCr2_MCLK                     ( BPSr2_MCLK                    ),
-    .FBCr2_MOSI                     ( BPSr2_MOSI                    ),
+    .FBCr2_MCLK                     ( BPSr2_MCLK_P                  ),
+    .FBCr2_MOSI                     ( BPSr2_MOSI_P                  ),
     .FBCr2_SCLK                     ( BPSr2_SCLK                    ),
     .FBCr2_MISO                     ( BPSr2_MISO                    )
 );
@@ -258,28 +275,29 @@ end
 arbitrate_bpsi arbitrate_bpsi_inst(
     .clk_i                          ( clk_100m                      ),
     .rst_i                          ( rst                           ),
-    .FBC_out_fifo_rst_i             ( rst                           ),
     
     // calibrate voltage. dark current * R
     .FBCi_cali_en_i                 ( FBCi_cali_en                  ),
     .FBCi_cali_a_i                  ( FBCi_cali_a                   ),
     .FBCi_cali_b_i                  ( FBCi_cali_b                   ),
-    .FBCr1_cali_en_i                ( FBCr1_cali_en                 ),
-    .FBCr1_cali_a_i                 ( FBCr1_cali_a                  ),
-    .FBCr1_cali_b_i                 ( FBCr1_cali_b                  ),
+    // .FBCr1_cali_en_i                ( FBCr1_cali_en                 ),
+    // .FBCr1_cali_a_i                 ( FBCr1_cali_a                  ),
+    // .FBCr1_cali_b_i                 ( FBCr1_cali_b                  ),
     .FBCr2_cali_en_i                ( FBCr2_cali_en                 ),
     .FBCr2_cali_a_i                 ( FBCr2_cali_a                  ),
     .FBCr2_cali_b_i                 ( FBCr2_cali_b                  ),
     // actual voltage
-    .FBCi_out_en_i                  ( FBCi_out_en                   ),
-    .FBCi_out_a_i                   ( FBCi_out_a                    ),
-    .FBCi_out_b_i                   ( FBCi_out_b                    ),
-    .FBCr1_out_en_i                 ( FBCr1_out_en                  ),
-    .FBCr1_out_a_i                  ( FBCr1_out_a                   ),
-    .FBCr1_out_b_i                  ( FBCr1_out_b                   ),
-    .FBCr2_out_en_i                 ( FBCr2_out_en                  ),
-    .FBCr2_out_a_i                  ( FBCr2_out_a                   ),
-    .FBCr2_out_b_i                  ( FBCr2_out_b                   ),
+    .FBC_out_fifo_rst_i             ( FBC_out_fifo_rst              ),
+    .fbc_udp_rate_switch_i          ( fbc_udp_rate_switch           ),
+    .FBCi_out_en_i                  ( FBCi_cache_vld                ),
+    .FBCi_out_a_i                   ( FBCi_cache_data[47:24]        ),
+    .FBCi_out_b_i                   ( FBCi_cache_data[23:0]         ),
+    // .FBCr1_out_en_i                 ( FBCr1_cache_vld               ),
+    // .FBCr1_out_a_i                  ( FBCr1_cache_data[47:24]       ),
+    // .FBCr1_out_b_i                  ( FBCr1_cache_data[23:0]        ),
+    .FBCr2_out_en_i                 ( FBCr2_cache_vld               ),
+    .FBCr2_out_a_i                  ( FBCr2_cache_data[47:24]       ),
+    .FBCr2_out_b_i                  ( FBCr2_cache_data[23:0]        ),
     // Enocde
     .encode_w_i                     ( real_precise_encode_w                 ),
     .encode_x_i                     ( {4'd0,real_precise_encode_x[31:4]}    ),
@@ -287,9 +305,9 @@ arbitrate_bpsi arbitrate_bpsi_inst(
     .FBCi_bg_en_i                   ( FBCi_bg_en                    ),
     .FBCi_bg_a_i                    ( FBCi_bg_a                     ),
     .FBCi_bg_b_i                    ( FBCi_bg_b                     ),
-    .FBCr1_bg_en_i                  ( FBCr1_bg_en                   ),
-    .FBCr1_bg_a_i                   ( FBCr1_bg_a                    ),
-    .FBCr1_bg_b_i                   ( FBCr1_bg_b                    ),
+    // .FBCr1_bg_en_i                  ( FBCr1_bg_en                   ),
+    // .FBCr1_bg_a_i                   ( FBCr1_bg_a                    ),
+    // .FBCr1_bg_b_i                   ( FBCr1_bg_b                    ),
     .FBCr2_bg_en_i                  ( FBCr2_bg_en                   ),
     .FBCr2_bg_a_i                   ( FBCr2_bg_a                    ),
     .FBCr2_bg_b_i                   ( FBCr2_bg_b                    ),
@@ -326,7 +344,10 @@ slave_comm slave_comm_inst(
     // info
     .SLAVE_MSG_CLK                  ( FPGA_TO_SFPGA_RESERVE0        ),
     .SLAVE_MSG_TX_FSX               ( FPGA_TO_SFPGA_RESERVE3        ),
-    .SLAVE_MSG_TX                   ( FPGA_TO_SFPGA_RESERVE4        ),
+    .SLAVE_MSG_TX0                  ( FPGA_TO_SFPGA_RESERVE4        ),
+    .SLAVE_MSG_TX1                  ( FPGA_TO_SFPGA_RESERVE5        ),
+    .SLAVE_MSG_TX2                  ( FPGA_TO_SFPGA_RESERVE6        ),
+    .SLAVE_MSG_TX3                  ( FPGA_TO_SFPGA_RESERVE7        ),
     .SLAVE_MSG_RX_FSX               ( FPGA_TO_SFPGA_RESERVE1        ),
     .SLAVE_MSG_RX                   ( FPGA_TO_SFPGA_RESERVE2        )
 );
@@ -354,39 +375,15 @@ command_map command_map_inst(
     .eds_frame_en_o                 ( eds_frame_en                  ),
     .laser_uart_data_o              ( laser_tx_data                 ),
     .laser_uart_vld_o               ( laser_tx_vld                  ),
-    .dbg_mem_rd_en_o                ( dbg_mem_rd_en                 ),
-    .dbg_mem_start_o                ( dbg_mem_start                 ),
-    .dbg_mem_state_i                ( dbg_mem_state                 ),
-    .dbg_mem_rd_data_i              ( dbg_mem_rd_data               ),
+    // .dbg_mem_rd_en_o                ( dbg_mem_rd_en                 ),
+    // .dbg_mem_start_o                ( dbg_mem_start                 ),
+    // .dbg_mem_state_i                ( dbg_mem_state                 ),
+    // .dbg_mem_rd_data_i              ( dbg_mem_rd_data               ),
 
     .debug_info                     (                      )   
 );
 
 
-laser_comm_ctrl laser_comm_ctrl_inst(
-    // clk & rst
-    .clk_i                          ( clk_100m                      ),
-    .rst_i                          ( rst                           ),
-    
-    .laser_tx_data_i                ( laser_tx_data                 ),
-    .laser_tx_vld_i                 ( laser_tx_vld                  ),
-    .laser_rx_data_o                ( laser_rx_data                 ),
-    .laser_rx_vld_o                 ( laser_rx_vld                  ),
-    .laser_rx_last_o                ( laser_rx_last                 ),
-
-    // interface    
-    .LASER_UART_RXD                 ( UART_RX                       ),
-    .LASER_UART_TXD                 ( UART_TX                       )
-);
-message_comm_rx message_comm_rx_inst(
-    .clk                 ( FPGA_TO_SFPGA_RESERVE0 ),
-    .rst_n               ( 0 ),
-    .msg_rx_data_vld_o   ( ),
-    .msg_rx_data_o       ( ),
-    .MSG_CLK             ( FPGA_TO_SFPGA_RESERVE0 ),
-    .MSG_RX_FSX          ( FPGA_TO_SFPGA_RESERVE3 ),
-    .MSG_RX              ( FPGA_TO_SFPGA_RESERVE4 )
-);
 
 initial
 begin

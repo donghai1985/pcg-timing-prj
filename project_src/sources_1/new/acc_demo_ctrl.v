@@ -66,7 +66,7 @@ reg     [18-1:0]        align_wr_wencode            = 'd0;
 reg                     align_rd_en                 = 'd0;
 reg                     align_valid                 = 'd0;
 
-reg                                 real_scan_flag_latch        = 'd0;
+(*dont_touch = "true"*)reg                                 real_scan_flag_latch        = 'd0;
 reg                                 acc_demo_start_d            = 'd0;
 reg     [16-1:0]                    particle_num                = 'd0;
 reg     [18-1:0]                    acc_demo_start_Wencode      = 'd0;

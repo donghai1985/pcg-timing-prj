@@ -22,7 +22,7 @@ reg   [ENCODE_WID-1:0]  encode_x_i_125         = 0;
 reg encode_update_d0 ;
 reg encode_update_d1 ;
 
-reg   [ENCODE_WID-1:0]  FIRST_DELTA_WENCODE = 956 ;
+reg   [ENCODE_WID-1:0]  FIRST_DELTA_WENCODE = 65 ;
 reg   [ENCODE_WID-1:0]  FIRST_DELTA_XENCODE = 500   ;
 
 // encode_process Output
@@ -197,10 +197,15 @@ always @(posedge clk_i) begin
         end
     end
 end
+// always @(posedge clk_i) begin
+//     if(count == count_num)begin
+//         FIRST_DELTA_WENCODE <= delta_wencode_flag ? (delta_wencode_flag_cnt2[0] ? FIRST_DELTA_WENCODE + 2 : FIRST_DELTA_WENCODE - 2): FIRST_DELTA_WENCODE + 0 ;
+//     end
+// end
 
 always @(posedge clk_i) begin
     if(count == count_num)begin
-        FIRST_DELTA_WENCODE <= delta_wencode_flag ? (delta_wencode_flag_cnt2[0] ? FIRST_DELTA_WENCODE + 2 : FIRST_DELTA_WENCODE - 2): FIRST_DELTA_WENCODE + 0 ;
+        FIRST_DELTA_XENCODE <= delta_wencode_flag ? (delta_wencode_flag_cnt2[0] ? FIRST_DELTA_XENCODE + 2 : FIRST_DELTA_XENCODE - 2): FIRST_DELTA_XENCODE + 0 ;
     end
 end
 

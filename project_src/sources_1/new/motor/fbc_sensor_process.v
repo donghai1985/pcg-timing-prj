@@ -32,7 +32,7 @@ module fbc_sensor_process#(
     input   wire                bg_data_acq_en_i            , // background sample. pulse
     input   wire                position_cali_en_i          , // test
     input   wire    [1:0]       sensor_mode_sel_i           ,
-    input   wire    [11-1:0]    sensor_ds_rate_i            ,
+    input   wire    [2-1:0]     sensor_ds_rate_i            ,
 
     // calibrate voltage. dark current * R
     output  wire                cali_data_en_o              ,
@@ -167,7 +167,7 @@ reg                             sspi_rd_vld_sim  = 'd0;
 reg  [SPI_SLAVE_WIDTH-1:0]      sspi_rd_data_sim = {24'd8192,24'd8192};
 reg  [32-1:0]                   sim_cnt          = 'd0;
 always @(posedge clk_sys_i) begin
-    if(sim_cnt == 'd1_000)begin    // simulate 10 us
+    if(sim_cnt == 'd1_00)begin    // simulate 10 us
         sspi_rd_vld_sim <= #TCQ 'd1;
         sspi_rd_data_sim[23:0] <= #TCQ sspi_rd_data_sim[23:0] + 6 ;
         sspi_rd_data_sim[47:24] <= #TCQ sspi_rd_data_sim[47:24] + 2 ;
@@ -460,8 +460,8 @@ always @(posedge clk_sys_i) begin
 end
 
 assign data_out_en_o    = actual_data_vld;
-assign data_out_a_o     = actual_data_a[23:0];
-assign data_out_b_o     = actual_data_b[23:0];
+assign data_out_a_o     = actual_data_a;
+assign data_out_b_o     = actual_data_b;
 
 assign bg_data_en_o     = avg_beat[2] && (bg_pos_state==BG_AVG);
 assign bg_data_a_o      = state_data_a_avg[23:0];

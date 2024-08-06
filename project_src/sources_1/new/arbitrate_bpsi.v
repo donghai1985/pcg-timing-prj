@@ -34,16 +34,13 @@ module arbitrate_bpsi #(
     input    wire                           readback_vld_i              ,
     input    wire    [64-1:0]               fpga_message_up_data_i      ,
     input    wire                           fpga_message_up_i           ,
-    input    wire    [64-1:0]               acc_encode_latch_i          ,
-    input    wire                           acc_encode_latch_en_i       ,
-
     // calibrate voltage. dark current * R
     input    wire                           FBCi_cali_en_i              ,
     input    wire    [23:0]                 FBCi_cali_a_i               ,
     input    wire    [23:0]                 FBCi_cali_b_i               ,
-    input    wire                           FBCr1_cali_en_i             ,
-    input    wire    [23:0]                 FBCr1_cali_a_i              ,
-    input    wire    [23:0]                 FBCr1_cali_b_i              ,
+    // input    wire                           FBCr1_cali_en_i             ,
+    // input    wire    [23:0]                 FBCr1_cali_a_i              ,
+    // input    wire    [23:0]                 FBCr1_cali_b_i              ,
     input    wire                           FBCr2_cali_en_i             ,
     input    wire    [23:0]                 FBCr2_cali_a_i              ,
     input    wire    [23:0]                 FBCr2_cali_b_i              ,
@@ -54,9 +51,9 @@ module arbitrate_bpsi #(
     input    wire                           FBCi_out_en_i               ,
     input    wire    [23:0]                 FBCi_out_a_i                ,
     input    wire    [23:0]                 FBCi_out_b_i                ,
-    input    wire                           FBCr1_out_en_i              ,
-    input    wire    [23:0]                 FBCr1_out_a_i               ,
-    input    wire    [23:0]                 FBCr1_out_b_i               ,
+    // input    wire                           FBCr1_out_en_i              ,
+    // input    wire    [23:0]                 FBCr1_out_a_i               ,
+    // input    wire    [23:0]                 FBCr1_out_b_i               ,
     input    wire                           FBCr2_out_en_i              ,
     input    wire    [23:0]                 FBCr2_out_a_i               ,
     input    wire    [23:0]                 FBCr2_out_b_i               ,
@@ -68,9 +65,9 @@ module arbitrate_bpsi #(
     input    wire                           FBCi_bg_en_i                ,
     input    wire    [23:0]                 FBCi_bg_a_i                 ,
     input    wire    [23:0]                 FBCi_bg_b_i                 ,
-    input    wire                           FBCr1_bg_en_i               ,
-    input    wire    [23:0]                 FBCr1_bg_a_i                ,
-    input    wire    [23:0]                 FBCr1_bg_b_i                ,
+    // input    wire                           FBCr1_bg_en_i               ,
+    // input    wire    [23:0]                 FBCr1_bg_a_i                ,
+    // input    wire    [23:0]                 FBCr1_bg_b_i                ,
     input    wire                           FBCr2_bg_en_i               ,
     input    wire    [23:0]                 FBCr2_bg_a_i                ,
     input    wire    [23:0]                 FBCr2_bg_b_i                ,
@@ -95,6 +92,10 @@ module arbitrate_bpsi #(
     input    wire                           spi_slave2_ack_vld_i        ,
     input    wire                           spi_slave2_ack_last_i       ,
     input    wire    [32-1:0]               spi_slave2_ack_data_i       ,
+    input    wire                           spi_slave3_ack_rst_i        ,
+    input    wire                           spi_slave3_ack_vld_i        ,
+    input    wire                           spi_slave3_ack_last_i       ,
+    input    wire    [32-1:0]               spi_slave3_ack_data_i       ,
 
     // read mfpga version
     input    wire                           rd_mfpga_version_i          ,
@@ -114,7 +115,7 @@ module arbitrate_bpsi #(
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 localparam          [16-1:0]                FBC_ACTUAL_TYPE             = 'h010F;
 localparam          [11-1:0]                FBC_ACTUAL_DATA_NUM         = 'd30;
-localparam          [16-1:0]                FBC_ACTUAL_BYTE_NUM         = FBC_ACTUAL_DATA_NUM * 18 + 2 + FBC_ACTUAL_DATA_NUM*8;
+localparam          [16-1:0]                FBC_ACTUAL_BYTE_NUM         = FBC_ACTUAL_DATA_NUM * 12 + 2 + FBC_ACTUAL_DATA_NUM*8;
 
 localparam          [16-1:0]                FBC_VOL_TYPE                = 'h010B;
 localparam          [11-1:0]                FBC_VOL_DATA_NUM            = 'd10;
@@ -138,9 +139,6 @@ localparam          [16-1:0]                HEARTBEAT_NUM               = 'd10;
 
 localparam          [16-1:0]                FPGA_ACT_MESS_TYPE          = 'h0340;
 localparam          [16-1:0]                FPGA_ACT_MESS_NUM           = 'd10;
-
-localparam          [16-1:0]                ACC_ENCODE_UP_TYPE          = 'h0338;
-localparam          [16-1:0]                ACC_ENCODE_UP_NUM           = 'd10;
 
 localparam                                  ARBITRATE_NUM               = 13;    // control arbitrate channel
 genvar i;
@@ -204,10 +202,10 @@ reg                 [24-1:0]                FBCi_bg_data_a_sync         = 'd0;
 reg                 [24-1:0]                FBCi_bg_data_b_sync         = 'd0;
 reg                 [24-1:0]                FBCi_cali_data_a_sync       = 'd0;
 reg                 [24-1:0]                FBCi_cali_data_b_sync       = 'd0;
-reg                 [24-1:0]                FBCr1_bg_data_a_sync        = 'd0;
-reg                 [24-1:0]                FBCr1_bg_data_b_sync        = 'd0;
-reg                 [24-1:0]                FBCr1_cali_data_a_sync      = 'd0;
-reg                 [24-1:0]                FBCr1_cali_data_b_sync      = 'd0;
+// reg                 [24-1:0]                FBCr1_bg_data_a_sync        = 'd0;
+// reg                 [24-1:0]                FBCr1_bg_data_b_sync        = 'd0;
+// reg                 [24-1:0]                FBCr1_cali_data_a_sync      = 'd0;
+// reg                 [24-1:0]                FBCr1_cali_data_b_sync      = 'd0;
 reg                 [24-1:0]                FBCr2_bg_data_a_sync        = 'd0;
 reg                 [24-1:0]                FBCr2_bg_data_b_sync        = 'd0;
 reg                 [24-1:0]                FBCr2_cali_data_a_sync      = 'd0;
@@ -216,15 +214,15 @@ reg                 [25-1:0]                bpsi_position_actual_sync   = 'd0;
 reg                 [16-1:0]                slave_tx_byte_num           = 'd0;
 
 reg                                         FBCi_bg_ready               = 'd0;
-reg                                         FBCr1_bg_ready              = 'd0;
+// reg                                         FBCr1_bg_ready              = 'd0;
 reg                                         FBCr2_bg_ready              = 'd0;
 reg                                         FBCi_cali_ready             = 'd0;
-reg                                         FBCr1_cali_ready            = 'd0;
+// reg                                         FBCr1_cali_ready            = 'd0;
 reg                                         FBCr2_cali_ready            = 'd0;
 
-reg                 [ 6-1:0]                spi_slave_ack_cnt [2:0] ;
-reg                 [ 6-1:0]                spi_slave_ack_num [2:0] ;
-reg                                         spi_ack_rd_en     [2:0] ;
+reg                 [ 6-1:0]                spi_slave_ack_cnt [3:0] ;
+reg                 [ 6-1:0]                spi_slave_ack_num [3:0] ;
+reg                                         spi_ack_rd_en     [3:0] ;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
@@ -236,15 +234,15 @@ wire                [ARBITRATE_NUM-1:0]     bpsi_en             ;
 wire                [ARBITRATE_NUM-1:0]     arbitr_result       ;
 
 wire                                        FBCi_arbitr_en      ;
-wire                                        FBCr1_arbitr_en     ;
+// wire                                        FBCr1_arbitr_en     ;
 wire                                        FBCr2_arbitr_en     ;
 wire                [24-1:0]                FBCi_dout           ;
-wire                [24-1:0]                FBCr1_dout          ;
+// wire                [24-1:0]                FBCr1_dout          ;
 wire                [24-1:0]                FBCr2_dout          ;
 wire                                        FBCi_full           ;
 wire                                        FBCi_empty          ;
-wire                                        FBCr1_full          ;
-wire                                        FBCr1_empty         ;
+// wire                                        FBCr1_full          ;
+// wire                                        FBCr1_empty         ;
 wire                                        FBCr2_full          ;
 wire                                        FBCr2_empty         ;
 wire                                        fbc_encode_vld      ;
@@ -261,10 +259,10 @@ wire                                        fbc_vol_arbitr_en   ;
 wire                                        laser_rx_en         ;
 wire                [ 8-1:0]                laser_rx_dout       ;
 
-wire                                        spi_slave_ack_en [2:0];
-wire                [32-1:0]                spi_ack_rd_dout  [2:0];
-wire                                        spi_ack_full     [2:0];
-wire                                        spi_ack_empty    [2:0];
+wire                                        spi_slave_ack_en [3:0];
+wire                [32-1:0]                spi_ack_rd_dout  [3:0];
+wire                                        spi_ack_full     [3:0];
+wire                                        spi_ack_empty    [3:0];
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -286,16 +284,16 @@ bpsi_fbc_fifo bpsi_fbci_fifo_inst(
   .empty                    ( FBCi_empty                            )
 );
 
-bpsi_fbc_fifo bpsi_fbcr1_fifo_inst(
-  .clk                      ( clk_i                                 ),
-  .srst                     ( rst_i || FBC_out_fifo_rst_i           ),
-  .din                      ( FBCr1_din                             ),
-  .wr_en                    ( FBCr1_wr_en_d1 || FBCr1_wr_en_d0      ),
-  .rd_en                    ( FBCr1_rd_en                           ),
-  .dout                     ( FBCr1_dout                            ),
-  .full                     ( FBCr1_full                            ),
-  .empty                    ( FBCr1_empty                           )
-);
+// bpsi_fbc_fifo bpsi_fbcr1_fifo_inst(
+//   .clk                      ( clk_i                                 ),
+//   .srst                     ( rst_i || FBC_out_fifo_rst_i           ),
+//   .din                      ( FBCr1_din                             ),
+//   .wr_en                    ( FBCr1_wr_en_d1 || FBCr1_wr_en_d0      ),
+//   .rd_en                    ( FBCr1_rd_en                           ),
+//   .dout                     ( FBCr1_dout                            ),
+//   .full                     ( FBCr1_full                            ),
+//   .empty                    ( FBCr1_empty                           )
+// );
 
 bpsi_fbc_fifo bpsi_fbcr2_fifo_inst(
   .clk                      ( clk_i                                 ),
@@ -319,7 +317,7 @@ xpm_sync_fifo #(
 )u_xpm_sync_fifo (
     .wr_clk_i               ( clk_i                                 ),
     .rst_i                  ( rst_i || FBC_out_fifo_rst_i           ), // synchronous to wr_clk
-    .wr_en_i                ( FBCr2_out_en_i                        ),
+    .wr_en_i                ( FBCi_out_en_i                         ),
     .wr_data_i              ( {encode_w_i,encode_x_i}               ),
 
     .rd_en_i                ( fbc_encode_rd                         ),
@@ -350,7 +348,7 @@ laser_rx_fifo laser_rx_fifo_inst(
 );
 
 generate
-    for (i = 0; i<3; i=i+1) begin
+    for (i = 0; i<4; i=i+1) begin
         spi_slave_ack_fifo spi_slave_ack_fifo_inst(
             .clk            ( clk_i                                 ),
             .srst           ( rst_i                                 ),
@@ -373,15 +371,15 @@ endgenerate
 // FBCi,FBCr1,FBCr2 data ready. 
 // generate a transmission every 100 times.
 // fifo width is 3byte,twice write en,for save resources.
-always @(posedge clk_i) FBCi_wr_en_d0   <= #TCQ fbc_udp_rate_switch_i ? FBCr2_out_en_i : FBCi_out_en_i;
+always @(posedge clk_i) FBCi_wr_en_d0   <= #TCQ FBCi_out_en_i;
 always @(posedge clk_i) FBCi_wr_en_d1   <= #TCQ FBCi_wr_en_d0;
-always @(posedge clk_i) FBCr1_wr_en_d0  <= #TCQ fbc_udp_rate_switch_i ? FBCr2_out_en_i : FBCr1_out_en_i;
-always @(posedge clk_i) FBCr1_wr_en_d1  <= #TCQ FBCr1_wr_en_d0;
-always @(posedge clk_i) FBCr2_wr_en_d0  <= #TCQ FBCr2_out_en_i;
+// always @(posedge clk_i) FBCr1_wr_en_d0  <= #TCQ fbc_udp_rate_switch_i ? FBCi_out_en_i : FBCr1_out_en_i;
+// always @(posedge clk_i) FBCr1_wr_en_d1  <= #TCQ FBCr1_wr_en_d0;
+always @(posedge clk_i) FBCr2_wr_en_d0  <= #TCQ fbc_udp_rate_switch_i ? FBCi_out_en_i : FBCr2_out_en_i;
 always @(posedge clk_i) FBCr2_wr_en_d1  <= #TCQ FBCr2_wr_en_d0;
 
 always @(posedge clk_i) FBCi_data_b     <= #TCQ FBCi_out_b_i;
-always @(posedge clk_i) FBCr1_data_b    <= #TCQ FBCr1_out_b_i;
+// always @(posedge clk_i) FBCr1_data_b    <= #TCQ FBCr1_out_b_i;
 always @(posedge clk_i) FBCr2_data_b    <= #TCQ FBCr2_out_b_i;
 always @(posedge clk_i) begin
     if(FBCi_out_en_i)
@@ -389,12 +387,12 @@ always @(posedge clk_i) begin
     else if(FBCi_wr_en_d0)
         FBCi_din <= #TCQ FBCi_data_b;
 end
-always @(posedge clk_i) begin
-    if(FBCr1_out_en_i)
-        FBCr1_din <= #TCQ FBCr1_out_a_i;
-    else if(FBCr1_wr_en_d0)
-        FBCr1_din <= #TCQ FBCr1_data_b;
-end
+// always @(posedge clk_i) begin
+//     if(FBCr1_out_en_i)
+//         FBCr1_din <= #TCQ FBCr1_out_a_i;
+//     else if(FBCr1_wr_en_d0)
+//         FBCr1_din <= #TCQ FBCr1_data_b;
+// end
 always @(posedge clk_i) begin
     if(FBCr2_out_en_i)
         FBCr2_din <= #TCQ FBCr2_out_a_i;
@@ -443,14 +441,14 @@ always @(posedge clk_i) begin
     else if(fbc_arbitr_en)
         fbc_i_full <= #TCQ 'd0;
 end
-always @(posedge clk_i) begin
-    if(rst_i || FBC_out_fifo_rst_i)
-        fbc_r1_full <= #TCQ 'd0;
-    else if(FBCr1_arbitr_en)
-        fbc_r1_full <= #TCQ 'd1;
-    else if(fbc_arbitr_en)
-        fbc_r1_full <= #TCQ 'd0;
-end
+// always @(posedge clk_i) begin
+//     if(rst_i || FBC_out_fifo_rst_i)
+//         fbc_r1_full <= #TCQ 'd0;
+//     else if(FBCr1_arbitr_en)
+//         fbc_r1_full <= #TCQ 'd1;
+//     else if(fbc_arbitr_en)
+//         fbc_r1_full <= #TCQ 'd0;
+// end
 always @(posedge clk_i) begin
     if(rst_i || FBC_out_fifo_rst_i)
         fbc_r2_full <= #TCQ 'd0;
@@ -460,10 +458,10 @@ always @(posedge clk_i) begin
         fbc_r2_full <= #TCQ 'd0;
 end
 assign FBCi_arbitr_en = (FBCi_cnt == FBC_ACTUAL_DATA_NUM - 1) && FBCi_wr_en_d1;
-assign FBCr1_arbitr_en = (FBCr1_cnt == FBC_ACTUAL_DATA_NUM - 1) && FBCr1_wr_en_d1;
+// assign FBCr1_arbitr_en = (FBCr1_cnt == FBC_ACTUAL_DATA_NUM - 1) && FBCr1_wr_en_d1;
 assign FBCr2_arbitr_en = (FBCr2_cnt == FBC_ACTUAL_DATA_NUM - 1) && FBCr2_wr_en_d1;
 
-assign fbc_arbitr_en = fbc_i_full && fbc_r1_full && fbc_r2_full;
+assign fbc_arbitr_en = fbc_i_full && fbc_r2_full;
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate fbc_sensor enable end
 
 // fbc_background_voltage and fbc_cali_position data ready.
@@ -479,17 +477,17 @@ always @(posedge clk_i) begin
     end
 end
 
-always @(posedge clk_i) begin
-    if(FBCr1_bg_en_i)begin
-        FBCr1_bg_data_a_sync <= #TCQ FBCr1_bg_a_i;
-        FBCr1_bg_data_b_sync <= #TCQ FBCr1_bg_b_i;
-    end 
+// always @(posedge clk_i) begin
+//     if(FBCr1_bg_en_i)begin
+//         FBCr1_bg_data_a_sync <= #TCQ FBCr1_bg_a_i;
+//         FBCr1_bg_data_b_sync <= #TCQ FBCr1_bg_b_i;
+//     end 
 
-    if(FBCr1_cali_en_i)begin
-        FBCr1_cali_data_a_sync <= #TCQ FBCr1_cali_a_i;
-        FBCr1_cali_data_b_sync <= #TCQ FBCr1_cali_b_i;
-    end
-end
+//     if(FBCr1_cali_en_i)begin
+//         FBCr1_cali_data_a_sync <= #TCQ FBCr1_cali_a_i;
+//         FBCr1_cali_data_b_sync <= #TCQ FBCr1_cali_b_i;
+//     end
+// end
 
 always @(posedge clk_i) begin
     if(FBCr2_bg_en_i)begin
@@ -507,25 +505,25 @@ always @(posedge clk_i) begin
     if(FBCi_bg_en_i)            FBCi_bg_ready <= #TCQ 'd1;
     else if(FBC_bg_arbitr_en)   FBCi_bg_ready <= #TCQ 'd0;
     
-    if(FBCr1_bg_en_i)           FBCr1_bg_ready <= #TCQ 'd1;
-    else if(FBC_bg_arbitr_en)   FBCr1_bg_ready <= #TCQ 'd0;
+    // if(FBCr1_bg_en_i)           FBCr1_bg_ready <= #TCQ 'd1;
+    // else if(FBC_bg_arbitr_en)   FBCr1_bg_ready <= #TCQ 'd0;
     
     if(FBCr2_bg_en_i)           FBCr2_bg_ready <= #TCQ 'd1;
     else if(FBC_bg_arbitr_en)   FBCr2_bg_ready <= #TCQ 'd0;
 end
-assign FBC_bg_arbitr_en = FBCi_bg_ready && FBCr1_bg_ready && FBCr2_bg_ready;
+assign FBC_bg_arbitr_en = FBCi_bg_ready && FBCr2_bg_ready;
 
 always @(posedge clk_i) begin
     if(FBCi_cali_en_i)            FBCi_cali_ready <= #TCQ 'd1;
     else if(FBC_cali_arbitr_en)   FBCi_cali_ready <= #TCQ 'd0;
     
-    if(FBCr1_cali_en_i)           FBCr1_cali_ready <= #TCQ 'd1;
-    else if(FBC_cali_arbitr_en)   FBCr1_cali_ready <= #TCQ 'd0;
+    // if(FBCr1_cali_en_i)           FBCr1_cali_ready <= #TCQ 'd1;
+    // else if(FBC_cali_arbitr_en)   FBCr1_cali_ready <= #TCQ 'd0;
     
     if(FBCr2_cali_en_i)           FBCr2_cali_ready <= #TCQ 'd1;
     else if(FBC_cali_arbitr_en)   FBCr2_cali_ready <= #TCQ 'd0;
 end
-assign FBC_cali_arbitr_en = FBCi_cali_ready && FBCr1_cali_ready && FBCr2_cali_ready;
+assign FBC_cali_arbitr_en = FBCi_cali_ready && FBCr2_cali_ready;
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate fbc_background and fbc_calibration enable end
 
 // FBC_Uop FBC_Ufeed data ready. 
@@ -572,9 +570,9 @@ assign laser_rx_en = laser_rx_vld_i && laser_rx_last_i;
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate laser_rx enable end
 // wire            spi_slave_ack_rst  [2:0];
-wire            spi_slave_ack_vld  [2:0];
-wire            spi_slave_ack_last [2:0];
-wire [32-1:0]   spi_slave_ack_data [2:0];
+wire            spi_slave_ack_vld  [3:0];
+wire            spi_slave_ack_last [3:0];
+wire [32-1:0]   spi_slave_ack_data [3:0];
 
 // assign  spi_slave_ack_rst [0] = spi_slave0_ack_rst_i ;
 assign  spi_slave_ack_vld [0] = spi_slave0_ack_vld_i ;
@@ -588,11 +586,15 @@ assign  spi_slave_ack_data[1] = spi_slave1_ack_data_i;
 assign  spi_slave_ack_vld [2] = spi_slave2_ack_vld_i ;
 assign  spi_slave_ack_last[2] = spi_slave2_ack_last_i;
 assign  spi_slave_ack_data[2] = spi_slave2_ack_data_i;
+// assign  spi_slave_ack_rst [3] = spi_slave3_ack_rst_i ;
+assign  spi_slave_ack_vld [3] = spi_slave3_ack_vld_i ;
+assign  spi_slave_ack_last[3] = spi_slave3_ack_last_i;
+assign  spi_slave_ack_data[3] = spi_slave3_ack_data_i;
 
 // generate new arbitrate enable
 // generate spi slave ack enable, from PMT board
 generate
-    for (i=0;i<3;i=i+1) begin
+    for (i=0;i<4;i=i+1) begin
         always @(posedge clk_i) begin
             if(rst_i)
                 spi_slave_ack_cnt[i] <= #TCQ 'd0;
@@ -613,17 +615,11 @@ endgenerate
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate new_arbitrate enable end
 
-reg [64-1:0] acc_encode_latch = 'd0;
-always @(posedge clk_i) begin
-    if(acc_encode_latch_en_i && (~arbitr_result[12]))
-        acc_encode_latch <= #TCQ acc_encode_latch_i;
-end
-
 // generate arbitrate enable , alwaye modify when arbitrate channel add.
 assign bpsi_en          = {  
-                             acc_encode_latch_en_i
-                            ,fpga_message_up_i
+                             fpga_message_up_i
                             ,heartbeat_en_i
+                            ,spi_slave_ack_en[3]
                             ,readback_vld_i
                             ,rd_mfpga_version_i
                             ,spi_slave_ack_en[2]
@@ -663,24 +659,26 @@ end
 // with arbitrate number change
 always @(posedge clk_i) begin
     if(arbitr_result[1])
-        slave_tx_data <= #TCQ {8'd0,8'h02 ,FBCi_bg_data_a_sync[23:0],FBCi_bg_data_b_sync[23:0]
-                                        ,FBCr1_bg_data_a_sync[23:0],FBCr1_bg_data_b_sync[23:0]
+        slave_tx_data <= #TCQ {8'd0,8'h02 ,24'd0,24'd0,
+                                         FBCi_bg_data_a_sync[23:0],FBCi_bg_data_b_sync[23:0]
+                                        // ,FBCr1_bg_data_a_sync[23:0],FBCr1_bg_data_b_sync[23:0]
                                         ,FBCr2_bg_data_a_sync[23:0],FBCr2_bg_data_b_sync[23:0]};
     if(arbitr_result[2])
-        slave_tx_data <= #TCQ {8'd0,8'h01 ,FBCi_cali_data_a_sync[23:0],FBCi_cali_data_b_sync[23:0]
-                                        ,FBCr1_cali_data_a_sync[23:0],FBCr1_cali_data_b_sync[23:0]
+        slave_tx_data <= #TCQ {8'd0,8'h01 ,24'd0,24'd0,
+                                         FBCi_cali_data_a_sync[23:0],FBCi_cali_data_b_sync[23:0]
+                                        // ,FBCr1_cali_data_a_sync[23:0],FBCr1_cali_data_b_sync[23:0]
                                         ,FBCr2_cali_data_a_sync[23:0],FBCr2_cali_data_b_sync[23:0]};
     if(arbitr_result[8])
         slave_tx_data <= #TCQ MFPGA_VERSION;
 end
 
 // FBC sensor byte control
-reg [2:0] fbc_cnt  = 'd5;
+reg [2:0] fbc_cnt  = 'd3;
 reg [1:0] fbc_byte_cnt = 'd2;
 reg [11-1:0] fbc_tx_cnt = 'd0;
 always @(posedge clk_i) begin
     if(arbitr_result[0] && fbc_tx_cnt>='d1 && (fbc_tx_cnt<FBC_ACTUAL_DATA_NUM + 2))begin
-        if(fbc_byte_cnt=='d2 && fbc_cnt=='d5)begin
+        if(fbc_byte_cnt=='d2 && fbc_cnt=='d3)begin
             fbc_byte_cnt <= #TCQ 'd0;
             fbc_cnt      <= #TCQ 'd0;
         end
@@ -695,7 +693,7 @@ always @(posedge clk_i) begin
     end
     else begin
         fbc_byte_cnt <= #TCQ 'd2;
-        fbc_cnt      <= #TCQ 'd5;
+        fbc_cnt      <= #TCQ 'd3;
     end
 end
 
@@ -713,7 +711,7 @@ end
 
 always @(posedge clk_i) begin
     if(arbitr_result[0])begin
-        if(fbc_tx_cnt<FBC_ACTUAL_DATA_NUM + 2 && fbc_cnt=='d5 && fbc_byte_cnt=='d2)begin
+        if(fbc_tx_cnt<FBC_ACTUAL_DATA_NUM + 2 && fbc_cnt=='d3 && fbc_byte_cnt=='d2)begin
             fbc_tx_cnt <= #TCQ fbc_tx_cnt + 1;
         end
         else if(fbc_tx_cnt>=FBC_ACTUAL_DATA_NUM + 2 && fbc_encode_byte_cnt=='d7)begin
@@ -771,6 +769,20 @@ always @(posedge clk_i) begin
             spi_byte_cnt <= #TCQ 'd0;
         end
     end
+    else if(arbitr_result[10])begin
+        if(spi_ack_cnt < 'd2)begin
+            spi_ack_cnt  <= #TCQ spi_ack_cnt + 1;
+            spi_byte_cnt <= #TCQ 'd0;
+        end
+        else if(spi_ack_cnt < spi_slave_ack_num[3]+2) begin
+            spi_ack_cnt  <= #TCQ (spi_byte_cnt=='d3) ? spi_ack_cnt + 1 : spi_ack_cnt;
+            spi_byte_cnt <= #TCQ (spi_byte_cnt=='d3) ? 'd0 : spi_byte_cnt + 1;
+        end
+        else begin
+            spi_ack_cnt  <= #TCQ spi_slave_ack_num[3]+3;
+            spi_byte_cnt <= #TCQ 'd0;
+        end
+    end
     else begin
         spi_ack_cnt <= #TCQ 'd0;
         spi_byte_cnt <= #TCQ 'd0;
@@ -819,12 +831,12 @@ end
 always @(posedge clk_i) begin
     if((arbitr_result[0]) && (fbc_tx_cnt<FBC_ACTUAL_DATA_NUM + 2) && slave_tx_byte_en && fbc_byte_cnt=='d1)begin
         FBCi_rd_en  <= #TCQ fbc_cnt[2:1]=='b00;
-        FBCr1_rd_en <= #TCQ fbc_cnt[2:1]=='b01;
-        FBCr2_rd_en <= #TCQ fbc_cnt[2:1]=='b10;
+        // FBCr1_rd_en <= #TCQ fbc_cnt[2:1]=='b01;
+        FBCr2_rd_en <= #TCQ fbc_cnt[2:1]=='b01;
     end
     else begin
         FBCi_rd_en  <= #TCQ 'd0;
-        FBCr1_rd_en <= #TCQ 'd0;
+        // FBCr1_rd_en <= #TCQ 'd0;
         FBCr2_rd_en <= #TCQ 'd0;
     end
 end
@@ -855,11 +867,13 @@ always @(posedge clk_i) begin  // rd_en to slave_tx_byte need 1clk
         spi_ack_rd_en[0] <= #TCQ (arbitr_result[5]) && slave_tx_byte_en;
         spi_ack_rd_en[1] <= #TCQ (arbitr_result[6]) && slave_tx_byte_en;
         spi_ack_rd_en[2] <= #TCQ (arbitr_result[7]) && slave_tx_byte_en;
+        spi_ack_rd_en[3] <= #TCQ (arbitr_result[10]) && slave_tx_byte_en;
     end
     else begin
         spi_ack_rd_en[0] <= #TCQ 'd0;
         spi_ack_rd_en[1] <= #TCQ 'd0;
         spi_ack_rd_en[2] <= #TCQ 'd0;
+        spi_ack_rd_en[3] <= #TCQ 'd0;
     end
 end
 
@@ -875,7 +889,7 @@ end
 
 reg [3:0] heartbeat_cnt = 'd0;
 always @(posedge clk_i) begin
-    if(arbitr_result[10])begin
+    if(arbitr_result[11])begin
         if(heartbeat_cnt < HEARTBEAT_NUM + 1)
             heartbeat_cnt <= #TCQ heartbeat_cnt + 1;
     end
@@ -893,16 +907,6 @@ always @(posedge clk_i) begin
         fpga_act_mess_cnt <= #TCQ 'd0;
 end
 
-reg [3:0] acc_encode_upload_cnt = 'd0;
-always @(posedge clk_i) begin
-    if(arbitr_result[12])begin
-        if(acc_encode_upload_cnt < ACC_ENCODE_UP_NUM + 1)
-            acc_encode_upload_cnt <= #TCQ acc_encode_upload_cnt + 1;
-    end
-    else 
-        acc_encode_upload_cnt <= #TCQ 'd0;
-end
-
 always @(posedge clk_i) begin
     if(arbitr_result[0])begin
         if(fbc_tx_cnt=='d0)
@@ -912,8 +916,8 @@ always @(posedge clk_i) begin
         else if(fbc_tx_cnt < FBC_ACTUAL_DATA_NUM + 2)begin
             case(fbc_cnt[2:1])
             'b00 : slave_tx_byte <= #TCQ FBCi_dout[(2-fbc_byte_cnt)*8 +: 8];
-            'b01 : slave_tx_byte <= #TCQ FBCr1_dout[(2-fbc_byte_cnt)*8 +: 8];
-            'b10 : slave_tx_byte <= #TCQ FBCr2_dout[(2-fbc_byte_cnt)*8 +: 8];
+            // 'b01 : slave_tx_byte <= #TCQ FBCr1_dout[(2-fbc_byte_cnt)*8 +: 8];
+            'b01 : slave_tx_byte <= #TCQ FBCr2_dout[(2-fbc_byte_cnt)*8 +: 8];
             default : /*default*/;
             endcase
         end
@@ -970,6 +974,13 @@ always @(posedge clk_i) begin
             default:slave_tx_byte <= #TCQ spi_ack_rd_dout[2][(3-spi_byte_cnt)*8 +: 8];
         endcase
     end
+    else if(arbitr_result[10])begin
+        case(spi_ack_cnt)
+            'd0 : slave_tx_byte <= #TCQ SPI_SLAVE_ACK_TYPE[15:8];
+            'd1 : slave_tx_byte <= #TCQ SPI_SLAVE_ACK_TYPE[7:0];
+            default:slave_tx_byte <= #TCQ spi_ack_rd_dout[3][(3-spi_byte_cnt)*8 +: 8];
+        endcase
+    end
     else if(arbitr_result[9] && readback_cnt<READBACK_NUM)begin
         case(readback_cnt)
             'd0 : slave_tx_byte <= #TCQ READBACK_TYPE[15:8];
@@ -977,25 +988,18 @@ always @(posedge clk_i) begin
             default:slave_tx_byte <= #TCQ readback_data_i[(4'd9-readback_cnt)*8 +: 8];
         endcase
     end
-    else if(arbitr_result[10] && heartbeat_cnt<HEARTBEAT_NUM)begin
+    else if(arbitr_result[11] && heartbeat_cnt<HEARTBEAT_NUM)begin
         case(heartbeat_cnt)
             'd0 : slave_tx_byte <= #TCQ HEARTBEAT_TYPE[15:8];
             'd1 : slave_tx_byte <= #TCQ HEARTBEAT_TYPE[7:0];
             default:slave_tx_byte <= #TCQ heartbeat_data_i[(4'd9-heartbeat_cnt)*8 +: 8];
         endcase
     end
-    else if(arbitr_result[11] && fpga_act_mess_cnt<FPGA_ACT_MESS_NUM)begin
+    else if(arbitr_result[12] && fpga_act_mess_cnt<FPGA_ACT_MESS_NUM)begin
         case(fpga_act_mess_cnt)
             'd0 : slave_tx_byte <= #TCQ FPGA_ACT_MESS_TYPE[15:8];
             'd1 : slave_tx_byte <= #TCQ FPGA_ACT_MESS_TYPE[7:0];
             default:slave_tx_byte <= #TCQ fpga_message_up_data_i[(4'd9-fpga_act_mess_cnt)*8 +: 8];
-        endcase
-    end
-    else if(arbitr_result[12] && acc_encode_upload_cnt<ACC_ENCODE_UP_NUM)begin
-        case(acc_encode_upload_cnt)
-            'd0 : slave_tx_byte <= #TCQ ACC_ENCODE_UP_TYPE[15:8];
-            'd1 : slave_tx_byte <= #TCQ ACC_ENCODE_UP_TYPE[7:0];
-            default:slave_tx_byte <= #TCQ acc_encode_latch[(4'd9-acc_encode_upload_cnt)*8 +: 8];
         endcase
     end
 end
@@ -1022,14 +1026,14 @@ always @(*) begin
         slave_tx_byte_en = (spi_ack_cnt>'d0) && (spi_ack_cnt < spi_slave_ack_num[1] + 3);
     else if(arbitr_result[7])
         slave_tx_byte_en = (spi_ack_cnt>'d0) && (spi_ack_cnt < spi_slave_ack_num[2] + 3);
+    else if(arbitr_result[10])
+        slave_tx_byte_en = (spi_ack_cnt>'d0) && (spi_ack_cnt < spi_slave_ack_num[3] + 3);
     else if(arbitr_result[9])
         slave_tx_byte_en = (readback_cnt>'d0) && (readback_cnt < READBACK_NUM + 1);
-    else if(arbitr_result[10])
-        slave_tx_byte_en = (heartbeat_cnt>'d0) && (heartbeat_cnt < HEARTBEAT_NUM + 1);
     else if(arbitr_result[11])
-        slave_tx_byte_en = (fpga_act_mess_cnt>'d0) && (fpga_act_mess_cnt < FPGA_ACT_MESS_NUM + 1);
+        slave_tx_byte_en = (heartbeat_cnt>'d0) && (heartbeat_cnt < HEARTBEAT_NUM + 1);
     else if(arbitr_result[12])
-        slave_tx_byte_en = (acc_encode_upload_cnt>'d0) && (acc_encode_upload_cnt < ACC_ENCODE_UP_NUM + 1);
+        slave_tx_byte_en = (fpga_act_mess_cnt>'d0) && (fpga_act_mess_cnt < FPGA_ACT_MESS_NUM + 1);
     else 
         slave_tx_byte_en = 'd0;
 end
@@ -1051,14 +1055,14 @@ always @(posedge clk_i) begin
         slave_tx_byte_num <= #TCQ {spi_slave_ack_num[1][5:0],2'b00} + 'd2;
     if(arbitr_result[7])
         slave_tx_byte_num <= #TCQ {spi_slave_ack_num[2][5:0],2'b00} + 'd2;
+    if(arbitr_result[10])
+        slave_tx_byte_num <= #TCQ {spi_slave_ack_num[3][5:0],2'b00} + 'd2;
     if(arbitr_result[9])
         slave_tx_byte_num <= #TCQ READBACK_NUM;
-    if(arbitr_result[10])
-        slave_tx_byte_num <= #TCQ HEARTBEAT_NUM;
     if(arbitr_result[11])
-        slave_tx_byte_num <= #TCQ FPGA_ACT_MESS_NUM;
+        slave_tx_byte_num <= #TCQ HEARTBEAT_NUM;
     if(arbitr_result[12])
-        slave_tx_byte_num <= #TCQ ACC_ENCODE_UP_NUM;
+        slave_tx_byte_num <= #TCQ FPGA_ACT_MESS_NUM;
 end
 
 always @(posedge clk_i) begin

@@ -31,7 +31,7 @@ module bspi_ctrl #(
     input   wire                            clk_i                   ,
     input   wire                            rst_i                   ,
     
-    // input   wire [11-1:0]                   sensor_ds_rate_i        ,
+    // input   wire [2-1:0]                    sensor_ds_rate_i        ,
     input   wire                            mspi_wr_en_i            ,
     input   wire [SPI_MASTER_WIDTH-1:0]     mspi_wr_data_i          ,
     output  wire                            sspi_rd_vld_o           ,
@@ -301,16 +301,69 @@ assign sspi_rd_data_o = rd_rx_data;
 // reg [10-1:0] down_sample_cnt = 'd0;
 // wire sensor_ds_rate_en = sensor_ds_rate_i[10];
 // always @(posedge clk_i) begin
-//     if(rst_i)
-//         down_sample_cnt <= #TCQ 'd0;
-//     else if(sensor_ds_rate_en || (down_sample_cnt==sensor_ds_rate_i[9:0]))
-//         down_sample_cnt <= #TCQ 'd0;
-//     else if(rd_rx_vld)
-//         down_sample_cnt <= #TCQ down_sample_cnt + 1;
+//     case (sensor_ds_rate_i)
+//         'd0: filter_depth <= #TCQ 'd1023;
+//         'd1: filter_depth <= #TCQ 'd511;
+//         'd2: filter_depth <= #TCQ 'd255;
+//         'd3: filter_depth <= #TCQ 'd127;
+//         default:/*default*/;
+//     endcase
 // end
 
-// assign sspi_rd_ds_vld_o  = rd_rx_vld && (&down_sample_cnt);
-// assign sspi_rd_ds_data_o = rd_rx_data;
+// reg [2-1:0] sensor_ds_rate_d = 'd0;
+// always @(posedge clk_i) begin
+//     sensor_ds_rate_d <= #TCQ sensor_ds_rate_i;
+// end
+
+// always @(posedge clk_i) begin
+//     if(rst_i || (sensor_ds_rate_d != sensor_ds_rate_i))
+//         filter_cnt <= #TCQ 'd0;
+//     else if(rd_rx_vld)begin
+//         if(filter_cnt == filter_depth)
+//             filter_cnt <= #TCQ 'd0;
+//         else 
+//             filter_cnt <= #TCQ filter_cnt + 1;
+//     end
+// end
+
+// always @(posedge clk_i) begin
+//     if(rd_rx_vld)
+//         filter_mem[filter_cnt] <= #TCQ rd_rx_data;
+// end
+
+// reg filter_sum_flag = 'd0;
+// always @(posedge clk_i) begin
+//     if(rst_i || (sensor_ds_rate_d != sensor_ds_rate_i))
+//         filter_sum_flag <= #TCQ 'd0;
+//     else if(rd_rx_vld && (filter_cnt == filter_depth))
+//         filter_sum_flag <= #TCQ 'd1;
+// end
+
+// reg [24+SF_RATE-1:0] rd_rx_data_a_sum = 'd0;
+// reg [24+SF_RATE-1:0] rd_rx_data_b_sum = 'd0;
+// always @(posedge clk_i) begin
+//     if(rd_rx_vld)begin
+//         if(filter_sum_flag)begin
+//             rd_rx_data_a_sum <= #TCQ rd_rx_data_a_sum + rd_rx_data[48-1:24] - filter_mem[filter_cnt][48-1:24];
+//             rd_rx_data_b_sum <= #TCQ rd_rx_data_b_sum + rd_rx_data[24-1:0] - filter_mem[filter_cnt][24-1:0];
+//         end
+//         else begin
+//             rd_rx_data_a_sum <= #TCQ rd_rx_data_a_sum + rd_rx_data[48-1:24];
+//             rd_rx_data_b_sum <= #TCQ rd_rx_data_b_sum + rd_rx_data[24-1:0];
+//         end
+//     end 
+// end
+
+// reg [SPI_SLAVE_WIDTH-1:0] rd_rx_avg_data = 'd0;
+// reg                       rd_rx_avg_vld  = 'd0;
+// always @(posedge clk_i) begin
+//     rd_rx_avg_vld  <= #TCQ rd_rx_vld && filter_sum_flag;
+//     rd_rx_avg_data <= #TCQ {rd_rx_data_a_sum[24+SF_RATE-1 : SF_RATE],rd_rx_data_b_sum[24+SF_RATE-1 : SF_RATE]};
+// end
+
+// assign sspi_rd_avg_vld_o  = rd_rx_avg_vld ;
+// assign sspi_rd_avg_data_o = rd_rx_avg_data;
+
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 endmodule

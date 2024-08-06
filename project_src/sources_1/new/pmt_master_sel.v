@@ -29,7 +29,7 @@ module pmt_master_sel #(
     input    wire                           rst_i                       ,
     input    wire   [32-1:0]                master_wr_data_i            ,
     input    wire                           master_wr_vld_i             ,
-    input    wire   [ 3-1:0]                pmt_master_cmd_parser_i     ,
+    input    wire   [ 4-1:0]                pmt_master_cmd_parser_i     ,
 
     output   wire   [32-1:0]                pmt_master_wr_data_o        ,
     output   wire   [ 2-1:0]                pmt_master_wr_vld_o         
@@ -96,7 +96,7 @@ always @(posedge clk_i) begin
     pmt_master_cmd_parser_d1 <= #TCQ pmt_master_cmd_parser_d0;
 end
 
-assign master_wr_en     = master_wr_vld_i && ~pmt_master_cmd_parser_d1 && (|master_wr_data_i[10:8]);
+assign master_wr_en     = master_wr_vld_i && ~pmt_master_cmd_parser_d1 && (|master_wr_data_i[11:8]);
 
 always @(posedge clk_i) begin
     if(rst_i || timeout_cnt[15])

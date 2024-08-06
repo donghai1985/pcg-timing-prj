@@ -26,14 +26,6 @@ module mfpga_top(
 		input	wire		USER_SMA_CLOCK,
 		input	wire		FPGA_MASTER_CLOCK_P,
 		input	wire		FPGA_MASTER_CLOCK_N,
-		//ssd1
-		output	wire		FPGA_SSD1_DEVSLP, 
-		output	wire		FPGA_SSD1_SMB_CLK, 
-		inout	wire		FPGA_SSD1_SMB_DATA, 
-		input	wire		FPGA_SSD1_ALERT_B, 
-		output	wire		FPGA_SSD1_PERST_B, 
-		input	wire		FPGA_SSD1_CLKREQ_B, 
-		input	wire		FPGA_SSD1_PEWAKE_B, 
 		//
 		output	wire		HMC7044_SYNC,
 		output	wire		HMC7044_RESET, 
@@ -49,24 +41,17 @@ module mfpga_top(
 		// output	wire [1:0]	DSP_FPGA_SRIO_RX_N, 
 		// input	wire [1:0]	DSP_FPGA_SRIO_TX_P, 
 		// input	wire [1:0]	DSP_FPGA_SRIO_TX_N, 
-		//ssd1 serdes
-		// input	wire		FPGA_SSD1_PCIE_MGTREFCLK0_C_P, 
-		// input	wire		FPGA_SSD1_PCIE_MGTREFCLK0_C_N, 
-		// input	wire [3:0]	FPGA_SSD1_PCIE_RX_P,
-		// input	wire [3:0]	FPGA_SSD1_PCIE_RX_N,
-		// output	wire [3:0]	FPGA_SSD1_PCIE_TX_P,
-		// output	wire [3:0]	FPGA_SSD1_PCIE_TX_N,
 		//sfp serdes
 		input	wire		SFP_MGT_REFCLK0_C_P, 
 		input	wire		SFP_MGT_REFCLK0_C_N, 
-		input	wire 		FPGA_SFP1_RX_P, 
-		input	wire 		FPGA_SFP1_RX_N,  
-		output	wire 		FPGA_SFP1_TX_P, 
-		output	wire 		FPGA_SFP1_TX_N, 
-		// input	wire 		FPGA_SFP4_RX_P, 
-		// input	wire 		FPGA_SFP4_RX_N,  
-		// output	wire 		FPGA_SFP4_TX_P, 
-		// output	wire 		FPGA_SFP4_TX_N, 
+		// input	wire 		FPGA_SFP1_RX_P, 
+		// input	wire 		FPGA_SFP1_RX_N,  
+		// output	wire 		FPGA_SFP1_TX_P, 
+		// output	wire 		FPGA_SFP1_TX_N, 
+		input	wire 		FPGA_SFP4_RX_P, 
+		input	wire 		FPGA_SFP4_RX_N,  
+		output	wire 		FPGA_SFP4_TX_P, 
+		output	wire 		FPGA_SFP4_TX_N, 
 		input	wire		SFP_MGT_REFCLK1_C_P, 
 		input	wire		SFP_MGT_REFCLK1_C_N, 
 		input	wire 		FPGA_SFP2_RX_P, 
@@ -78,42 +63,35 @@ module mfpga_top(
 		output	wire 		FPGA_SFP3_TX_P, 
 		output	wire 		FPGA_SFP3_TX_N, 
 		//sfp1 io
-		input	wire		FPGA_SFP1_TX_FAULT, 
-		output	wire		FPGA_SFP1_TX_DISABLE, 
-		input	wire		FPGA_SFP1_MOD_DETECT, 
-		input	wire		FPGA_SFP1_LOS, 
-		output	wire		FPGA_SFP1_IIC_SCL, 
-		inout	wire		FPGA_SFP1_IIC_SDA, 
+		// input	wire		FPGA_SFP1_TX_FAULT, 
+		// input	wire		FPGA_SFP1_MOD_DETECT, 
+		// input	wire		FPGA_SFP1_LOS, 
+		// output	wire		FPGA_SFP1_IIC_SCL, 
+		// inout	wire		FPGA_SFP1_IIC_SDA, 
 		//sfp2 io
 		input	wire		FPGA_SFP2_TX_FAULT, 
-		output	wire		FPGA_SFP2_TX_DISABLE, 
 		input	wire		FPGA_SFP2_MOD_DETECT, 
 		input	wire		FPGA_SFP2_LOS, 
         output	wire		FPGA_SFP2_IIC_SCL,
 		inout	wire		FPGA_SFP2_IIC_SDA, 
 		//sfp3 io
 		input	wire		FPGA_SFP3_TX_FAULT, 
-		output	wire		FPGA_SFP3_TX_DISABLE, 
 		input	wire		FPGA_SFP3_MOD_DETECT, 
 		input	wire		FPGA_SFP3_LOS, 
 		output	wire		FPGA_SFP3_IIC_SCL, 
 		inout	wire		FPGA_SFP3_IIC_SDA, 
 		//sfp4 io
-		// input	wire		FPGA_SFP4_TX_FAULT, 
-		// output	wire		FPGA_SFP4_TX_DISABLE, 
-		// input	wire		FPGA_SFP4_MOD_DETECT, 
-		// input	wire		FPGA_SFP4_LOS, 
-        // output	wire		FPGA_SFP4_IIC_SCL,
-		// inout	wire		FPGA_SFP4_IIC_SDA, 
+		input	wire		FPGA_SFP4_TX_FAULT, 
+		input	wire		FPGA_SFP4_MOD_DETECT, 
+		input	wire		FPGA_SFP4_LOS, 
+        output	wire		FPGA_SFP4_IIC_SCL,
+		inout	wire		FPGA_SFP4_IIC_SDA, 
 		//EDS
 		output	wire		EDS_CLK_P,
-		output	wire		EDS_CLK_N,
 		input	wire [3:0]	EDS_DATA_P,
 		input	wire [3:0]	EDS_DATA_N,
 		output	wire		EDS_TC_P,
-		output	wire		EDS_TC_N,
 		output	wire		EDS_TFG_P,
-		output	wire		EDS_TFG_N,
 		input	wire		EDS_CC1_P,
 		input	wire		EDS_CC1_N,
 		input	wire		EDS_CC2_P,
@@ -124,56 +102,56 @@ module mfpga_top(
 		input	wire		EDS_CC4_N,
 		//BPSr1
 		output	wire		BPSr1_CLK_P,
-		output	wire		BPSr1_CLK_N, 
 		output	wire		BPSr1_MCLK_P,
-		output	wire		BPSr1_MCLK_N,
 		output	wire		BPSr1_MOSI_P,
-		output	wire		BPSr1_MOSI_N,
 		input	wire		BPSr1_SCLK_P,
 		input	wire		BPSr1_SCLK_N,
 		input	wire		BPSr1_MISO_P,
 		input	wire		BPSr1_MISO_N,
 		//BPSr2
 		output	wire		BPSr2_CLK_P,
-		output	wire		BPSr2_CLK_N, 
 		output	wire		BPSr2_MCLK_P,
-		output	wire		BPSr2_MCLK_N,
 		output	wire		BPSr2_MOSI_P,
-		output	wire		BPSr2_MOSI_N,
 		input	wire		BPSr2_SCLK_P,
 		input	wire		BPSr2_SCLK_N,
 		input	wire		BPSr2_MISO_P,
 		input	wire		BPSr2_MISO_N,
 		//BPSi
 		output	wire		BPSi_CLK_P,
-		output	wire		BPSi_CLK_N, 
 		output	wire		BPSi_MCLK_P,
-		output	wire		BPSi_MCLK_N,
 		output	wire		BPSi_MOSI_P,
-		output	wire		BPSi_MOSI_N,
 		input	wire		BPSi_SCLK_P,
 		input	wire		BPSi_SCLK_N,
 		input	wire		BPSi_MISO_P,
 		input	wire		BPSi_MISO_N,
+		// PMT IO
+		// output	wire		RF_ENABLE_1,
+		// input	wire		RF_FAULT_1,
+		// output	wire		RF_ENABLE_2,
+		// input	wire		RF_FAULT_2,
+		// output	wire		RF_ENABLE_3,
+		// input	wire		RF_FAULT_3,
+		// output	wire		RF_ENABLE_4,
+		// input	wire		RF_FAULT_4,
 		// PMT SPI 
-        output  wire  [3:1] IO_ENCODE_SPI_MCLK_P,
-        output  wire  [3:1] IO_ENCODE_SPI_MCLK_N,
-        output  wire  [3:1] IO_ENCODE_SPI_MOSI_P,
-        output  wire  [3:1] IO_ENCODE_SPI_MOSI_N,
+        output  wire  [4:1] IO_ENCODE_SPI_MCLK_P,		//RF_SYNC_P
+        output  wire  [4:1] IO_ENCODE_SPI_MOSI_P,		//TIMING_SPI_MISO_P
+		// input   wire  [4:1] IO_ENCODE_SPI_SCLK_P,	//RF_Mod_in_fixed_P
+        // input   wire  [4:1] IO_ENCODE_SPI_SCLK_N,	//RF_Mod_in_fixed_N
+        // input   wire  [4:1] IO_ENCODE_SPI_MISO_P,	//RF_Mod_in_variable_P
+        // input   wire  [4:1] IO_ENCODE_SPI_MISO_N,	//RF_Mod_in_variable_N
+
+        output  wire  [4:1] IO_PMT_SPI_MCLK_P,   // timing_pmt_spi		TIMING_SPI_MOSI_P
+        output  wire  [4:1] IO_PMT_SPI_MOSI_P,   // timing_pmt_spi		TIMING_SPI_CSN_P
+        input   wire  [4:1] IO_PMT_SPI_SCLK_P,   // timing_pmt_spi		TIMING_SPI_CLK_P
+        input   wire  [4:1] IO_PMT_SPI_SCLK_N,   // timing_pmt_spi		TIMING_SPI_CLK_N
+        input   wire  [4:1] IO_PMT_SPI_MISO_P,   // timing_pmt_spi		RF_FPS_trigger_P
+        input   wire  [4:1] IO_PMT_SPI_MISO_N,   // timing_pmt_spi		RF_FPS_trigger_N
         
-        output  wire  [3:1] IO_PMT_SPI_MCLK_P,   // timing_pmt_spi
-        output  wire  [3:1] IO_PMT_SPI_MCLK_N,   // timing_pmt_spi
-        output  wire  [3:1] IO_PMT_SPI_MOSI_P,   // timing_pmt_spi
-        output  wire  [3:1] IO_PMT_SPI_MOSI_N,   // timing_pmt_spi
-        input   wire  [3:1] IO_PMT_SPI_SCLK_P,   // timing_pmt_spi
-        input   wire  [3:1] IO_PMT_SPI_SCLK_N,   // timing_pmt_spi
-        input   wire  [3:1] IO_PMT_SPI_MISO_P,   // timing_pmt_spi
-        input   wire  [3:1] IO_PMT_SPI_MISO_N,   // timing_pmt_spi
-        
-        input   wire  [3:1] IO_ACC_SPI_SCLK_P,
-        input   wire  [3:1] IO_ACC_SPI_SCLK_N,
-        input   wire  [3:1] IO_ACC_SPI_MISO_P,
-        input   wire  [3:1] IO_ACC_SPI_MISO_N,
+        input   wire  [4:1] IO_ACC_SPI_SCLK_P,
+        input   wire  [4:1] IO_ACC_SPI_SCLK_N,
+        input   wire  [4:1] IO_ACC_SPI_MISO_P,
+        input   wire  [4:1] IO_ACC_SPI_MISO_N,
 
         // output  wire        RF_Mod_in_variable_LS   ,
         output  wire        RF_Enable_LS            ,
@@ -181,6 +159,7 @@ module mfpga_top(
         // output  wire        RF_ready_LS             ,
         output  wire        RF_emission_LS          ,
         // output  wire        RF_SYNC_LS              ,
+
 		output	wire		UART_TX,
 		input	wire		UART_RX,
 		//AD5445
@@ -196,51 +175,17 @@ module mfpga_top(
 		output	wire		AD7680_SCLK_LS,
 		output	wire		AD7680_CS_LS,
 		input	wire		AD7680_SDATA_LS,
-		//LAN A
-/*		output	wire		LAN_A_RESET_B,
-		input	wire		LAN_A_TXCLK,
-		output	wire		LAN_A_TXEN,
-		output	wire [3:0]	LAN_A_TX
-		input	wire		LAN_A_RXCLK,
-		input	wire		LAN_A_RXDV,
-		input	wire [3:0]	LAN_A_RX,
-		input	wire		LAN_A_RXER,
-		output	wire		LAN_A_MDC,
-		inout	wire		LAN_A_MDIO,
-		input	wire		LAN_A_CRS,
-		input	wire		LAN_A_COL,
-		//LAN B
-		output	wire		LAN_B_RESET_B,
-		input	wire		LAN_B_TXCLK,
-		output	wire		LAN_B_TXEN,
-		output	wire [3:0]	LAN_B_TX
-		input	wire		LAN_B_RXCLK,
-		input	wire		LAN_B_RXDV,
-		input	wire [3:0]	LAN_B_RX,
-		input	wire		LAN_B_RXER,
-		output	wire		LAN_B_MDC,
-		inout	wire		LAN_B_MDIO,
-		input	wire		LAN_B_CRS,
-		input	wire		LAN_B_COL,*/
 		//X_Encoder
 		input	wire		X_Encoder_A_IN_LS,
 		input	wire		X_Encoder_B_IN_LS,
 		input	wire		X_Encoder_Z_IN_LS,
-		output	wire		X_Encoder_A_OUT,
-		output	wire		X_Encoder_B_OUT,
-		output	wire		X_Encoder_Z_OUT,
 		//W_Encoder
 		input	wire		W_Encoder_MA_IN_LS,
 		input	wire		W_Encoder_SLO_IN_LS,
-		output	wire		W_Encoder_MA_OUT,
-		output	wire		W_Encoder_SLO_OUT,
 		//Z_Encoder
 		// input	wire		Z_Encoder_A_IN_LS,
 		// input	wire		Z_Encoder_B_IN_LS,
 		// input	wire		Z_Encoder_Z_IN_LS,
-		// output	wire		Z_Encoder_A_OUT,
-		// output	wire		Z_Encoder_B_OUT,
-		// output	wire		Z_Encoder_Z_OUT,
 		//Fast_Shutter
 		output	wire		Fast_Shutter_in1,
 		output	wire		Fast_Shutter_in2,
@@ -248,11 +193,6 @@ module mfpga_top(
 		input	wire		Fast_Shutter_out1, 
 		input	wire		Fast_Shutter_out2, 
 		input	wire		Fast_Shutter_out3, 
-		//ACS IO
-		input 	wire		ACS_OUT1_LS,
-		input	wire		ACS_OUT2_LS,
-		output	wire		ACS_IN1,
-		output	wire		ACS_IN2,
 		//Safety PLC
 		output	wire		Safety_in1,
 		// output	wire		Safety_in2,
@@ -279,10 +219,8 @@ module mfpga_top(
 		input	wire		VCC3V6_PG, 
 		input	wire		VCC3V3_C_PG,
 		input	wire		VCC5V_PG, 
-		input	wire		VCC__5V5_A_PG, 
 		//power en
 		output	wire		VCC3V3_DSP_SSD_EN,
-		output	wire		VCC3V3_FPGA_SSD_EN,
 		output	wire		VCC12V_FAN_EN, 
 		//ddr3
 		inout	wire [63:0]	DDR3_A_D, 
@@ -307,10 +245,6 @@ module mfpga_top(
 		output	wire		AD5592_1_SPI_CLK, 
 		output	wire		AD5592_1_SPI_MOSI, 
 		input	wire		AD5592_1_SPI_MISO, 
-		output	wire		AD5592_2_SPI_CS_B, 
-		output	wire		AD5592_2_SPI_CLK, 
-		output	wire		AD5592_2_SPI_MOSI, 
-		input	wire		AD5592_2_SPI_MISO, 
 		//dsp
 		input	wire		DSP_SYSCLKOUT_FPGA, 
 		output	wire		DSP_MCBSP0_SLCLK,
@@ -326,16 +260,79 @@ module mfpga_top(
 		output	wire		DSP_RESETZ, 
 		output	wire		DSP_SYS_NRESET, 
 		//
-		input	wire		FPGA_TO_SFPGA_RESERVE0, 	//clk
-		input	wire		FPGA_TO_SFPGA_RESERVE1, 	//fsr
-		input	wire		FPGA_TO_SFPGA_RESERVE2, 	//rx
-		output	wire		FPGA_TO_SFPGA_RESERVE3,		//fsx	
-		output	wire		FPGA_TO_SFPGA_RESERVE4, 	//tx
-		output	wire		FPGA_TO_SFPGA_RESERVE5, 	//reserved
-		input	wire		FPGA_TO_SFPGA_RESERVE6, 	//reserved 
-		input	wire		FPGA_TO_SFPGA_RESERVE7, 	//reserved 
-		input	wire		FPGA_TO_SFPGA_RESERVE8, 	//reserved 
-		input	wire		FPGA_TO_SFPGA_RESERVE9, 	//reserved
+        input   wire        FPGA_TO_SFPGA_RESERVE0, 	//clk
+        input   wire        FPGA_TO_SFPGA_RESERVE1, 	//fsr
+        input   wire        FPGA_TO_SFPGA_RESERVE2, 	//rx
+        output  wire        FPGA_TO_SFPGA_RESERVE3,		//fsx	
+        output  wire        FPGA_TO_SFPGA_RESERVE4, 	//tx
+        output  wire        FPGA_TO_SFPGA_RESERVE5, 	//reserved
+        output  wire        FPGA_TO_SFPGA_RESERVE6, 	//reserved 
+        output  wire        FPGA_TO_SFPGA_RESERVE7, 	//reserved 
+        output  wire        FPGA_TO_SFPGA_RESERVE8, 	//reserved 
+        output  wire        FPGA_TO_SFPGA_RESERVE9, 	//reserved
+		//ethernet phy
+		// output  wire        FPGA_RGMII_MDC           , 
+		// inout   wire        FPGA_RGMII_MDIO          ,
+		//ethernet phy_1
+		output  wire        FPGA_1_ETH_PWR_EN        , 
+		// output  wire        FPGA_1_RGMII_TX_CLK      , 
+		// output  wire [3:0]  FPGA_1_RGMII_TXD         ,
+		// output  wire        FPGA_1_RGMII_TX_CTL      ,
+		// input   wire        FPGA_1_RGMII_RX_CLK      , 
+		// input   wire [3:0]  FPGA_1_RGMII_RXD         ,
+		// input   wire        FPGA_1_RGMII_RX_CTL      ,
+		// output  wire        FPGA_1_ETH_RESET_B       , 
+		// input   wire        FPGA_1_ETH_INTB          , 
+		//ethernet phy_2
+		output  wire        FPGA_2_ETH_PWR_EN        , 
+		// output  wire        FPGA_2_RGMII_TX_CLK      , 
+		// output  wire [3:0]  FPGA_2_RGMII_TXD         ,
+		// output  wire        FPGA_2_RGMII_TX_CTL      ,
+		// input   wire        FPGA_2_RGMII_RX_CLK      , 
+		// input   wire [3:0]  FPGA_2_RGMII_RXD         ,
+		// input   wire        FPGA_2_RGMII_RX_CTL      ,
+		// output  wire        FPGA_2_ETH_RESET_B       , 
+		// input   wire        FPGA_2_ETH_INTB          , 
+		//ethernet phy_3
+		output  wire        FPGA_3_ETH_PWR_EN        , 
+		// output  wire        FPGA_3_RGMII_TX_CLK      , 
+		// output  wire [3:0]  FPGA_3_RGMII_TXD         ,
+		// output  wire        FPGA_3_RGMII_TX_CTL      ,
+		// input   wire        FPGA_3_RGMII_RX_CLK      , 
+		// input   wire [3:0]  FPGA_3_RGMII_RXD         ,
+		// input   wire        FPGA_3_RGMII_RX_CTL      ,
+		// output  wire        FPGA_3_ETH_RESET_B       , 
+		// input   wire        FPGA_3_ETH_INTB          , 
+		//FPGA reserved gpio
+		// input	wire		FPGA_GPIO_CON1,
+		// input	wire		FPGA_GPIO_CON2,
+		// input	wire		FPGA_GPIO_CON3,
+		// input	wire		FPGA_GPIO_CON4,
+		// input	wire		FPGA_GPIO_CON5,
+		//analog switch enable signal
+		// output	wire		FPGA_GPIO_OUT1,
+		// output	wire		FPGA_GPIO_OUT2,
+		// output	wire		FPGA_GPIO_OUT3,
+		// output	wire		FPGA_GPIO_OUT4,
+		//TDI sync out signal
+		// output	wire		FPGA_TDI_SYNC_GPIO_OUT1,
+		// output	wire		FPGA_TDI_SYNC_GPIO_OUT2,
+		// output	wire		FPGA_TDI_SYNC_GPIO_OUT3,
+		// output	wire		FPGA_TDI_SYNC_GPIO_OUT4,
+		//TDI io signal
+		// input	wire		FPGA_TDI_1_GPIO_IN1,
+		// input	wire		FPGA_TDI_2_GPIO_IN1,
+		// input	wire		FPGA_TDI_3_GPIO_IN1,
+		// input	wire		FPGA_TDI_4_GPIO_IN1,
+		//TDI isolated io signal
+		// input	wire		FPGA_TDI_1_GPIO_IN2,
+		// input	wire		FPGA_TDI_2_GPIO_IN2,
+		// input	wire		FPGA_TDI_3_GPIO_IN2,
+		// input	wire		FPGA_TDI_4_GPIO_IN2,
+		// output	wire		FPGA_TDI_1_GPIO_OUT,
+		// output	wire		FPGA_TDI_2_GPIO_OUT,
+		// output	wire		FPGA_TDI_3_GPIO_OUT,
+		// output	wire		FPGA_TDI_4_GPIO_OUT,
 		//test io
 		output	wire		TP102,
 		output	wire		TP103,
@@ -345,18 +342,12 @@ module mfpga_top(
 		
 		output	wire		TP110,
 		output	wire		TP111,
-		output	wire		TP112,
-		output	wire		TP113,
-		output	wire		TP114,
-		output	wire		TP115,
 		
-		output	wire		TP117,
-		output	wire		TP119,
-		output	wire		TP121
+		output	wire		TP117
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.6.4  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v2.3.1  "; // 新Timing板，机台级更新
 
 
 wire                slave_tx_ack                    ;
@@ -367,14 +358,13 @@ wire    [15:0]      slave_tx_byte_num               ;
 wire                slave_rx_data_vld               ;
 wire    [ 7:0]      slave_rx_data                   ;
 
-wire    [3-1:0]     pmt_scan_cmd_sel                ;
+wire    [4-1:0]     pmt_scan_cmd_sel                ;
 wire    [4-1:0]     pmt_scan_cmd                    ;
-wire    [2:0]       pmt_start_en                    ;
-wire    [2:0]       pmt_start_test_en               ;
+wire    [4-1:0]     pmt_start_en                    ;
+wire    [4-1:0]     pmt_start_test_en               ;
 wire    [2:0]       pcie_pmt_end_en                 ;
 wire    [2:0]       aurora_fbc_end                  ;
-wire    [2:0]       pmt_master_cmd_parser           ;
-wire    [2:0]       rd_ack_timeout_rst              = 'd0;
+wire    [4-1:0]     pmt_master_cmd_parser           ;
 wire    [32-1:0]    pmt_master_wr_data              ;
 wire    [1:0]       pmt_master_wr_vld               ;
 wire    [32-1:0]    pmt_master_spi_data             ;
@@ -382,9 +372,9 @@ wire                pmt_master_spi_vld              ;
 wire    [32-1:0]    pmt_adc_start_data              ;
 wire                pmt_adc_start_vld               ;
 wire    [32-1:0]    pmt_adc_start_hold              ;
-wire                spi_slave_ack_vld   [2:0]       ;
-wire                spi_slave_ack_last  [2:0]       ;
-wire    [32-1:0]    spi_slave_ack_data  [2:0]       ;
+wire                spi_slave_ack_vld   [3:0]       ;
+wire                spi_slave_ack_last  [3:0]       ;
+wire    [32-1:0]    spi_slave_ack_data  [3:0]       ;
 
 wire                acc_job_control                 ;
 // wire                acc_job_init_switch             ;
@@ -439,17 +429,17 @@ wire                eds_clk                         ;
 wire                pll_locked                      ;
 wire                pll_2_locked                    ;
 
-wire    [2:0]       ACC_SPI_SCLK                    ;
-wire    [2:0]       ACC_SPI_MISO                    ;
-wire    [2:0]       acc_pmt_flag_sel                ;
+wire    [4-1:0]     ACC_SPI_SCLK                    ;
+wire    [4-1:0]     ACC_SPI_MISO                    ;
+wire    [4-1:0]     acc_pmt_flag_sel                ;
 
-wire    [2:0]       ENCODE_SPI_MCLK                 ;
-wire    [2:0]       ENCODE_SPI_MOSI                 ;
+wire    [4-1:0]     ENCODE_SPI_MCLK                 ;
+wire    [4-1:0]     ENCODE_SPI_MOSI                 ;
 
-wire    [2:0]       PMT_SPI_MCLK                    ;
-wire    [2:0]       PMT_SPI_MOSI                    ;
-wire    [2:0]       PMT_SPI_SCLK                    ;
-wire    [2:0]       PMT_SPI_MISO                    ;
+wire    [4-1:0]     PMT_SPI_MCLK                    ;
+wire    [4-1:0]     PMT_SPI_MOSI                    ;
+wire    [4-1:0]     PMT_SPI_SCLK                    ;
+wire    [4-1:0]     PMT_SPI_MISO                    ;
 
 wire                BPSi_MCLK                       ;
 wire                BPSi_MOSI                       ;
@@ -490,31 +480,31 @@ wire    [127:0]     eds_sensor_data_temp            ;
 wire                eds_sensor_training_done        ;
 wire                eds_sensor_training_result      ;
 
-wire    [2:0]       ACC_SPI_SCLK_P                  ;
-wire    [2:0]       ACC_SPI_SCLK_N                  ;
-wire    [2:0]       ACC_SPI_MISO_P                  ;
-wire    [2:0]       ACC_SPI_MISO_N                  ;
+wire    [4-1:0]     ACC_SPI_SCLK_P                  ;
+wire    [4-1:0]     ACC_SPI_SCLK_N                  ;
+wire    [4-1:0]     ACC_SPI_MISO_P                  ;
+wire    [4-1:0]     ACC_SPI_MISO_N                  ;
 
-wire    [2:0]       ENCODE_SPI_MCLK_P               ;
-wire    [2:0]       ENCODE_SPI_MCLK_N               ;
-wire    [2:0]       ENCODE_SPI_MOSI_P               ;
-wire    [2:0]       ENCODE_SPI_MOSI_N               ;
+wire    [4-1:0]     ENCODE_SPI_MCLK_P               ;
+wire    [4-1:0]     ENCODE_SPI_MCLK_N               ;
+wire    [4-1:0]     ENCODE_SPI_MOSI_P               ;
+wire    [4-1:0]     ENCODE_SPI_MOSI_N               ;
 
-wire    [2:0]       PMT_SPI_MCLK_P                  ;
-wire    [2:0]       PMT_SPI_MCLK_N                  ;
-wire    [2:0]       PMT_SPI_MOSI_P                  ;
-wire    [2:0]       PMT_SPI_MOSI_N                  ;
-wire    [2:0]       PMT_SPI_SCLK_P                  ;
-wire    [2:0]       PMT_SPI_SCLK_N                  ;
-wire    [2:0]       PMT_SPI_MISO_P                  ;
-wire    [2:0]       PMT_SPI_MISO_N                  ;
+wire    [4-1:0]     PMT_SPI_MCLK_P                  ;
+wire    [4-1:0]     PMT_SPI_MCLK_N                  ;
+wire    [4-1:0]     PMT_SPI_MOSI_P                  ;
+wire    [4-1:0]     PMT_SPI_MOSI_N                  ;
+wire    [4-1:0]     PMT_SPI_SCLK_P                  ;
+wire    [4-1:0]     PMT_SPI_SCLK_N                  ;
+wire    [4-1:0]     PMT_SPI_MISO_P                  ;
+wire    [4-1:0]     PMT_SPI_MISO_N                  ;
     // calibrate voltage. dark current * R
 wire                FBCi_cali_en                    ;
 wire    [23:0]      FBCi_cali_a                     ;
 wire    [23:0]      FBCi_cali_b                     ;
-wire                FBCr1_cali_en                   ;
-wire    [23:0]      FBCr1_cali_a                    ;
-wire    [23:0]      FBCr1_cali_b                    ;
+// wire                FBCr1_cali_en                   ;
+// wire    [23:0]      FBCr1_cali_a                    ;
+// wire    [23:0]      FBCr1_cali_b                    ;
 wire                FBCr2_cali_en                   ;
 wire    [23:0]      FBCr2_cali_a                    ;
 wire    [23:0]      FBCr2_cali_b                    ;
@@ -524,9 +514,9 @@ wire                fbc_udp_rate_switch             ;
 wire                FBCi_out_en                     ;
 wire    [23:0]      FBCi_out_a                      ;
 wire    [23:0]      FBCi_out_b                      ;
-wire                FBCr1_out_en                    ;
-wire    [23:0]      FBCr1_out_a                     ;
-wire    [23:0]      FBCr1_out_b                     ;
+// wire                FBCr1_out_en                    ;
+// wire    [23:0]      FBCr1_out_a                     ;
+// wire    [23:0]      FBCr1_out_b                     ;
 wire                FBCr2_out_en                    ;
 wire    [23:0]      FBCr2_out_a                     ;
 wire    [23:0]      FBCr2_out_b                     ;
@@ -534,9 +524,9 @@ wire    [23:0]      FBCr2_out_b                     ;
 wire                FBCi_bg_en                      ;
 wire    [23:0]      FBCi_bg_a                       ;
 wire    [23:0]      FBCi_bg_b                       ;
-wire                FBCr1_bg_en                     ;
-wire    [23:0]      FBCr1_bg_a                      ;
-wire    [23:0]      FBCr1_bg_b                      ;
+// wire                FBCr1_bg_en                     ;
+// wire    [23:0]      FBCr1_bg_a                      ;
+// wire    [23:0]      FBCr1_bg_b                      ;
 wire                FBCr2_bg_en                     ;
 wire    [23:0]      FBCr2_bg_a                      ;
 wire    [23:0]      FBCr2_bg_b                      ;
@@ -544,16 +534,13 @@ wire    [23:0]      FBCr2_bg_b                      ;
 // FBC cache data
 wire                FBCi_cache_vld                  ;
 wire    [48-1:0]    FBCi_cache_data                 ;
-wire                FBCr1_cache_vld                 ;
-wire    [48-1:0]    FBCr1_cache_data                ;
+// wire                FBCr1_cache_vld                 ;
+// wire    [48-1:0]    FBCr1_cache_data                ;
 wire                FBCr2_cache_vld                 ;
 wire    [48-1:0]    FBCr2_cache_data                ;
 
 wire    [4-1:0]     map_readback_cnt                ;
 wire    [4-1:0]     main_scan_cnt                   ;
-wire                acc_encode_upload               ;
-wire                acc_encode_latch_en             ;
-wire    [64-1:0]    acc_encode_latch                ;
 wire                rd_mfpga_version                ;
 wire    [64-1:0]    heartbeat_data                  ;
 wire                heartbeat_en                    ;
@@ -569,11 +556,13 @@ wire    [26-1:0]    bpsi_ki                         ;
 wire    [26-1:0]    bpsi_kd                         ;
 wire    [3:0]       bpsi_motor_freq                 ;
 wire                bpsi_position_en                ;
-wire    [11-1:0]    sensor_ds_rate                  ;
+wire    [2-1:0]     sensor_ds_rate                  ;
 wire    [2-1:0]     sensor_mode_sel                 ;
 wire                fbc_bias_vol_en                 ;
 wire    [15:0]      fbc_bias_voltage                ;
 wire    [15:0]      fbc_cali_uop_set                ;
+wire    [15:0]      ascent_gradient                 ;
+wire    [15:0]      slow_ascent_period              ;
 
 wire                motor_data_in_en                ;
 wire    [15:0]      motor_Ufeed_latch               ;
@@ -591,21 +580,6 @@ wire                GT1_qpllrefclk_quad1            ;
 wire                GT1_qpllrefclklost              ;
 wire                GT1_qplllock                    ;
 
-wire                aurora_log_clk_2                ;
-wire                aurora_rst_2                    ;
-wire                pcie_eds_frame_end_2            ;
-// wire                CHANNEL_UP_DONE_2               ;
-
-wire                aurora_log_clk_3                ;
-wire                aurora_rst_3                    ;
-wire                pcie_eds_frame_end_3            ;
-// wire                CHANNEL_UP_DONE_3               ;
-wire    [4-1:0]     aurora_empty_1                  ;
-wire    [4-1:0]     aurora_empty_2                  ;
-wire    [4-1:0]     aurora_empty_3                  ;
-wire                aurora_soft_rd_1                ;
-wire                aurora_soft_rd_2                ;
-wire                aurora_soft_rd_3                ;
 wire    [2-1:0]     cfg_acc_use                     ;
 wire                cfg_fbc_rate                    ;
 wire                cfg_spindle_width               ;
@@ -616,15 +590,12 @@ wire                GT0_qpllrefclk_quad1            ;
 wire                GT0_qpllrefclklost              ;
 wire                GT0_qplllock                    ;
 
-wire                aurora_log_clk_1                ;
-wire                aurora_rst_1                    ;
-wire                pcie_eds_frame_end_1            ;
-// wire                CHANNEL_UP_DONE_1               ;
+wire    [4-1:0]     aurora_empty[0:2]               ;
+wire    [3-1:0]     aurora_soft_rd                  ;
+wire    [2:0]       aurora_log_clk                  ;
+wire    [2:0]       aurora_rst                      ;
+wire    [2:0]       pcie_eds_frame_end              ;
 
-// wire                aurora_log_clk_4                ;
-// wire                aurora_rst_4                    ;
-// wire                pcie_eds_frame_end_4            ;
-// wire                CHANNEL_UP_DONE_4               ;
 
 wire                rst_100m                        ;
 wire                ddr_ui_clk                      ;
@@ -648,9 +619,7 @@ wire                fbc_vout_end                    ;
 wire                aurora_fbc_vout_end             ;
 wire                aurora_fbc_vout_vld             ;
 wire    [64-1:0]    aurora_fbc_vout_data            ;
-wire                aurora_fbc_almost_full_1        ;
-wire                aurora_fbc_almost_full_2        ;
-wire                aurora_fbc_almost_full_3        ;
+wire    [3-1:0]     aurora_fbc_almost_full          ;
 
 wire                x_zero_flag                     ;
 wire                x_data_out_en                   ;
@@ -814,12 +783,12 @@ wire                scan_aurora_reset               ;
 wire                aurora_scan_reset               ;
 wire    [3-1:0]     aurora_tx_idle                  ;
 
-wire    [32-1:0]    eds_pack_cnt_1                  ;
-wire    [32-1:0]    encode_pack_cnt_1               ;
-wire    [32-1:0]    eds_pack_cnt_2                  ;
-wire    [32-1:0]    encode_pack_cnt_2               ;
-wire    [32-1:0]    eds_pack_cnt_3                  ;
-wire    [32-1:0]    encode_pack_cnt_3               ;
+wire    [32-1:0]    eds_pack_cnt        [0:2]       ;
+wire    [32-1:0]    encode_pack_cnt     [0:2]       ;
+// wire    [32-1:0]    eds_pack_cnt_2      [0:2]       ;
+// wire    [32-1:0]    encode_pack_cnt_2   [0:2]       ;
+// wire    [32-1:0]    eds_pack_cnt_3      [0:2]       ;
+// wire    [32-1:0]    encode_pack_cnt_3   [0:2]       ;
 
 wire                laser_control                   ;
 wire                laser_out_switch                ;
@@ -896,32 +865,18 @@ end
 
 assign      TP102               = 0;
 assign      TP103               = 0;
-assign      TP104               = aurora_log_clk_1;
-assign      TP105               = aurora_log_clk_2;
-assign      TP106               = aurora_log_clk_3;
+assign      TP104               = aurora_log_clk[0];
+assign      TP105               = aurora_log_clk[1];
+assign      TP106               = aurora_log_clk[2];
 assign      TP110               = clk_100m;
-assign      TP111               = 0;
-assign      TP112               = pll_locked;
-assign      TP113               = 0;
-assign      TP114               = 0;
-assign      TP115               = 0;
+assign      TP111               = pll_locked;
 
 assign      TP117               = PMT_SPI_SCLK[0];
-assign      TP119               = PMT_SPI_SCLK[1];
-assign      TP121               = PMT_SPI_SCLK[2];
 
-assign		FPGA_SFP1_TX_DISABLE		=	1'b0; //FPGA_SFP1_MOD_DETECT ? 1'b1 : 1'b0;
-assign		FPGA_SFP1_IIC_SCL			=	1'b1;
-assign		FPGA_SFP2_TX_DISABLE		=	1'b0; //FPGA_SFP2_MOD_DETECT ? 1'b1 : 1'b0;
+// assign		FPGA_SFP1_IIC_SCL			=	1'b1;
 assign		FPGA_SFP2_IIC_SCL			=	1'b1;
-assign		FPGA_SFP3_TX_DISABLE		=	1'b0; //FPGA_SFP3_MOD_DETECT ? 1'b1 : 1'b0;
 assign		FPGA_SFP3_IIC_SCL			=	1'b1;
-// assign		FPGA_SFP4_TX_DISABLE		=	FPGA_SFP4_MOD_DETECT ? 1'b1 : 1'b0;
-// assign		FPGA_SFP4_IIC_SCL			=	1'b1;
-
-assign		FPGA_SSD1_DEVSLP	=	1'b0;
-assign		FPGA_SSD1_SMB_CLK	=	1'b0;
-assign		FPGA_SSD1_PERST_B	=	1'b0;
+assign		FPGA_SFP4_IIC_SCL			=	1'b1;
 
 assign		DSP_MCBSP0_SLCLK	=	1'b0;
 assign		DSP_MCBSP0_RXCLK	=	1'b0;
@@ -933,85 +888,80 @@ assign		DSP_RESETZ			=	1'b0;
 assign		DSP_SYS_NRESET		=	1'b0;
 
 assign		VCC3V3_DSP_SSD_EN	=	1'b0;
-assign		VCC3V3_FPGA_SSD_EN	=	1'b0;
 assign		VCC12V_FAN_EN		=	1'b1;
 
 assign      Safety_in3          =   ready_signal;
-// assign      RF_Mod_in_variable_LS   = 1'b0;
-// assign      RF_Enable_LS            = 1'b0;
-// assign      RF_fault_LS             = 1'b0;
-// assign      RF_ready_LS             = 1'b0;
-// assign      RF_emission_LS          = 1'b0;
-// assign      RF_SYNC_LS              = 1'b0;
 
-// assign      IO_PMT_SPI_MCLK_P[0]   = PMT_SPI_MCLK_P[3];
-// assign      IO_PMT_SPI_MCLK_N[0]   = PMT_SPI_MCLK_N[3];
-// assign      IO_PMT_SPI_MOSI_P[0]   = PMT_SPI_MOSI_P[3];
-// assign      IO_PMT_SPI_MOSI_N[0]   = PMT_SPI_MOSI_N[3];
-// assign      PMT_SPI_SCLK_P[3]   = IO_PMT_SPI_SCLK_P[0];
-// assign      PMT_SPI_SCLK_N[3]   = IO_PMT_SPI_SCLK_N[0];
-// assign      PMT_SPI_MISO_P[3]   = IO_PMT_SPI_MISO_P[0];
-// assign      PMT_SPI_MISO_N[3]   = IO_PMT_SPI_MISO_N[0];
+// assign      FPGA_RGMII_MDC      =   1'b1;
+assign		FPGA_1_ETH_PWR_EN	=	1'b0;
+assign		FPGA_2_ETH_PWR_EN	=	1'b0;
+assign		FPGA_3_ETH_PWR_EN	=	1'b0;
 
-assign      ACC_SPI_SCLK_P[1] = IO_ACC_SPI_SCLK_P[1];
-assign      ACC_SPI_SCLK_N[1] = IO_ACC_SPI_SCLK_N[1];
-assign      ACC_SPI_MISO_P[1] = IO_ACC_SPI_MISO_P[1];
-assign      ACC_SPI_MISO_N[1] = IO_ACC_SPI_MISO_N[1];
+//PMT1
+assign      IO_ENCODE_SPI_MCLK_P[3]  = ENCODE_SPI_MCLK[0];
+assign      IO_ENCODE_SPI_MOSI_P[3]  = ENCODE_SPI_MOSI[0];
 
-assign      IO_ENCODE_SPI_MCLK_P[1]  = ENCODE_SPI_MCLK_P[1];
-assign      IO_ENCODE_SPI_MCLK_N[1]  = ENCODE_SPI_MCLK_N[1];
-assign      IO_ENCODE_SPI_MOSI_P[1]  = ENCODE_SPI_MOSI_P[1];
-assign      IO_ENCODE_SPI_MOSI_N[1]  = ENCODE_SPI_MOSI_N[1];
+assign      IO_PMT_SPI_MCLK_P[3]   = PMT_SPI_MCLK[0];
+assign      IO_PMT_SPI_MOSI_P[3]   = PMT_SPI_MOSI[0];
+assign      PMT_SPI_SCLK_P[0]   = IO_PMT_SPI_SCLK_P[3];
+assign      PMT_SPI_SCLK_N[0]   = IO_PMT_SPI_SCLK_N[3];
+assign      PMT_SPI_MISO_P[0]   = IO_PMT_SPI_MISO_P[3];
+assign      PMT_SPI_MISO_N[0]   = IO_PMT_SPI_MISO_N[3];
 
-assign      IO_PMT_SPI_MCLK_P[1]   = PMT_SPI_MCLK_P[1];
-assign      IO_PMT_SPI_MCLK_N[1]   = PMT_SPI_MCLK_N[1];
-assign      IO_PMT_SPI_MOSI_P[1]   = PMT_SPI_MOSI_P[1];
-assign      IO_PMT_SPI_MOSI_N[1]   = PMT_SPI_MOSI_N[1];
-assign      PMT_SPI_SCLK_P[1]   = IO_PMT_SPI_SCLK_P[1];
-assign      PMT_SPI_SCLK_N[1]   = IO_PMT_SPI_SCLK_N[1];
-assign      PMT_SPI_MISO_P[1]   = IO_PMT_SPI_MISO_P[1];
-assign      PMT_SPI_MISO_N[1]   = IO_PMT_SPI_MISO_N[1];
+assign      ACC_SPI_SCLK_P[0]   = IO_ACC_SPI_SCLK_P[3];
+assign      ACC_SPI_SCLK_N[0]   = IO_ACC_SPI_SCLK_N[3];
+assign      ACC_SPI_MISO_P[0]   = IO_ACC_SPI_MISO_P[3];
+assign      ACC_SPI_MISO_N[0]   = IO_ACC_SPI_MISO_N[3];
 
+//PMT2
+assign      IO_ENCODE_SPI_MCLK_P[2]  = ENCODE_SPI_MCLK[1];
+assign      IO_ENCODE_SPI_MOSI_P[2]  = ENCODE_SPI_MOSI[1];
 
-assign      ACC_SPI_SCLK_P[0] = IO_ACC_SPI_SCLK_P[2];
-assign      ACC_SPI_SCLK_N[0] = IO_ACC_SPI_SCLK_N[2];
-assign      ACC_SPI_MISO_P[0] = IO_ACC_SPI_MISO_P[2];
-assign      ACC_SPI_MISO_N[0] = IO_ACC_SPI_MISO_N[2];
+assign      IO_PMT_SPI_MCLK_P[2]   = PMT_SPI_MCLK[1];
+assign      IO_PMT_SPI_MOSI_P[2]   = PMT_SPI_MOSI[1];
+assign      PMT_SPI_SCLK_P[1]   = IO_PMT_SPI_SCLK_P[2];
+assign      PMT_SPI_SCLK_N[1]   = IO_PMT_SPI_SCLK_N[2];
+assign      PMT_SPI_MISO_P[1]   = IO_PMT_SPI_MISO_P[2];
+assign      PMT_SPI_MISO_N[1]   = IO_PMT_SPI_MISO_N[2];
 
-assign      IO_ENCODE_SPI_MCLK_P[2]  = ENCODE_SPI_MCLK_P[0];
-assign      IO_ENCODE_SPI_MCLK_N[2]  = ENCODE_SPI_MCLK_N[0];
-assign      IO_ENCODE_SPI_MOSI_P[2]  = ENCODE_SPI_MOSI_P[0];
-assign      IO_ENCODE_SPI_MOSI_N[2]  = ENCODE_SPI_MOSI_N[0];
+assign      ACC_SPI_SCLK_P[1]   = IO_ACC_SPI_SCLK_P[2];
+assign      ACC_SPI_SCLK_N[1]   = IO_ACC_SPI_SCLK_N[2];
+assign      ACC_SPI_MISO_P[1]   = IO_ACC_SPI_MISO_P[2];
+assign      ACC_SPI_MISO_N[1]   = IO_ACC_SPI_MISO_N[2];
 
-assign      IO_PMT_SPI_MCLK_P[2]   = PMT_SPI_MCLK_P[0];
-assign      IO_PMT_SPI_MCLK_N[2]   = PMT_SPI_MCLK_N[0];
-assign      IO_PMT_SPI_MOSI_P[2]   = PMT_SPI_MOSI_P[0];
-assign      IO_PMT_SPI_MOSI_N[2]   = PMT_SPI_MOSI_N[0];
-assign      PMT_SPI_SCLK_P[0]   = IO_PMT_SPI_SCLK_P[2];
-assign      PMT_SPI_SCLK_N[0]   = IO_PMT_SPI_SCLK_N[2];
-assign      PMT_SPI_MISO_P[0]   = IO_PMT_SPI_MISO_P[2];
-assign      PMT_SPI_MISO_N[0]   = IO_PMT_SPI_MISO_N[2];
+//PMT3
+assign      IO_ENCODE_SPI_MCLK_P[4]  = ENCODE_SPI_MCLK[2];
+assign      IO_ENCODE_SPI_MOSI_P[4]  = ENCODE_SPI_MOSI[2];
+
+assign      IO_PMT_SPI_MCLK_P[4]   = PMT_SPI_MCLK[2];
+assign      IO_PMT_SPI_MOSI_P[4]   = PMT_SPI_MOSI[2];
+assign      PMT_SPI_SCLK_P[2]   = IO_PMT_SPI_SCLK_P[4];
+assign      PMT_SPI_SCLK_N[2]   = IO_PMT_SPI_SCLK_N[4];
+assign      PMT_SPI_MISO_P[2]   = IO_PMT_SPI_MISO_P[4];
+assign      PMT_SPI_MISO_N[2]   = IO_PMT_SPI_MISO_N[4];
 
 
-assign      ACC_SPI_SCLK_P[2] = IO_ACC_SPI_SCLK_P[3];
-assign      ACC_SPI_SCLK_N[2] = IO_ACC_SPI_SCLK_N[3];
-assign      ACC_SPI_MISO_P[2] = IO_ACC_SPI_MISO_P[3];
-assign      ACC_SPI_MISO_N[2] = IO_ACC_SPI_MISO_N[3];
+assign      ACC_SPI_SCLK_P[2]   = IO_ACC_SPI_SCLK_P[4];
+assign      ACC_SPI_SCLK_N[2]   = IO_ACC_SPI_SCLK_N[4];
+assign      ACC_SPI_MISO_P[2]   = IO_ACC_SPI_MISO_P[4];
+assign      ACC_SPI_MISO_N[2]   = IO_ACC_SPI_MISO_N[4];
 
-assign      IO_ENCODE_SPI_MCLK_P[3]  = ENCODE_SPI_MCLK_P[2];
-assign      IO_ENCODE_SPI_MCLK_N[3]  = ENCODE_SPI_MCLK_N[2];
-assign      IO_ENCODE_SPI_MOSI_P[3]  = ENCODE_SPI_MOSI_P[2];
-assign      IO_ENCODE_SPI_MOSI_N[3]  = ENCODE_SPI_MOSI_N[2];
+//PMT4 reserved
+assign      IO_ENCODE_SPI_MCLK_P[1]  = ENCODE_SPI_MCLK[3];
+assign      IO_ENCODE_SPI_MOSI_P[1]  = ENCODE_SPI_MOSI[3];
 
-assign      IO_PMT_SPI_MCLK_P[3]   = PMT_SPI_MCLK_P[2];
-assign      IO_PMT_SPI_MCLK_N[3]   = PMT_SPI_MCLK_N[2];
-assign      IO_PMT_SPI_MOSI_P[3]   = PMT_SPI_MOSI_P[2];
-assign      IO_PMT_SPI_MOSI_N[3]   = PMT_SPI_MOSI_N[2];
-assign      PMT_SPI_SCLK_P[2]   = IO_PMT_SPI_SCLK_P[3];
-assign      PMT_SPI_SCLK_N[2]   = IO_PMT_SPI_SCLK_N[3];
-assign      PMT_SPI_MISO_P[2]   = IO_PMT_SPI_MISO_P[3];
-assign      PMT_SPI_MISO_N[2]   = IO_PMT_SPI_MISO_N[3];
+assign      IO_PMT_SPI_MCLK_P[1]   = PMT_SPI_MCLK[3];
+assign      IO_PMT_SPI_MOSI_P[1]   = PMT_SPI_MOSI[3];
+assign      PMT_SPI_SCLK_P[3]   = IO_PMT_SPI_SCLK_P[1];
+assign      PMT_SPI_SCLK_N[3]   = IO_PMT_SPI_SCLK_N[1];
+assign      PMT_SPI_MISO_P[3]   = IO_PMT_SPI_MISO_P[1];
+assign      PMT_SPI_MISO_N[3]   = IO_PMT_SPI_MISO_N[1];
 
+
+assign      ACC_SPI_SCLK_P[3]   = IO_ACC_SPI_SCLK_P[1];
+assign      ACC_SPI_SCLK_N[3]   = IO_ACC_SPI_SCLK_N[1];
+assign      ACC_SPI_MISO_P[3]   = IO_ACC_SPI_MISO_P[1];
+assign      ACC_SPI_MISO_N[3]   = IO_ACC_SPI_MISO_N[1];
 
 
 IBUFDS #(
@@ -1046,25 +996,7 @@ pll_2 pll_2_inst(
 
 ////////////////////////////////////////////
 generate
-    for(i=0;i<3;i=i+1)begin : TIMING_PMT_SPI_INFO
-
-        OBUFDS #(
-              .IOSTANDARD("DEFAULT"), 		// Specify the output I/O standard
-              .SLEW("SLOW")           		// Specify the output slew rate
-           ) TIMING_SPI_MCLK_inst(
-              .O(PMT_SPI_MCLK_P[i]),		// Diff_p output (connect directly to top-level port)
-              .OB(PMT_SPI_MCLK_N[i]), 		// Diff_n output (connect directly to top-level port)
-              .I(PMT_SPI_MCLK[i])			// Buffer input
-        );
-
-        OBUFDS #(
-              .IOSTANDARD("DEFAULT"), 		// Specify the output I/O standard
-              .SLEW("SLOW")           		// Specify the output slew rate
-           ) TIMING_SPI_MOSI_inst(
-              .O(PMT_SPI_MOSI_P[i]),		// Diff_p output (connect directly to top-level port)
-              .OB(PMT_SPI_MOSI_N[i]), 		// Diff_n output (connect directly to top-level port)
-              .I(PMT_SPI_MOSI[i])			// Buffer input
-        );
+    for(i=0;i<4;i=i+1)begin : TIMING_PMT_SPI_INFO
 
         IBUFDS #(
                 .DIFF_TERM("TRUE"),  			// Differential Termination
@@ -1084,24 +1016,6 @@ generate
                 .O(PMT_SPI_MISO[i]),  		// Buffer output
                 .I(PMT_SPI_MISO_P[i]), 		// Diff_p buffer input (connect directly to top-level port)
                 .IB(PMT_SPI_MISO_N[i])		// Diff_n buffer input (connect directly to top-level port)
-        );
-
-        OBUFDS #(
-            .IOSTANDARD("DEFAULT"), 		// Specify the output I/O standard
-            .SLEW("SLOW")           		// Specify the output slew rate
-        ) ENCODE_MOSI_inst(
-            .O(ENCODE_SPI_MOSI_P[i]),		// Diff_p output (connect directly to top-level port)
-            .OB(ENCODE_SPI_MOSI_N[i]), 		// Diff_n output (connect directly to top-level port)
-            .I(ENCODE_SPI_MOSI[i])			// Buffer input
-        );
-
-        OBUFDS #(
-            .IOSTANDARD("DEFAULT"), 		// Specify the output I/O standard
-            .SLEW("SLOW")           		// Specify the output slew rate
-        ) ENCODE_MCLK_inst(
-            .O(ENCODE_SPI_MCLK_P[i]),		// Diff_p output (connect directly to top-level port)
-            .OB(ENCODE_SPI_MCLK_N[i]), 		// Diff_n output (connect directly to top-level port)
-            .I(ENCODE_SPI_MCLK[i])			// Buffer input
         );
 
         IBUFDS #(
@@ -1130,32 +1044,7 @@ endgenerate
 //>>>>>>>>>>>>>>>>>>>>> ENCODE SERIAL
 
 //////////////////////////////////////
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSi_CLK_inst (
-		.O(BPSi_CLK_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSi_CLK_N),   // Diff_n output (connect directly to top-level port)
-		.I(clk_100m)      // Buffer input
-   );
-  
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSi_DATA0_inst (
-		.O(BPSi_MCLK_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSi_MCLK_N),   // Diff_n output (connect directly to top-level port)
-		.I(BPSi_MCLK)      // Buffer input
-   );
-
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSi_DATA1_inst (
-		.O(BPSi_MOSI_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSi_MOSI_N),   // Diff_n output (connect directly to top-level port)
-		.I(BPSi_MOSI)      // Buffer input
-   );
+assign	BPSi_CLK_P = clk_100m;
 
 IBUFDS #(
       .DIFF_TERM("TRUE"),  			// Differential Termination
@@ -1177,32 +1066,7 @@ IBUFDS #(
 		.IB(BPSi_MISO_N)		// Diff_n buffer input (connect directly to top-level port)
 );
 
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSr1_CLK_inst (
-		.O(BPSr1_CLK_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSr1_CLK_N),   // Diff_n output (connect directly to top-level port)
-		.I(clk_100m)      // Buffer input
-   );
-  
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSr1_DATA0_inst (
-		.O(BPSr1_MCLK_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSr1_MCLK_N),   // Diff_n output (connect directly to top-level port)
-		.I(BPSr1_MCLK)      // Buffer input
-   );
-
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSr1_DATA1_inst (
-		.O(BPSr1_MOSI_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSr1_MOSI_N),   // Diff_n output (connect directly to top-level port)
-		.I(BPSr1_MOSI)      // Buffer input
-   );
+assign	BPSr1_CLK_P = clk_100m;
 
 IBUFDS #(
       .DIFF_TERM("TRUE"),  			// Differential Termination
@@ -1224,33 +1088,7 @@ IBUFDS #(
 		.IB(BPSr1_MISO_N)		// Diff_n buffer input (connect directly to top-level port)
 );
 
-
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSr2_CLK_inst (
-		.O(BPSr2_CLK_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSr2_CLK_N),   // Diff_n output (connect directly to top-level port)
-		.I(clk_100m)      // Buffer input
-   );
-  
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSr2_DATA0_inst (
-		.O(BPSr2_MCLK_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSr2_MCLK_N),   // Diff_n output (connect directly to top-level port)
-		.I(BPSr2_MCLK)      // Buffer input
-   );
-
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) BPSr2_DATA1_inst (
-		.O(BPSr2_MOSI_P),     // Diff_p output (connect directly to top-level port)
-		.OB(BPSr2_MOSI_N),   // Diff_n output (connect directly to top-level port)
-		.I(BPSr2_MOSI)      // Buffer input
-   );
+assign	BPSr2_CLK_P = clk_100m;
 
 IBUFDS #(
       .DIFF_TERM("TRUE"),  			// Differential Termination
@@ -1305,6 +1143,8 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .motor_bias_vol_en_i            ( fbc_bias_vol_en               ),
     .fbc_bias_voltage_i             ( fbc_bias_voltage              ),
     .fbc_cali_uop_set_i             ( fbc_cali_uop_set              ),
+    .ascent_gradient_i              ( ascent_gradient               ),
+    .slow_ascent_period_i           ( slow_ascent_period            ),
 
     .position_pid_thr_i             ( position_pid_thr              ),
     .fbc_pose_err_thr_i             ( fbc_pose_err_thr              ),
@@ -1329,9 +1169,9 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .FBCi_cali_en_o                 ( FBCi_cali_en                  ),
     .FBCi_cali_a_o                  ( FBCi_cali_a                   ),
     .FBCi_cali_b_o                  ( FBCi_cali_b                   ),
-    .FBCr1_cali_en_o                ( FBCr1_cali_en                 ),
-    .FBCr1_cali_a_o                 ( FBCr1_cali_a                  ),
-    .FBCr1_cali_b_o                 ( FBCr1_cali_b                  ),
+    // .FBCr1_cali_en_o                ( FBCr1_cali_en                 ),
+    // .FBCr1_cali_a_o                 ( FBCr1_cali_a                  ),
+    // .FBCr1_cali_b_o                 ( FBCr1_cali_b                  ),
     .FBCr2_cali_en_o                ( FBCr2_cali_en                 ),
     .FBCr2_cali_a_o                 ( FBCr2_cali_a                  ),
     .FBCr2_cali_b_o                 ( FBCr2_cali_b                  ),
@@ -1339,9 +1179,9 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .FBCi_out_en_o                  ( FBCi_out_en                   ),
     .FBCi_out_a_o                   ( FBCi_out_a                    ),
     .FBCi_out_b_o                   ( FBCi_out_b                    ),
-    .FBCr1_out_en_o                 ( FBCr1_out_en                  ),
-    .FBCr1_out_a_o                  ( FBCr1_out_a                   ),
-    .FBCr1_out_b_o                  ( FBCr1_out_b                   ),
+    // .FBCr1_out_en_o                 ( FBCr1_out_en                  ),
+    // .FBCr1_out_a_o                  ( FBCr1_out_a                   ),
+    // .FBCr1_out_b_o                  ( FBCr1_out_b                   ),
     .FBCr2_out_en_o                 ( FBCr2_out_en                  ),
     .FBCr2_out_a_o                  ( FBCr2_out_a                   ),
     .FBCr2_out_b_o                  ( FBCr2_out_b                   ),
@@ -1349,17 +1189,17 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .FBCi_bg_en_o                   ( FBCi_bg_en                    ),
     .FBCi_bg_a_o                    ( FBCi_bg_a                     ),
     .FBCi_bg_b_o                    ( FBCi_bg_b                     ),
-    .FBCr1_bg_en_o                  ( FBCr1_bg_en                   ),
-    .FBCr1_bg_a_o                   ( FBCr1_bg_a                    ),
-    .FBCr1_bg_b_o                   ( FBCr1_bg_b                    ),
+    // .FBCr1_bg_en_o                  ( FBCr1_bg_en                   ),
+    // .FBCr1_bg_a_o                   ( FBCr1_bg_a                    ),
+    // .FBCr1_bg_b_o                   ( FBCr1_bg_b                    ),
     .FBCr2_bg_en_o                  ( FBCr2_bg_en                   ),
     .FBCr2_bg_a_o                   ( FBCr2_bg_a                    ),
     .FBCr2_bg_b_o                   ( FBCr2_bg_b                    ),
 
     .FBCi_cache_vld_o               ( FBCi_cache_vld                ),
     .FBCi_cache_data_o              ( FBCi_cache_data               ),
-    .FBCr1_cache_vld_o              ( FBCr1_cache_vld               ),
-    .FBCr1_cache_data_o             ( FBCr1_cache_data              ),
+    // .FBCr1_cache_vld_o              ( FBCr1_cache_vld               ),
+    // .FBCr1_cache_data_o             ( FBCr1_cache_data              ),
     .FBCr2_cache_vld_o              ( FBCr2_cache_vld               ),
     .FBCr2_cache_data_o             ( FBCr2_cache_data              ),
 
@@ -1368,16 +1208,16 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     // .dbg_mem_state_o                ( dbg_mem_state                 ),
     // .dbg_mem_rd_data_o              ( dbg_mem_rd_data               ),
     // spi info
-    .FBCi_MCLK                      ( BPSi_MCLK                     ),
-    .FBCi_MOSI                      ( BPSi_MOSI                     ),
+    .FBCi_MCLK                      ( BPSi_MCLK_P                   ),
+    .FBCi_MOSI                      ( BPSi_MOSI_P                   ),
     .FBCi_SCLK                      ( BPSi_SCLK                     ),
     .FBCi_MISO                      ( BPSi_MISO                     ),
-    .FBCr1_MCLK                     ( BPSr1_MCLK                    ),
-    .FBCr1_MOSI                     ( BPSr1_MOSI                    ),
+    .FBCr1_MCLK                     ( BPSr1_MCLK_P                  ),
+    .FBCr1_MOSI                     ( BPSr1_MOSI_P                  ),
     .FBCr1_SCLK                     ( BPSr1_SCLK                    ),
     .FBCr1_MISO                     ( BPSr1_MISO                    ),
-    .FBCr2_MCLK                     ( BPSr2_MCLK                    ),
-    .FBCr2_MOSI                     ( BPSr2_MOSI                    ),
+    .FBCr2_MCLK                     ( BPSr2_MCLK_P                  ),
+    .FBCr2_MOSI                     ( BPSr2_MOSI_P                  ),
     .FBCr2_SCLK                     ( BPSr2_SCLK                    ),
     .FBCr2_MISO                     ( BPSr2_MISO                    )
 );
@@ -1421,15 +1261,13 @@ arbitrate_bpsi #(
     .readback_vld_i                 ( readback_vld                  ),
     .fpga_message_up_data_i         ( fpga_message_up_data          ),
     .fpga_message_up_i              ( fpga_message_up               ),
-    .acc_encode_latch_i             ( acc_encode_latch              ),
-    .acc_encode_latch_en_i          ( acc_encode_latch_en           ),
     // calibrate voltage. dark current * R
     .FBCi_cali_en_i                 ( FBCi_cali_en                  ),
     .FBCi_cali_a_i                  ( FBCi_cali_a                   ),
     .FBCi_cali_b_i                  ( FBCi_cali_b                   ),
-    .FBCr1_cali_en_i                ( FBCr1_cali_en                 ),
-    .FBCr1_cali_a_i                 ( FBCr1_cali_a                  ),
-    .FBCr1_cali_b_i                 ( FBCr1_cali_b                  ),
+    // .FBCr1_cali_en_i                ( FBCr1_cali_en                 ),
+    // .FBCr1_cali_a_i                 ( FBCr1_cali_a                  ),
+    // .FBCr1_cali_b_i                 ( FBCr1_cali_b                  ),
     .FBCr2_cali_en_i                ( FBCr2_cali_en                 ),
     .FBCr2_cali_a_i                 ( FBCr2_cali_a                  ),
     .FBCr2_cali_b_i                 ( FBCr2_cali_b                  ),
@@ -1439,9 +1277,9 @@ arbitrate_bpsi #(
     .FBCi_out_en_i                  ( FBCi_out_en                   ),
     .FBCi_out_a_i                   ( FBCi_out_a                    ),
     .FBCi_out_b_i                   ( FBCi_out_b                    ),
-    .FBCr1_out_en_i                 ( FBCr1_out_en                  ),
-    .FBCr1_out_a_i                  ( FBCr1_out_a                   ),
-    .FBCr1_out_b_i                  ( FBCr1_out_b                   ),
+    // .FBCr1_out_en_i                 ( FBCr1_out_en                  ),
+    // .FBCr1_out_a_i                  ( FBCr1_out_a                   ),
+    // .FBCr1_out_b_i                  ( FBCr1_out_b                   ),
     .FBCr2_out_en_i                 ( FBCr2_out_en                  ),
     .FBCr2_out_a_i                  ( FBCr2_out_a                   ),
     .FBCr2_out_b_i                  ( FBCr2_out_b                   ),
@@ -1452,9 +1290,9 @@ arbitrate_bpsi #(
     .FBCi_bg_en_i                   ( FBCi_bg_en                    ),
     .FBCi_bg_a_i                    ( FBCi_bg_a                     ),
     .FBCi_bg_b_i                    ( FBCi_bg_b                     ),
-    .FBCr1_bg_en_i                  ( FBCr1_bg_en                   ),
-    .FBCr1_bg_a_i                   ( FBCr1_bg_a                    ),
-    .FBCr1_bg_b_i                   ( FBCr1_bg_b                    ),
+    // .FBCr1_bg_en_i                  ( FBCr1_bg_en                   ),
+    // .FBCr1_bg_a_i                   ( FBCr1_bg_a                    ),
+    // .FBCr1_bg_b_i                   ( FBCr1_bg_b                    ),
     .FBCr2_bg_en_i                  ( FBCr2_bg_en                   ),
     .FBCr2_bg_a_i                   ( FBCr2_bg_a                    ),
     .FBCr2_bg_b_i                   ( FBCr2_bg_b                    ),
@@ -1467,18 +1305,18 @@ arbitrate_bpsi #(
     .laser_rx_vld_i                 ( laser_rx_vld                  ), // laser uart
     .laser_rx_last_i                ( laser_rx_last                 ), // laser uart
 
-    .spi_slave0_ack_rst_i           ( rd_ack_timeout_rst[0]         ),
     .spi_slave0_ack_vld_i           ( spi_slave_ack_vld[0]          ),
     .spi_slave0_ack_last_i          ( spi_slave_ack_last[0]         ),
     .spi_slave0_ack_data_i          ( spi_slave_ack_data[0]         ),
-    .spi_slave1_ack_rst_i           ( rd_ack_timeout_rst[1]         ),
     .spi_slave1_ack_vld_i           ( spi_slave_ack_vld[1]          ),
     .spi_slave1_ack_last_i          ( spi_slave_ack_last[1]         ),
     .spi_slave1_ack_data_i          ( spi_slave_ack_data[1]         ),
-    .spi_slave2_ack_rst_i           ( rd_ack_timeout_rst[2]         ),
     .spi_slave2_ack_vld_i           ( spi_slave_ack_vld[2]          ),
     .spi_slave2_ack_last_i          ( spi_slave_ack_last[2]         ),
     .spi_slave2_ack_data_i          ( spi_slave_ack_data[2]         ),
+    .spi_slave3_ack_vld_i           ( spi_slave_ack_vld[3]          ),
+    .spi_slave3_ack_last_i          ( spi_slave_ack_last[3]         ),
+    .spi_slave3_ack_data_i          ( spi_slave_ack_data[3]         ),
 
     .rd_mfpga_version_i             ( rd_mfpga_version              ),
 
@@ -1506,7 +1344,10 @@ slave_comm slave_comm_inst(
     // info
     .SLAVE_MSG_CLK                  ( FPGA_TO_SFPGA_RESERVE0        ),
     .SLAVE_MSG_TX_FSX               ( FPGA_TO_SFPGA_RESERVE3        ),
-    .SLAVE_MSG_TX                   ( FPGA_TO_SFPGA_RESERVE4        ),
+    .SLAVE_MSG_TX0                  ( FPGA_TO_SFPGA_RESERVE4        ),
+    .SLAVE_MSG_TX1                  ( FPGA_TO_SFPGA_RESERVE5        ),
+    .SLAVE_MSG_TX2                  ( FPGA_TO_SFPGA_RESERVE6        ),
+    .SLAVE_MSG_TX3                  ( FPGA_TO_SFPGA_RESERVE7        ),
     .SLAVE_MSG_RX_FSX               ( FPGA_TO_SFPGA_RESERVE1        ),
     .SLAVE_MSG_RX                   ( FPGA_TO_SFPGA_RESERVE2        )
 );
@@ -1530,6 +1371,8 @@ command_map command_map_inst(
     .fbc_bias_vol_en_o              ( fbc_bias_vol_en               ),
     .fbc_bias_voltage_o             ( fbc_bias_voltage              ),
     .fbc_cali_uop_set_o             ( fbc_cali_uop_set              ),
+    .ascent_gradient_o              ( ascent_gradient               ),
+    .slow_ascent_period_o           ( slow_ascent_period            ),
     .motor_Ufeed_latch_i            ( motor_Ufeed_latch             ),
     .motor_data_in_i                ( motor_data_in                 ), // Uop to motor
     .delta_position_i               ( delta_position                ),
@@ -1550,6 +1393,8 @@ command_map command_map_inst(
     .pmt_adc_start_hold_o           ( pmt_adc_start_hold            ),
     .rd_mfpga_version_o             ( rd_mfpga_version              ),
     .FBC_fifo_rst_o                 ( FBC_out_fifo_rst              ),
+    .fast_shutter_set_i             ( fast_shutter_set              ),
+    .fast_shutter_en_i              ( fast_shutter_en               ),
     .readback_data_o                ( readback_data                 ),
     .readback_vld_o                 ( readback_vld                  ),
 
@@ -1612,12 +1457,12 @@ command_map command_map_inst(
     .lpo_encode_end_o               ( lpo_encode_end                ),
     .scan_state_i                   ( scan_state                    ),
 
-    .eds_pack_cnt_1_i               ( eds_pack_cnt_1                ),
-    .encode_pack_cnt_1_i            ( encode_pack_cnt_1             ),
-    .eds_pack_cnt_2_i               ( eds_pack_cnt_2                ),
-    .encode_pack_cnt_2_i            ( encode_pack_cnt_2             ),
-    .eds_pack_cnt_3_i               ( eds_pack_cnt_3                ),
-    .encode_pack_cnt_3_i            ( encode_pack_cnt_3             ),
+    .eds_pack_cnt_1_i               ( eds_pack_cnt[0]                ),
+    .encode_pack_cnt_1_i            ( encode_pack_cnt[0]             ),
+    .eds_pack_cnt_2_i               ( eds_pack_cnt[1]                ),
+    .encode_pack_cnt_2_i            ( encode_pack_cnt[1]             ),
+    .eds_pack_cnt_3_i               ( eds_pack_cnt[2]                ),
+    .encode_pack_cnt_3_i            ( encode_pack_cnt[2]             ),
 
     .laser_control_o                ( laser_control                 ),
     .laser_out_switch_o             ( laser_out_switch              ),
@@ -1655,27 +1500,29 @@ command_map command_map_inst(
     .acc_demo_particle_cnt_o        ( acc_demo_particle_cnt         ),
     .acc_demo_trim_time_pose_o      ( acc_demo_trim_time_pose       ),
     .acc_demo_trim_time_nege_o      ( acc_demo_trim_time_nege       ),
-    // .acc_demo_xencode_offset_o      ( acc_demo_xencode_offset       ),
+    .acc_demo_xencode_offset_o      ( acc_demo_xencode_offset       ),
     .acc_demo_skip_cnt_i            ( acc_demo_skip_cnt             ),
     .acc_demo_addr_latch_i          ( acc_demo_addr_latch           ),
     .acc_skip_fifo_rd_o             ( acc_skip_fifo_rd              ),
     .acc_skip_fifo_ready_i          ( acc_skip_fifo_ready           ),
     .acc_skip_fifo_data_i           ( acc_skip_fifo_data            ),
     .timing_flag_supp_o             ( timing_flag_supp              ),
-    .acc_trigger_num_i              ( acc_trigger_num               ),
+    // .acc_trigger_num_i              ( acc_trigger_num               ),
 
     .eds_sensor_training_done_i     ( eds_sensor_training_done      ),
     .eds_sensor_training_result_i   ( eds_sensor_training_result    ),
     
-    .aurora_empty_1_i               ( aurora_empty_1                ),
-    .aurora_empty_2_i               ( aurora_empty_2                ),
-    .aurora_empty_3_i               ( aurora_empty_3                ),
-    .aurora_soft_rd_1_o             ( aurora_soft_rd_1              ),
-    .aurora_soft_rd_2_o             ( aurora_soft_rd_2              ),
-    .aurora_soft_rd_3_o             ( aurora_soft_rd_3              ),
+    .aurora_empty_1_i               ( aurora_empty[0]               ),
+    .aurora_empty_2_i               ( aurora_empty[1]               ),
+    .aurora_empty_3_i               ( aurora_empty[2]               ),
+    .aurora_soft_rd_1_o             ( aurora_soft_rd[0]             ),
+    .aurora_soft_rd_2_o             ( aurora_soft_rd[1]             ),
+    .aurora_soft_rd_3_o             ( aurora_soft_rd[2]             ),
+
     .cfg_acc_use_o                  ( cfg_acc_use                   ),
     .cfg_fbc_rate_o                 ( cfg_fbc_rate                  ),
     .cfg_spindle_width_o            ( cfg_spindle_width             ),
+    
     .encode_check_clean_o           ( encode_check_clean            ),
     .w_encode_err_lock_i            ( w_encode_err_lock             ),
     .w_encode_warn_lock_i           ( w_encode_warn_lock            ),
@@ -1685,11 +1532,18 @@ command_map command_map_inst(
     // .w_src_encode_continuity_cnt_i  ( w_src_encode_continuity_cnt   ),
     // .w_eds_encode_continuity_max_i  ( w_eds_encode_continuity_max   ),
     // .w_eds_encode_continuity_cnt_i  ( w_eds_encode_continuity_cnt   ),
-
+    .ad5592_1_dac_config_en_o       ( ad5592_1_dac_config_en        ),
+    .ad5592_1_dac_channel_o         ( ad5592_1_dac_channel          ),
+    .ad5592_1_dac_data_o            ( ad5592_1_dac_data             ),
+    .ad5592_1_adc_config_en_o       ( ad5592_1_adc_config_en        ),
+    .ad5592_1_adc_channel_o         ( ad5592_1_adc_channel          ),
+    .ad5592_1_spi_conf_ok_i         ( ad5592_1_spi_conf_ok          ),
+    .ad5592_1_init_i                ( ad5592_1_init                 ),
+    .ad5592_1_adc_data_en_i         ( ad5592_1_adc_data_en          ),
+    .ad5592_1_adc_data_i            ( ad5592_1_adc_data             ),
     .fbc_udp_rate_switch_o          ( fbc_udp_rate_switch           ),
     .map_readback_cnt_o             ( map_readback_cnt              ),
     .main_scan_cnt_o                ( main_scan_cnt                 ),
-    .acc_encode_upload_o            ( acc_encode_upload             ),
 
     .debug_info                     (                               )
 );
@@ -1752,9 +1606,7 @@ scan_state_ctrl scan_state_ctrl_inst(
     // .aom_continuous_trig_err_i      ( aom_continuous_trig_err       ),
     // .aom_integral_trig_err_i        ( aom_integral_trig_err         ),
 
-    .PLC_ACC_IN                     ( Safety_in1                    ),
-    .ACS_IN1                        ( ACS_IN1                       ),
-    .ACS_OUT1                       ( ACS_OUT1_LS                   )
+    .PLC_ACC_IN                     ( Safety_in1                    )
 );
 
 scan_cmd_ctrl scan_cmd_ctrl_inst(
@@ -1762,6 +1614,7 @@ scan_cmd_ctrl scan_cmd_ctrl_inst(
     .clk_i                          ( clk_100m                      ),
     .rst_i                          ( rst_100m                      ),
     // scan control single
+    .acc_job_control_i              ( acc_job_control               ),
     .real_scan_flag_i               ( real_scan_flag                ),
     .real_scan_sel_i                ( real_scan_sel                 ),
     .pmt_adc_start_data_i           ( pmt_adc_start_data            ),
@@ -1777,7 +1630,7 @@ scan_flag_generate scan_flag_generate_inst(
     .clk_i                          ( clk_100m                      ),
     .rst_i                          ( rst_100m                      ),
     
-    .pmt_start_en_i                 ( pmt_start_en                  ),
+    .pmt_start_en_i                 ( pmt_start_en[2:0]             ),
     .pmt_end_en_i                   ( pcie_pmt_end_en               ),
     .pmt_scan_en_o                  ( pmt_scan_en                   ),
 
@@ -1814,7 +1667,7 @@ pmt_master_sel pmt_master_sel_inst(
 );
 
 generate
-    for(i=0;i<3;i=i+1)begin : PMT_SPI_MASTER
+    for(i=0;i<4;i=i+1)begin : PMT_SPI_MASTER
         serial_master_drv #(
             .DATA_WIDTH                     ( 32                            ),
             .ADDR_WIDTH                     ( 16                            ),
@@ -1843,7 +1696,7 @@ generate
 endgenerate
 
 generate
-    for(i=0;i<3;i=i+1)begin : PMT_ACC_SEL
+    for(i=0;i<4;i=i+1)begin : PMT_ACC_SEL
         acc_ctrl_rx_drv acc_ctrl_rx_drv_inst(
             // clk & rst
             .clk_i                          ( clk_100m                      ),
@@ -1861,7 +1714,8 @@ endgenerate
 
 assign acc_pmt_flag =      ((cfg_acc_use == 'd0) && acc_pmt_flag_sel[0])
                         || ((cfg_acc_use == 'd1) && acc_pmt_flag_sel[1])
-                        || ((cfg_acc_use == 'd2) && acc_pmt_flag_sel[2]);
+                        || ((cfg_acc_use == 'd2) && acc_pmt_flag_sel[2])
+                        || ((cfg_acc_use == 'd3) && acc_pmt_flag_sel[3]);
 
 acc_demo_ctrl acc_demo_ctrl_inst(
     // clk & rst
@@ -1894,11 +1748,6 @@ acc_demo_flag_trim acc_demo_flag_trim_inst(
     .clk_i                          ( clk_100m                      ),
     .rst_i                          ( rst_100m                      ),
 
-    .acc_encode_upload_i            ( acc_encode_upload             ),
-    .pmt_precise_encode_i           ( {pmt_precise_encode_w_temp,pmt_precise_encode_x_temp}),
-    .acc_encode_latch_en_o          ( acc_encode_latch_en           ),
-    .acc_encode_latch_o             ( acc_encode_latch              ),
-
     .pmt_scan_en_i                  ( |pmt_scan_en                  ),
     .acc_demo_flag_i                ( acc_pmt_flag || acc_demo_flag ),
     .acc_demo_trim_time_pose_i      ( acc_demo_trim_time_pose       ),
@@ -1909,7 +1758,7 @@ acc_demo_flag_trim acc_demo_flag_trim_inst(
 );
 
 generate
-    for(i=0;i<3;i=i+1)begin : PMT_SPI_ENCODE
+    for(i=0;i<4;i=i+1)begin : PMT_SPI_ENCODE
         encode_tx_drv encode_tx_drv_inst(
             // clk & rst
             .clk_i              ( clk_100m                                  ),
@@ -2066,32 +1915,7 @@ ad7680_spi_if ad7680_spi_if_inst(
 );
 
 //////////////////////////////////////////////
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) EDS_CLK_inst (
-		.O(EDS_CLK_P),     // Diff_p output (connect directly to top-level port)
-		.OB(EDS_CLK_N),   // Diff_n output (connect directly to top-level port)
-		.I(clk_100m)      // Buffer input
-   );
-  
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) EDS_TC_inst (
-		.O(EDS_TC_P),     // Diff_p output (connect directly to top-level port)
-		.OB(EDS_TC_N),   // Diff_n output (connect directly to top-level port)
-		.I(EDS_TC)      // Buffer input
-   );
-
-OBUFDS #(
-      .IOSTANDARD("DEFAULT"), // Specify the output I/O standard
-      .SLEW("SLOW")           // Specify the output slew rate
-   ) EDS_TFG_inst (
-		.O(EDS_TFG_P),     // Diff_p output (connect directly to top-level port)
-		.OB(EDS_TFG_N),   // Diff_n output (connect directly to top-level port)
-		.I(EDS_TFG)      // Buffer input
-   );
+assign	EDS_CLK_P	=	clk_100m;
 
 IBUFDS #(
       .DIFF_TERM("TRUE"),  			// Differential Termination
@@ -2175,7 +1999,7 @@ IBUFDS #(
 
 reg eds_frame_end_en_d0;
 always @(posedge clk_300m) begin
-    eds_frame_end_en_d0 <= pcie_eds_frame_end_2 || pcie_eds_frame_end_1 || pcie_eds_frame_end_3;
+    eds_frame_end_en_d0 <= (|pcie_eds_frame_end);
 end
 
 
@@ -2199,8 +2023,8 @@ eds_top_if	eds_top_if_inst(
     .rst                        ( rst_80m                                   ),
     .clk_div_3                  ( clk_div_3                                 ),
     .clk_div_6                  ( clk_div_6                                 ),
-    .spi_clk                    ( EDS_TC                                    ),
-    .spi_mosi                   ( EDS_TFG                                   ),
+    .spi_clk                    ( EDS_TC_P                                  ),
+    .spi_mosi                   ( EDS_TFG_P                                 ),
 
     .eds_power_en               ( eds_power_en                              ),
     .eds_frame_en               ( eds_frame_en                              ),
@@ -2241,14 +2065,12 @@ reset_generate reset_generate_inst(
 
     .hmc7044_config_ok          ( hmc7044_config_ok                     ),
 
-    .aurora_log_clk_1           ( aurora_log_clk_1                      ),
-    .aurora_log_clk_2           ( aurora_log_clk_2                      ),
-    .aurora_log_clk_3           ( aurora_log_clk_3                      ),
-    // .aurora_log_clk_4           ( aurora_log_clk_4                      ),
-    .aurora_rst_1               ( aurora_rst_1                          ),
-    .aurora_rst_2               ( aurora_rst_2                          ),
-    .aurora_rst_3               ( aurora_rst_3                          )
-    // .aurora_rst_4               ( aurora_rst_4                          )
+    .aurora_log_clk_1           ( aurora_log_clk[0]                      ),
+    .aurora_log_clk_2           ( aurora_log_clk[1]                      ),
+    .aurora_log_clk_3           ( aurora_log_clk[2]                      ),
+    .aurora_rst_1               ( aurora_rst[0]                          ),
+    .aurora_rst_2               ( aurora_rst[1]                          ),
+    .aurora_rst_3               ( aurora_rst[2]                          )
 );
 
 FBC_cache FBC_cache_inst(
@@ -2258,8 +2080,8 @@ FBC_cache FBC_cache_inst(
     // FBC actual voltage
     .FBCi_cache_vld_i               ( FBCi_cache_vld                        ),
     .FBCi_cache_data_i              ( FBCi_cache_data                       ),
-    .FBCr1_cache_vld_i              ( FBCr1_cache_vld                       ),
-    .FBCr1_cache_data_i             ( FBCr1_cache_data                      ),
+    // .FBCr1_cache_vld_i              ( FBCr1_cache_vld                       ),
+    // .FBCr1_cache_data_i             ( FBCr1_cache_data                      ),
     .FBCr2_cache_vld_i              ( FBCr2_cache_vld                       ),
     .FBCr2_cache_data_i             ( FBCr2_cache_data                      ),
     
@@ -2283,9 +2105,7 @@ FBC_cache FBC_cache_inst(
     
     .aurora_fbc_vout_vld_o          ( aurora_fbc_vout_vld                   ),
     .aurora_fbc_vout_data_o         ( aurora_fbc_vout_data                  ),
-    .aurora_fbc_almost_full_1_i     ( aurora_fbc_almost_full_1              ),
-    .aurora_fbc_almost_full_2_i     ( aurora_fbc_almost_full_2              ),
-    .aurora_fbc_almost_full_3_i     ( aurora_fbc_almost_full_3              )
+    .aurora_fbc_almost_full_i       ( aurora_fbc_almost_full                )
 );
 
 ddr_top u_ddr_top(
@@ -2323,139 +2143,17 @@ ddr_top u_ddr_top(
     .ddr3_dqs_p                     ( DDR3_A_DQS_P                      )
 );
 
-aurora_64b66b_0_exdes aurora_64b66b_exdes_inst_1(
-    .aurora_log_clk_o               ( aurora_log_clk_1                  ),
-    .aurora_empty_o                 ( aurora_empty_1                    ),
-    .aurora_soft_rd_i               ( aurora_soft_rd_1                  ),
-    // eds
-    .eds_clk_i                      ( eds_clk                           ),  // eds clk -> 100m/6
-    .clk_h_i                        ( clk_300m                          ),  // eds clk_h -> 300m
-    .eds_sensor_vld_i               ( eds_sensor_data_en                ),
-    .eds_sensor_data_i              ( eds_sensor_data                   ),
-    .eds_frame_en_i                 ( eds_frame_en && eds_frame_sel[1]  ),
-    .pcie_eds_end_o                 ( pcie_eds_frame_end_1              ),
-
-    .precise_encode_en_i            ( align_src_encode_en               ),
-    .precise_encode_w_data_i        ( align_src_encode_w                ),
-    .precise_encode_x_data_i        ( align_src_encode_x                ),
-    .dbg_eds_frame_en_o             ( dbg_eds_frame_en[1]               ),
-    .dbg_eds_wencode_vld_o          ( dbg_eds_wencode_vld[1]            ),
-    .dbg_eds_wencode_o              ( dbg_eds_wencode[1]                ),
-
-    // pmt
-    .pmt_clk_i                      ( clk_100m                          ),  // sys clk -> 100m
-    .pmt_encode_vld_i               ( pmt_precise_encode_en_temp && pmt_scan_en[1]            ),
-    .pmt_encode_data_i              ( {pmt_precise_encode_w_temp,pmt_precise_encode_x_temp}   ),
-    .pmt_start_en_i                 ( pmt_start_en[1]                   ),
-    .pcie_pmt_end_o                 ( pcie_pmt_end_en[1]                ),
-
-    // fbc
-    .fbc_clk_i                      ( clk_100m                          ),  // sys clk -> 100m
-    .fbc_up_start_i                 ( fbc_up_start && fbc_up_en[1]      ),
-    .aurora_fbc_end_o               ( aurora_fbc_end[1]                 ),
-    .fbc_vld_i                      ( aurora_fbc_vout_vld && fbc_up_en[1]),
-    .fbc_data_i                     ( aurora_fbc_vout_data              ),
-    .aurora_fbc_almost_full_o       ( aurora_fbc_almost_full_1          ),
-
-    .aurora_scan_reset_i            ( aurora_scan_reset || scan_aurora_reset),
-    .aurora_tx_idle_o               ( aurora_tx_idle[1]                 ),
-    .eds_pack_cnt_o                 ( eds_pack_cnt_1                    ),
-    .encode_pack_cnt_o              ( encode_pack_cnt_1                 ),
-    // Reset and clk
-    .RESET                          ( aurora_rst_1                      ),
-    .PMA_INIT                       ( gt_rst                            ),
-    .INIT_CLK_P                     ( clk_50m                           ),
-    .DRP_CLK_IN                     ( clk_50m                           ),
-
-    // GTX Reference Clock Interface
-    .GTXQ0_P                        ( SFP_MGT_REFCLK0_C_P               ),
-    .GTXQ0_N                        ( SFP_MGT_REFCLK0_C_N               ),
-    // GT clk to aurora_1_support
-    .refclk1_o                      ( GT0_refclk1                       ),
-    .gt_qpllclk_quad1_o             ( GT0_qpllclk_quad1                 ),
-    .gt_qpllrefclk_quad1_o          ( GT0_qpllrefclk_quad1              ),
-    .gt_qpllrefclklost_o            ( GT0_qpllrefclklost                ),
-    .gt_qplllock_o                  ( GT0_qplllock                      ),
-
-    // GTX Serial I/O
-    .RXP                            ( FPGA_SFP1_RX_P                    ),
-    .RXN                            ( FPGA_SFP1_RX_N                    ),
-    .TXP                            ( FPGA_SFP1_TX_P                    ),
-    .TXN                            ( FPGA_SFP1_TX_N                    )
-);
-
-aurora_64b66b_0_exdes aurora_64b66b_exdes_inst_2(
-    .aurora_log_clk_o               ( aurora_log_clk_2                  ),
-    .aurora_empty_o                 ( aurora_empty_2                    ),
-    .aurora_soft_rd_i               ( aurora_soft_rd_2                  ),
-    // eds
-    .eds_clk_i                      ( eds_clk                           ),  // eds clk -> 100m/6
-    .clk_h_i                        ( clk_300m                          ),  // eds clk_h -> 300m
-    .eds_sensor_vld_i               ( eds_sensor_data_en                ),
-    .eds_sensor_data_i              ( eds_sensor_data                   ),
-    .eds_frame_en_i                 ( eds_frame_en && eds_frame_sel[0]  ),
-    .pcie_eds_end_o                 ( pcie_eds_frame_end_2              ),
-
-    .precise_encode_en_i            ( align_src_encode_en               ),
-    .precise_encode_w_data_i        ( align_src_encode_w                ),
-    .precise_encode_x_data_i        ( align_src_encode_x                ),
-    .dbg_eds_frame_en_o             ( dbg_eds_frame_en[0]               ),
-    .dbg_eds_wencode_vld_o          ( dbg_eds_wencode_vld[0]            ),
-    .dbg_eds_wencode_o              ( dbg_eds_wencode[0]                ),
-
-    // pmt
-    .pmt_clk_i                      ( clk_100m                          ),  // sys clk -> 100m
-    .pmt_encode_vld_i               ( pmt_precise_encode_en_temp && pmt_scan_en[0]            ),
-    .pmt_encode_data_i              ( {pmt_precise_encode_w_temp,pmt_precise_encode_x_temp}   ),
-    .pmt_start_en_i                 ( pmt_start_en[0]                   ),
-    .pcie_pmt_end_o                 ( pcie_pmt_end_en[0]                ),
-
-    // fbc
-    .fbc_clk_i                      ( clk_100m                          ),  // sys clk -> 100m
-    .fbc_up_start_i                 ( fbc_up_start && fbc_up_en[0]      ),
-    .aurora_fbc_end_o               ( aurora_fbc_end[0]                 ),
-    .fbc_vld_i                      ( aurora_fbc_vout_vld && fbc_up_en[0]),
-    .fbc_data_i                     ( aurora_fbc_vout_data              ),
-    .aurora_fbc_almost_full_o       ( aurora_fbc_almost_full_2          ),
-
-    .aurora_scan_reset_i            ( aurora_scan_reset || scan_aurora_reset),
-    .aurora_tx_idle_o               ( aurora_tx_idle[0]                 ),
-    .eds_pack_cnt_o                 ( eds_pack_cnt_2                    ),
-    .encode_pack_cnt_o              ( encode_pack_cnt_2                 ),
-    // Reset and clk
-    .RESET                          ( aurora_rst_2                      ),
-    .PMA_INIT                       ( gt_rst                            ),
-    .INIT_CLK_P                     ( clk_50m                           ),
-    .DRP_CLK_IN                     ( clk_50m                           ),
-
-    // GTX Reference Clock Interface
-    .GTXQ0_P                        ( SFP_MGT_REFCLK1_C_P               ),
-    .GTXQ0_N                        ( SFP_MGT_REFCLK1_C_N               ),
-    // GT clk to aurora_1_support
-    .refclk1_o                      ( GT1_refclk1                       ),
-    .gt_qpllclk_quad1_o             ( GT1_qpllclk_quad1                 ),
-    .gt_qpllrefclk_quad1_o          ( GT1_qpllrefclk_quad1              ),
-    .gt_qpllrefclklost_o            ( GT1_qpllrefclklost                ),
-    .gt_qplllock_o                  ( GT1_qplllock                      ),
-
-    // GTX Serial I/O
-    .RXP                            ( FPGA_SFP2_RX_P                    ),
-    .RXN                            ( FPGA_SFP2_RX_N                    ),
-    .TXP                            ( FPGA_SFP2_TX_P                    ),
-    .TXN                            ( FPGA_SFP2_TX_N                    )
-);
-
-aurora_64b66b_1_exdes aurora_64b66b_exdes_inst_3(
-    .aurora_log_clk_o               ( aurora_log_clk_3                  ),
-    .aurora_empty_o                 ( aurora_empty_3                    ),
-    .aurora_soft_rd_i               ( aurora_soft_rd_3                  ),
+aurora_64b66b_0_exdes aurora_64b66b_exdes_inst_3(
+    .aurora_log_clk_o               ( aurora_log_clk[2]                 ),
+    .aurora_empty_o                 ( aurora_empty[2]                   ),
+    .aurora_soft_rd_i               ( aurora_soft_rd[2]                 ),
     // eds
     .eds_clk_i                      ( eds_clk                           ),  // eds clk -> 100m/6
     .clk_h_i                        ( clk_300m                          ),  // eds clk_h -> 300m
     .eds_sensor_vld_i               ( eds_sensor_data_en                ),
     .eds_sensor_data_i              ( eds_sensor_data                   ),
     .eds_frame_en_i                 ( eds_frame_en && eds_frame_sel[2]  ),
-    .pcie_eds_end_o                 ( pcie_eds_frame_end_3              ),
+    .pcie_eds_end_o                 ( pcie_eds_frame_end[2]             ),
 
     .precise_encode_en_i            ( align_src_encode_en               ),
     .precise_encode_w_data_i        ( align_src_encode_w                ),
@@ -2477,14 +2175,136 @@ aurora_64b66b_1_exdes aurora_64b66b_exdes_inst_3(
     .aurora_fbc_end_o               ( aurora_fbc_end[2]                 ),
     .fbc_vld_i                      ( aurora_fbc_vout_vld && fbc_up_en[2]),
     .fbc_data_i                     ( aurora_fbc_vout_data              ),
-    .aurora_fbc_almost_full_o       ( aurora_fbc_almost_full_3          ),
+    .aurora_fbc_almost_full_o       ( aurora_fbc_almost_full[2]         ),
 
     .aurora_scan_reset_i            ( aurora_scan_reset || scan_aurora_reset),
     .aurora_tx_idle_o               ( aurora_tx_idle[2]                 ),
-    .eds_pack_cnt_o                 ( eds_pack_cnt_3                    ),
-    .encode_pack_cnt_o              ( encode_pack_cnt_3                 ),
+    .eds_pack_cnt_o                 ( eds_pack_cnt[2]                   ),
+    .encode_pack_cnt_o              ( encode_pack_cnt[2]                ),
     // Reset and clk
-    .RESET                          ( aurora_rst_3                      ),
+    .RESET                          ( aurora_rst[2]                     ),
+    .PMA_INIT                       ( gt_rst                            ),
+    .INIT_CLK_P                     ( clk_50m                           ),
+    .DRP_CLK_IN                     ( clk_50m                           ),
+
+    // GTX Reference Clock Interface
+    .GTXQ0_P                        ( SFP_MGT_REFCLK0_C_P               ),
+    .GTXQ0_N                        ( SFP_MGT_REFCLK0_C_N               ),
+    // GT clk to aurora_1_support
+    .refclk1_o                      ( GT0_refclk1                       ),
+    .gt_qpllclk_quad1_o             ( GT0_qpllclk_quad1                 ),
+    .gt_qpllrefclk_quad1_o          ( GT0_qpllrefclk_quad1              ),
+    .gt_qpllrefclklost_o            ( GT0_qpllrefclklost                ),
+    .gt_qplllock_o                  ( GT0_qplllock                      ),
+
+    // GTX Serial I/O
+    .RXP                            ( FPGA_SFP4_RX_P                    ),
+    .RXN                            ( FPGA_SFP4_RX_N                    ),
+    .TXP                            ( FPGA_SFP4_TX_P                    ),
+    .TXN                            ( FPGA_SFP4_TX_N                    )
+);
+
+aurora_64b66b_0_exdes aurora_64b66b_exdes_inst_1(
+    .aurora_log_clk_o               ( aurora_log_clk[0]                 ),
+    .aurora_empty_o                 ( aurora_empty[0]                   ),
+    .aurora_soft_rd_i               ( aurora_soft_rd[0]                 ),
+    // eds
+    .eds_clk_i                      ( eds_clk                           ),  // eds clk -> 100m/6
+    .clk_h_i                        ( clk_300m                          ),  // eds clk_h -> 300m
+    .eds_sensor_vld_i               ( eds_sensor_data_en                ),
+    .eds_sensor_data_i              ( eds_sensor_data                   ),
+    .eds_frame_en_i                 ( eds_frame_en && eds_frame_sel[0]  ),
+    .pcie_eds_end_o                 ( pcie_eds_frame_end[0]             ),
+
+    .precise_encode_en_i            ( align_src_encode_en               ),
+    .precise_encode_w_data_i        ( align_src_encode_w                ),
+    .precise_encode_x_data_i        ( align_src_encode_x                ),
+    .dbg_eds_frame_en_o             ( dbg_eds_frame_en[0]               ),
+    .dbg_eds_wencode_vld_o          ( dbg_eds_wencode_vld[0]            ),
+    .dbg_eds_wencode_o              ( dbg_eds_wencode[0]                ),
+
+    // pmt
+    .pmt_clk_i                      ( clk_100m                          ),  // sys clk -> 100m
+    .pmt_encode_vld_i               ( pmt_precise_encode_en_temp && pmt_scan_en[0]            ),
+    .pmt_encode_data_i              ( {pmt_precise_encode_w_temp,pmt_precise_encode_x_temp}   ),
+    .pmt_start_en_i                 ( pmt_start_en[0]                   ),
+    .pcie_pmt_end_o                 ( pcie_pmt_end_en[0]                ),
+
+    // fbc
+    .fbc_clk_i                      ( clk_100m                          ),  // sys clk -> 100m
+    .fbc_up_start_i                 ( fbc_up_start && fbc_up_en[0]      ),
+    .aurora_fbc_end_o               ( aurora_fbc_end[0]                 ),
+    .fbc_vld_i                      ( aurora_fbc_vout_vld && fbc_up_en[0]),
+    .fbc_data_i                     ( aurora_fbc_vout_data              ),
+    .aurora_fbc_almost_full_o       ( aurora_fbc_almost_full[0]         ),
+
+    .aurora_scan_reset_i            ( aurora_scan_reset || scan_aurora_reset),
+    .aurora_tx_idle_o               ( aurora_tx_idle[0]                 ),
+    .eds_pack_cnt_o                 ( eds_pack_cnt[0]                   ),
+    .encode_pack_cnt_o              ( encode_pack_cnt[0]                ),
+    // Reset and clk
+    .RESET                          ( aurora_rst[0]                     ),
+    .PMA_INIT                       ( gt_rst                            ),
+    .INIT_CLK_P                     ( clk_50m                           ),
+    .DRP_CLK_IN                     ( clk_50m                           ),
+
+    // GTX Reference Clock Interface
+    .GTXQ0_P                        ( SFP_MGT_REFCLK1_C_P               ),
+    .GTXQ0_N                        ( SFP_MGT_REFCLK1_C_N               ),
+    // GT clk to aurora_1_support
+    .refclk1_o                      ( GT1_refclk1                       ),
+    .gt_qpllclk_quad1_o             ( GT1_qpllclk_quad1                 ),
+    .gt_qpllrefclk_quad1_o          ( GT1_qpllrefclk_quad1              ),
+    .gt_qpllrefclklost_o            ( GT1_qpllrefclklost                ),
+    .gt_qplllock_o                  ( GT1_qplllock                      ),
+
+    // GTX Serial I/O
+    .RXP                            ( FPGA_SFP3_RX_P                    ),
+    .RXN                            ( FPGA_SFP3_RX_N                    ),
+    .TXP                            ( FPGA_SFP3_TX_P                    ),
+    .TXN                            ( FPGA_SFP3_TX_N                    )
+);
+
+aurora_64b66b_1_exdes aurora_64b66b_exdes_inst_2(
+    .aurora_log_clk_o               ( aurora_log_clk[1]                 ),
+    .aurora_empty_o                 ( aurora_empty[1]                   ),
+    .aurora_soft_rd_i               ( aurora_soft_rd[1]                 ),
+    // eds
+    .eds_clk_i                      ( eds_clk                           ),  // eds clk -> 100m/6
+    .clk_h_i                        ( clk_300m                          ),  // eds clk_h -> 300m
+    .eds_sensor_vld_i               ( eds_sensor_data_en                ),
+    .eds_sensor_data_i              ( eds_sensor_data                   ),
+    .eds_frame_en_i                 ( eds_frame_en && eds_frame_sel[1]  ),
+    .pcie_eds_end_o                 ( pcie_eds_frame_end[1]             ),
+
+    .precise_encode_en_i            ( align_src_encode_en               ),
+    .precise_encode_w_data_i        ( align_src_encode_w                ),
+    .precise_encode_x_data_i        ( align_src_encode_x                ),
+    .dbg_eds_frame_en_o             ( dbg_eds_frame_en[1]               ),
+    .dbg_eds_wencode_vld_o          ( dbg_eds_wencode_vld[1]            ),
+    .dbg_eds_wencode_o              ( dbg_eds_wencode[1]                ),
+
+    // pmt
+    .pmt_clk_i                      ( clk_100m                          ),  // sys clk -> 100m
+    .pmt_encode_vld_i               ( pmt_precise_encode_en_temp && pmt_scan_en[1]            ),
+    .pmt_encode_data_i              ( {pmt_precise_encode_w_temp,pmt_precise_encode_x_temp}   ),
+    .pmt_start_en_i                 ( pmt_start_en[1]                   ),
+    .pcie_pmt_end_o                 ( pcie_pmt_end_en[1]                ),
+
+    // fbc
+    .fbc_clk_i                      ( clk_100m                          ),  // sys clk -> 100m
+    .fbc_up_start_i                 ( fbc_up_start && fbc_up_en[1]      ),
+    .aurora_fbc_end_o               ( aurora_fbc_end[1]                 ),
+    .fbc_vld_i                      ( aurora_fbc_vout_vld && fbc_up_en[1]),
+    .fbc_data_i                     ( aurora_fbc_vout_data              ),
+    .aurora_fbc_almost_full_o       ( aurora_fbc_almost_full[1]         ),
+
+    .aurora_scan_reset_i            ( aurora_scan_reset || scan_aurora_reset),
+    .aurora_tx_idle_o               ( aurora_tx_idle[1]                 ),
+    .eds_pack_cnt_o                 ( eds_pack_cnt[1]                   ),
+    .encode_pack_cnt_o              ( encode_pack_cnt[1]                ),
+    // Reset and clk
+    .RESET                          ( aurora_rst[1]                     ),
     .PMA_INIT                       ( gt_rst                            ),
     .INIT_CLK_P                     ( clk_50m                           ),
     .DRP_CLK_IN                     ( clk_50m                           ),
@@ -2500,10 +2320,10 @@ aurora_64b66b_1_exdes aurora_64b66b_exdes_inst_3(
     .gt_qplllock_i                  ( GT1_qplllock                      ),
 
     // GTX Serial I/O
-    .RXP                            ( FPGA_SFP3_RX_P                    ),
-    .RXN                            ( FPGA_SFP3_RX_N                    ),
-    .TXP                            ( FPGA_SFP3_TX_P                    ),
-    .TXN                            ( FPGA_SFP3_TX_N                    )
+    .RXP                            ( FPGA_SFP2_RX_P                    ),
+    .RXN                            ( FPGA_SFP2_RX_N                    ),
+    .TXP                            ( FPGA_SFP2_TX_P                    ),
+    .TXN                            ( FPGA_SFP2_TX_N                    )
 );
 
 
@@ -2757,8 +2577,8 @@ hmc7044_config #(
 );
 
 ad5592_config #(
-	.ADC_IO_REG	(16'b0010000011101111),		//ADC:IO0,IO1,IO2,IO3,IO5,IO6,IO7
-	.DAC_IO_REG	(16'b0010100000010000)		//DAC:IO4
+	.ADC_IO_REG	(16'b0010000011111111),		//ADC:IO0,IO1,IO2,IO3,IO4,IO5,IO6,IO7
+	.DAC_IO_REG	(16'b0010100000000000)		//DAC:
 ) ad5592_config_inst1(
 		.clk(clk_100m),
 		.rst(rst_100m),
@@ -2778,27 +2598,6 @@ ad5592_config #(
 		.adc_data(ad5592_1_adc_data)	
 );
 
-ad5592_config #(
-	.ADC_IO_REG	(16'b0010000000001111),		//ADC:IO0,IO1,IO2,IO3
-	.DAC_IO_REG	(16'b0010100011110000)		//DAC:IO4,IO5,IO6,IO7
-) ad5592_config_inst2(
-		.clk(clk_100m),
-		.rst(rst_100m),
-		.dac_config_en(ad5592_2_dac_config_en),
-		.dac_channel(ad5592_2_dac_channel),
-		.dac_data(ad5592_2_dac_data),
-		.adc_config_en(ad5592_2_adc_config_en),
-		.adc_channel(ad5592_2_adc_channel),
-		
-		.spi_csn(AD5592_2_SPI_CS_B),
-		.spi_clk(AD5592_2_SPI_CLK),
-		.spi_mosi(AD5592_2_SPI_MOSI),
-		.spi_miso(AD5592_2_SPI_MISO),
-		.spi_conf_ok(ad5592_2_spi_conf_ok),
-		.init(ad5592_2_init),
-		.adc_data_en(ad5592_2_adc_data_en),
-		.adc_data(ad5592_2_adc_data)	
-);
 
 // TMP75 TMP75_inst(
 // 		.clk(clk_100m),
@@ -2830,6 +2629,5 @@ ad5592_config #(
 // 		.eeprom_hold_n(),
 // 		.spi_ok(eeprom_spi_ok)
 // );
-
 
 endmodule

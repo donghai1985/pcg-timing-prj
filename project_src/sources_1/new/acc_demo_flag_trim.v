@@ -38,11 +38,6 @@ module acc_demo_flag_trim #(
     input                           clk_i                       ,
     input                           rst_i                       ,
 
-    input                           acc_encode_upload_i         ,
-    input   [64-1:0]                pmt_precise_encode_i        ,
-    output                          acc_encode_latch_en_o       ,
-    output  [64-1:0]                acc_encode_latch_o          ,
-
     input                           pmt_scan_en_i               ,
     // output  [32-1:0]                acc_flag_phase_cnt_o        ,
 
@@ -76,10 +71,6 @@ reg                                 acc_demo_pose_delay     = 'd0;
 reg                                 acc_demo_nege_delay     = 'd0;
 reg                                 acc_demo_pose_delay_d   = 'd0;
 reg                                 acc_demo_nege_delay_d   = 'd0;
-
-reg                                 acc_demo_flag_d         = 'd0;
-reg                                 acc_encode_latch_en     = 'd0;
-reg     [64-1:0]                    acc_encode_latch        = 'd0;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -114,31 +105,6 @@ acc_time_ctrl_v2 acc_ctrl_inst(
 // *********** Logic Design
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 assign acc_demo_trim_ctrl_o = acc_demo_flag_i;
-
-always @(posedge clk_i) begin
-    acc_demo_flag_d <= #TCQ acc_demo_flag_i;
-end
-
-always @(posedge clk_i) begin
-    if(pmt_scan_en_i && acc_encode_upload_i)begin
-        if(~acc_demo_flag_d && acc_demo_flag_i)begin
-            acc_encode_latch_en <= #TCQ 'd1;
-            acc_encode_latch    <= #TCQ pmt_precise_encode_i;
-        end
-        else begin
-            acc_encode_latch_en <= #TCQ 'd0;
-            acc_encode_latch    <= #TCQ acc_encode_latch;
-        end
-    end
-    else begin
-        acc_encode_latch_en <= #TCQ 'd0;
-        acc_encode_latch    <= #TCQ acc_encode_latch;
-    end
-end
-
-assign acc_encode_latch_en_o  = acc_encode_latch_en;
-assign acc_encode_latch_o     = acc_encode_latch ;
-
 /*
 always @(posedge clk_i) acc_demo_flag_d0 <= #TCQ acc_demo_flag_i;
 assign acc_demo_flag_pose = (~acc_demo_flag_d0) && acc_demo_flag_i;

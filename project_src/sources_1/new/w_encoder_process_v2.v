@@ -430,7 +430,8 @@ begin
 				w_data_warn		<=	1'b0;
 				state			<=	'd0;
 			end
-            else if(cnt_16k == 'd3500) begin  // <6249
+            else if(   ((cnt_16k == 'd3000) && (~cfg_spindle_width_i))
+                    || ((cnt_16k == 'd3500) && (cfg_spindle_width_i)) ) begin  // <6249
 				state			<=	'd0;
 				cnt_16k			<=	cnt_16k + 1'd1;
 				w_data_out_en	<=	1'b1;

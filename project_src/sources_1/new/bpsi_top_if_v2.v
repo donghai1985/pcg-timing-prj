@@ -33,7 +33,7 @@ module bpsi_top_if_v2#(
     input   wire                bg_data_acq_en_i            , // background sample. pulse
     input   wire                position_cali_en_i          , // test
     input   wire    [1:0]       sensor_mode_sel_i           ,
-    input   wire    [11-1:0]    sensor_ds_rate_i            ,
+    input   wire    [2-1:0]     sensor_ds_rate_i            ,
     input   wire    [24:0]      position_aim_i              , // aim position
     input   wire    [26-1:0]    kp_i                        , // PID controller kp parameter
     input   wire    [26-1:0]    ki_i                        , // PID controller ki parameter
@@ -42,6 +42,8 @@ module bpsi_top_if_v2#(
     input   wire                motor_bias_vol_en_i         ,
     input   wire    [15:0]      fbc_bias_voltage_i          , // 
     input   wire    [15:0]      fbc_cali_uop_set_i          , // Uop set
+    input   wire    [16-1:0]    ascent_gradient_i           ,
+    input   wire    [16-1:0]    slow_ascent_period_i        ,
         
     output  wire                motor_rd_en_o               , // read Ufeed en
     input   wire                motor_data_out_en_i         , // Ufeed en
@@ -64,9 +66,9 @@ module bpsi_top_if_v2#(
     output  wire                FBCi_cali_en_o              ,
     output  wire    [23:0]      FBCi_cali_a_o               ,
     output  wire    [23:0]      FBCi_cali_b_o               ,
-    output  wire                FBCr1_cali_en_o             ,
-    output  wire    [23:0]      FBCr1_cali_a_o              ,
-    output  wire    [23:0]      FBCr1_cali_b_o              ,
+    // output  wire                FBCr1_cali_en_o             ,
+    // output  wire    [23:0]      FBCr1_cali_a_o              ,
+    // output  wire    [23:0]      FBCr1_cali_b_o              ,
     output  wire                FBCr2_cali_en_o             ,
     output  wire    [23:0]      FBCr2_cali_a_o              ,
     output  wire    [23:0]      FBCr2_cali_b_o              ,
@@ -75,9 +77,9 @@ module bpsi_top_if_v2#(
     output  wire                FBCi_out_en_o               ,
     output  wire    [23:0]      FBCi_out_a_o                ,
     output  wire    [23:0]      FBCi_out_b_o                ,
-    output  wire                FBCr1_out_en_o              ,
-    output  wire    [23:0]      FBCr1_out_a_o               ,
-    output  wire    [23:0]      FBCr1_out_b_o               ,
+    // output  wire                FBCr1_out_en_o              ,
+    // output  wire    [23:0]      FBCr1_out_a_o               ,
+    // output  wire    [23:0]      FBCr1_out_b_o               ,
     output  wire                FBCr2_out_en_o              ,
     output  wire    [23:0]      FBCr2_out_a_o               ,
     output  wire    [23:0]      FBCr2_out_b_o               ,
@@ -86,9 +88,9 @@ module bpsi_top_if_v2#(
     output  wire                FBCi_bg_en_o                ,
     output  wire    [23:0]      FBCi_bg_a_o                 ,
     output  wire    [23:0]      FBCi_bg_b_o                 ,
-    output  wire                FBCr1_bg_en_o               ,
-    output  wire    [23:0]      FBCr1_bg_a_o                ,
-    output  wire    [23:0]      FBCr1_bg_b_o                ,
+    // output  wire                FBCr1_bg_en_o               ,
+    // output  wire    [23:0]      FBCr1_bg_a_o                ,
+    // output  wire    [23:0]      FBCr1_bg_b_o                ,
     output  wire                FBCr2_bg_en_o               ,
     output  wire    [23:0]      FBCr2_bg_a_o                ,
     output  wire    [23:0]      FBCr2_bg_b_o                ,
@@ -96,8 +98,8 @@ module bpsi_top_if_v2#(
     // FBC cache data, 128k
     output  wire                FBCi_cache_vld_o            ,
     output  wire    [48-1:0]    FBCi_cache_data_o           ,
-    output  wire                FBCr1_cache_vld_o           ,
-    output  wire    [48-1:0]    FBCr1_cache_data_o          ,
+    // output  wire                FBCr1_cache_vld_o           ,
+    // output  wire    [48-1:0]    FBCr1_cache_data_o          ,
     output  wire                FBCr2_cache_vld_o           ,
     output  wire    [48-1:0]    FBCr2_cache_data_o          ,
 
@@ -198,38 +200,37 @@ fbc_sensor_process fbci_sensor_process_inst(
     .SSPI_MISO                      ( FBCi_MISO                     )
 );
 
-fbc_sensor_process fbcr1_sensor_process_inst(
-    .clk_sys_i                      ( clk_sys_i                     ),
-    .clk_h_i                        ( clk_h_i                       ),
-    .rst_i                          ( rst_i                         ),
+// fbc_sensor_process fbcr1_sensor_process_inst(
+//     .clk_sys_i                      ( clk_sys_i                     ),
+//     .clk_h_i                        ( clk_h_i                       ),
+//     .rst_i                          ( rst_i                         ),
 
-    .cfg_fbc_rate_i                 ( cfg_fbc_rate_i                ),
-    .data_acq_en_i                  ( data_acq_en_i                 ), // motor enable signal
-    .bg_data_acq_en_i               ( bg_data_acq_en_i              ), // background sample. pulse
-    .position_cali_en_i             ( position_cali_en_i            ), // test
-    .sensor_mode_sel_i              ( sensor_mode_sel_i             ),
-    .sensor_ds_rate_i               ( sensor_ds_rate_i              ),
+//     .data_acq_en_i                  ( data_acq_en_i                 ), // motor enable signal
+//     .bg_data_acq_en_i               ( bg_data_acq_en_i              ), // background sample. pulse
+//     .position_cali_en_i             ( position_cali_en_i            ), // test
+//     .sensor_mode_sel_i              ( sensor_mode_sel_i             ),
+//     .sensor_ds_rate_i               ( sensor_ds_rate_i              ),
 
-    .cali_data_en_o                 ( FBCr1_cali_en_o               ),
-    .cali_data_a_o                  ( FBCr1_cali_a_o                ),
-    .cali_data_b_o                  ( FBCr1_cali_b_o                ),
+//     .cali_data_en_o                 ( FBCr1_cali_en_o               ),
+//     .cali_data_a_o                  ( FBCr1_cali_a_o                ),
+//     .cali_data_b_o                  ( FBCr1_cali_b_o                ),
 
-    .data_out_en_o                  ( FBCr1_out_en_o                ),
-    .data_out_a_o                   ( FBCr1_out_a_o                 ),
-    .data_out_b_o                   ( FBCr1_out_b_o                 ),
+//     .data_out_en_o                  ( FBCr1_out_en_o                ),
+//     .data_out_a_o                   ( FBCr1_out_a_o                 ),
+//     .data_out_b_o                   ( FBCr1_out_b_o                 ),
 
-    .bg_data_en_o                   ( FBCr1_bg_en_o                 ),
-    .bg_data_a_o                    ( FBCr1_bg_a_o                  ),
-    .bg_data_b_o                    ( FBCr1_bg_b_o                  ),
+//     .bg_data_en_o                   ( FBCr1_bg_en_o                 ),
+//     .bg_data_a_o                    ( FBCr1_bg_a_o                  ),
+//     .bg_data_b_o                    ( FBCr1_bg_b_o                  ),
 
-    .fbc_cache_vld_o                ( FBCr1_cache_vld_o             ),
-    .fbc_cache_data_o               ( FBCr1_cache_data_o            ),
+//     .fbc_cache_vld_o                ( FBCr1_cache_vld_o             ),
+//     .fbc_cache_data_o               ( FBCr1_cache_data_o            ),
 
-    .MSPI_CLK                       ( FBCr1_MCLK                    ),
-    .MSPI_MOSI                      ( FBCr1_MOSI                    ),
-    .SSPI_CLK                       ( FBCr1_SCLK                    ),
-    .SSPI_MISO                      ( FBCr1_MISO                    )
-);
+//     .MSPI_CLK                       ( FBCr1_MCLK                    ),
+//     .MSPI_MOSI                      ( FBCr1_MOSI                    ),
+//     .SSPI_CLK                       ( FBCr1_SCLK                    ),
+//     .SSPI_MISO                      ( FBCr1_MISO                    )
+// );
 
 fbc_sensor_process fbcr2_sensor_process_inst(
     .clk_sys_i                      ( clk_sys_i                     ),
@@ -309,6 +310,20 @@ PID_control_v2 #(
     .err_intensity_latch_o          ( err_intensity_latch_o         )
 );
 
+// analog_slow_ascent analog_slow_ascent_inst(
+//     // clk & rst
+//     .clk_i                          ( clk_sys_i                     ),
+//     .rst_i                          ( rst_i                         ),
+    
+//     .ascent_gradient_i              ( ascent_gradient_i             ),
+//     .slow_ascent_period_i           ( slow_ascent_period_i          ),
+    
+//     .motor_data_in_en_i             ( motor_data_in_en              ),
+//     .motor_data_in_i                ( motor_data_in                 ),
+//     .motor_slow_ascent_en_o         ( motor_data_in_en_o            ),
+//     .motor_slow_ascent_o            ( motor_data_in_o               )
+
+// );
 // xpm_sync_fifo #(
 //     .ECC_MODE                       ( "no_ecc"                      ),
 //     .FIFO_MEMORY_TYPE               ( "block"                       ), // "auto" "block" "distributed"
@@ -334,6 +349,8 @@ PID_control_v2 #(
 //////////////////////////////////////////////////////////////////////////////////
 // *********** Logic Design
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+assign FBCr1_MCLK = 'd0;
+assign FBCr1_MOSI = 'd0;
 // assign FBCi_cache_vld_o   = FBCi_out_en_o;
 // assign FBCi_cache_data_o  = {FBCi_out_a_o,FBCi_out_b_o};
 // assign FBCr1_cache_vld_o  = FBCr1_out_en_o;

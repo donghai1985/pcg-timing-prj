@@ -28,13 +28,14 @@ module scan_cmd_ctrl #(
     input    wire                           clk_i                       ,
     input    wire                           rst_i                       ,
     // scan control single
+    input    wire                           acc_job_control_i           ,
     input    wire                           real_scan_flag_i            ,
     input    wire   [3-1:0]                 real_scan_sel_i             ,
     input    wire   [32-1:0]                pmt_adc_start_data_i        ,
     input    wire                           pmt_adc_start_vld_i         ,
     input    wire   [32-1:0]                pmt_adc_start_hold_i        ,
 
-    output   wire   [3-1:0]                 pmt_scan_cmd_sel_o          ,   // bit[0]:pmt1; bit[1]:pmt2; bit[2]:pmt3
+    output   wire   [4-1:0]                 pmt_scan_cmd_sel_o          ,   // bit[0]:pmt1; bit[1]:pmt2; bit[2]:pmt3
     output   wire   [4-1:0]                 pmt_scan_cmd_o                  // bit[0]:scan start; bit[1]:scan test
 );
 
@@ -49,7 +50,7 @@ localparam                                  UNIT_MS                     = 'd1000
 //////////////////////////////////////////////////////////////////////////////////
 // *********** Define Register Signal
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-reg     [3-1:0]                             pmt_scan_cmd_sel            = 'd0;
+reg     [4-1:0]                             pmt_scan_cmd_sel            = 'd0;
 reg     [4-1:0]                             pmt_scan_cmd                = 'd0;
 
 reg                                         pmt_adc_start_en            = 'd0;
@@ -136,19 +137,19 @@ assign real_scan_nege  = ~real_scan_flag_d0 && real_scan_flag_d1;
 
 always @(posedge clk_i) begin
     if(time_scan_pose)begin
-        pmt_scan_cmd_sel <= #TCQ pmt_adc_start_data_i[10:8];
+        pmt_scan_cmd_sel <= #TCQ {1'b0,pmt_adc_start_data_i[10:8]};
         pmt_scan_cmd     <= #TCQ pmt_adc_start_data_i[3:0];
     end
     else if(time_scan_nege)begin
-        pmt_scan_cmd_sel <= #TCQ pmt_adc_start_data_i[10:8];
+        pmt_scan_cmd_sel <= #TCQ {1'b0,pmt_adc_start_data_i[10:8]};
         pmt_scan_cmd     <= #TCQ 'd0;
     end
     else if(real_scan_pose)begin
-        pmt_scan_cmd_sel <= #TCQ real_scan_sel_i;
+        pmt_scan_cmd_sel <= #TCQ {((|real_scan_sel_i) && acc_job_control_i),real_scan_sel_i};
         pmt_scan_cmd     <= #TCQ 4'b0001;
     end
     else if(real_scan_nege)begin
-        pmt_scan_cmd_sel <= #TCQ real_scan_sel_i;
+        pmt_scan_cmd_sel <= #TCQ {((|real_scan_sel_i) && acc_job_control_i),real_scan_sel_i};
         pmt_scan_cmd     <= #TCQ 'd0;
     end
     else begin
