@@ -1,11 +1,11 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
+// Company: zas
 // Engineer: songyuxin
 // 
-// Create Date: 2023/06/01
-// Design Name: 
-// Module Name: bspi_ctrl
+// Create Date: 2024/05/28
+// Design Name: pcg
+// Module Name: quad_bspi_ctrl
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,11 +20,11 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module bspi_ctrl #(
+module quad_bspi_ctrl #(
     parameter                               TCQ                = 0.1,
     parameter                               SPI_CLK_DIVIDER    = 6  , // SPI Clock Control / Divid
     parameter                               SPI_MASTER_WIDTH   = 64 , // master spi data width
-    parameter                               SPI_SLAVE_WIDTH    = 48   // slave spi data width
+    parameter                               SPI_SLAVE_WIDTH    = 96   // slave spi data width
 
 )(
     // clk & rst
@@ -62,7 +62,7 @@ localparam       [ 3-1:0]                   RD_FINISH           = 3'b100;
 localparam                                  MSPI_CLK_DIV        = SPI_CLK_DIVIDER/2 -1;
 localparam                                  WR_CNT_WIDTH        = $clog2(SPI_MASTER_WIDTH);
 localparam                                  RD_CNT_WIDTH        = $clog2(SPI_SLAVE_WIDTH);
-localparam       [16-1:0]                   RD_TIMEOUT_LEN      = (SPI_SLAVE_WIDTH + 4) * 6; // > 300M/50M * SPI_SLAVE_WIDTH
+localparam       [16-1:0]                   RD_TIMEOUT_LEN      = 'd600; // > 300M/50M * SPI_SLAVE_WIDTH
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -250,7 +250,7 @@ assign sspi_rd_data_o = rd_rx_data;
 
 // // sliding filtering x128
 // localparam    SF_RATE = 7;
-// reg [SPI_SLAVE_WIDTH-1:0] filter_mem [0:127];
+// reg [SPI_SLAVE_WIDTH-1:0] filter_mem [0:255];
 // reg [SF_RATE-1:0] filter_cnt = 'd0;
 // always @(posedge clk_i) begin
 //     if(rst_i)

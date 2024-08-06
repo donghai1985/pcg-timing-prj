@@ -201,7 +201,7 @@ assign fifo_clear_done = (&fifo_clear_cnt);
 
 
 always@(posedge ddr_clk_i)begin
-    wr_ddr_addr <= #TCQ {3'd0,wr_burst_line[17:0],10'd0};  // 通过burst line控制突发首地址
+    wr_ddr_addr <= #TCQ {2'd0,wr_burst_line[17:0],10'd0};  // 通过burst line控制突发首地址
 end
 
 // always @(posedge ddr_clk_i) begin  // frame addr 控制ddr分区

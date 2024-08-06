@@ -356,7 +356,7 @@ module mfpga_top(
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.6.4  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.7.0  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
 
 
 wire                slave_tx_ack                    ;
@@ -508,16 +508,16 @@ wire    [2:0]       PMT_SPI_SCLK_P                  ;
 wire    [2:0]       PMT_SPI_SCLK_N                  ;
 wire    [2:0]       PMT_SPI_MISO_P                  ;
 wire    [2:0]       PMT_SPI_MISO_N                  ;
-    // calibrate voltage. dark current * R
-wire                FBCi_cali_en                    ;
-wire    [23:0]      FBCi_cali_a                     ;
-wire    [23:0]      FBCi_cali_b                     ;
-wire                FBCr1_cali_en                   ;
-wire    [23:0]      FBCr1_cali_a                    ;
-wire    [23:0]      FBCr1_cali_b                    ;
-wire                FBCr2_cali_en                   ;
-wire    [23:0]      FBCr2_cali_a                    ;
-wire    [23:0]      FBCr2_cali_b                    ;
+//     // calibrate voltage. dark current * R
+// wire                FBCi_cali_en                    ;
+// wire    [23:0]      FBCi_cali_a                     ;
+// wire    [23:0]      FBCi_cali_b                     ;
+// wire                FBCr1_cali_en                   ;
+// wire    [23:0]      FBCr1_cali_a                    ;
+// wire    [23:0]      FBCr1_cali_b                    ;
+// wire                FBCr2_cali_en                   ;
+// wire    [23:0]      FBCr2_cali_a                    ;
+// wire    [23:0]      FBCr2_cali_b                    ;
     // actual voltage
 wire                FBC_out_fifo_rst                ;
 wire                fbc_udp_rate_switch             ;
@@ -549,6 +549,14 @@ wire    [48-1:0]    FBCr1_cache_data                ;
 wire                FBCr2_cache_vld                 ;
 wire    [48-1:0]    FBCr2_cache_data                ;
 
+// QPD cache data
+wire                quad_sensor_data_en             ;
+wire    [96-1:0]    quad_sensor_data                ;
+wire                quad_sensor_bg_data_en          ;
+wire    [96-1:0]    quad_sensor_bg_data             ;
+wire                quad_cache_vld                  ;
+wire    [96-1:0]    quad_cache_data                 ;
+
 wire    [4-1:0]     map_readback_cnt                ;
 wire    [4-1:0]     main_scan_cnt                   ;
 wire                acc_encode_upload               ;
@@ -568,12 +576,18 @@ wire    [26-1:0]    bpsi_kp                         ;
 wire    [26-1:0]    bpsi_ki                         ;
 wire    [26-1:0]    bpsi_kd                         ;
 wire    [3:0]       bpsi_motor_freq                 ;
-wire                bpsi_position_en                ;
-wire    [11-1:0]    sensor_ds_rate                  ;
-wire    [2-1:0]     sensor_mode_sel                 ;
+// wire                bpsi_position_en                ;
+// wire    [2-1:0]     sensor_ds_rate                  ;
+// wire    [2-1:0]     sensor_mode_sel                 ;
 wire                fbc_bias_vol_en                 ;
 wire    [15:0]      fbc_bias_voltage                ;
 wire    [15:0]      fbc_cali_uop_set                ;
+wire    [15:0]      ascent_gradient                 ;
+wire    [15:0]      slow_ascent_period              ;
+wire                quad_sensor_bg_en               ;
+wire                sensor_config_en                ;
+wire    [16-1:0]    sensor_config_cmd               ;
+wire                sensor_config_test              ;
 
 wire                motor_data_in_en                ;
 wire    [15:0]      motor_Ufeed_latch               ;
@@ -609,6 +623,9 @@ wire                aurora_soft_rd_3                ;
 wire    [2-1:0]     cfg_acc_use                     ;
 wire                cfg_fbc_rate                    ;
 wire                cfg_spindle_width               ;
+wire    [2-1:0]     cfg_FBC_bypass                  ;
+wire                cfg_QPD_enable                  ;
+wire                dbg_qpd_mode                    ;
 
 wire                GT0_refclk1                     ;
 wire                GT0_qpllclk_quad1               ;
@@ -1292,11 +1309,13 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .rst_i                          ( rst_100m                      ),
                 
     .cfg_fbc_rate_i                 ( cfg_fbc_rate                  ),
+    .cfg_FBC_bypass_i               ( cfg_FBC_bypass                ),
+    .cfg_QPD_enable_i               ( cfg_QPD_enable                ),
+    .dbg_qpd_mode_i                 ( dbg_qpd_mode                  ),
     .data_acq_en_i                  ( bpsi_data_acq_en              ), // motor enable signal
     .bg_data_acq_en_i               ( bpsi_bg_data_acq_en           ), // background sample
-    .position_cali_en_i             ( bpsi_position_en              ), // test
-    .sensor_mode_sel_i              ( sensor_mode_sel               ),
-    .sensor_ds_rate_i               ( sensor_ds_rate                ),
+    // .sensor_mode_sel_i              ( sensor_mode_sel               ),
+    // .sensor_ds_rate_i               ( sensor_ds_rate                ),
     .position_aim_i                 ( bpsi_position_aim             ), // aim position
     .kp_i                           ( bpsi_kp                       ), // PID controller kp parameter
     .ki_i                           ( bpsi_ki                       ), // PID controller ki parameter
@@ -1304,7 +1323,13 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .motor_freq_i                   ( bpsi_motor_freq               ), // motor response frequency. 0:100Hz 1:200Hz 2:300Hz
     .motor_bias_vol_en_i            ( fbc_bias_vol_en               ),
     .fbc_bias_voltage_i             ( fbc_bias_voltage              ),
-    .fbc_cali_uop_set_i             ( fbc_cali_uop_set              ),
+    // .fbc_cali_uop_set_i             ( fbc_cali_uop_set              ),
+    // .ascent_gradient_i              ( ascent_gradient               ),
+    // .slow_ascent_period_i           ( slow_ascent_period            ),
+    .quad_sensor_bg_en_i            ( quad_sensor_bg_en             ),
+    .sensor_config_en_i             ( sensor_config_en              ), 
+    .sensor_config_cmd_i            ( sensor_config_cmd             ),
+    .sensor_config_test_i           ( sensor_config_test            ),
 
     .position_pid_thr_i             ( position_pid_thr              ),
     .fbc_pose_err_thr_i             ( fbc_pose_err_thr              ),
@@ -1325,16 +1350,13 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .delta_position_o               ( delta_position                ),
 
 
-    // calibrate voltage. dark current * R
-    .FBCi_cali_en_o                 ( FBCi_cali_en                  ),
-    .FBCi_cali_a_o                  ( FBCi_cali_a                   ),
-    .FBCi_cali_b_o                  ( FBCi_cali_b                   ),
-    .FBCr1_cali_en_o                ( FBCr1_cali_en                 ),
-    .FBCr1_cali_a_o                 ( FBCr1_cali_a                  ),
-    .FBCr1_cali_b_o                 ( FBCr1_cali_b                  ),
-    .FBCr2_cali_en_o                ( FBCr2_cali_en                 ),
-    .FBCr2_cali_a_o                 ( FBCr2_cali_a                  ),
-    .FBCr2_cali_b_o                 ( FBCr2_cali_b                  ),
+    // // calibrate voltage. dark current * R
+    // .FBCi_cali_en_o                 ( FBCi_cali_en                  ),
+    // .FBCi_cali_a_o                  ( FBCi_cali_a                   ),
+    // .FBCi_cali_b_o                  ( FBCi_cali_b                   ),
+    // .FBCr2_cali_en_o                ( FBCr2_cali_en                 ),
+    // .FBCr2_cali_a_o                 ( FBCr2_cali_a                  ),
+    // .FBCr2_cali_b_o                 ( FBCr2_cali_b                  ),
     // actual voltage
     .FBCi_out_en_o                  ( FBCi_out_en                   ),
     .FBCi_out_a_o                   ( FBCi_out_a                    ),
@@ -1363,10 +1385,12 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     .FBCr2_cache_vld_o              ( FBCr2_cache_vld               ),
     .FBCr2_cache_data_o             ( FBCr2_cache_data              ),
 
-    // .dbg_mem_rd_en_i                ( dbg_mem_rd_en                 ),
-    // .dbg_mem_start_i                ( dbg_mem_start                 ),
-    // .dbg_mem_state_o                ( dbg_mem_state                 ),
-    // .dbg_mem_rd_data_o              ( dbg_mem_rd_data               ),
+    .quad_sensor_data_en_o          ( quad_sensor_data_en           ),
+    .quad_sensor_data_o             ( quad_sensor_data              ),
+    .quad_sensor_bg_data_en_o       ( quad_sensor_bg_data_en        ),
+    .quad_sensor_bg_data_o          ( quad_sensor_bg_data           ),
+    .quad_cache_vld_o               ( quad_cache_vld                ),
+    .quad_cache_data_o              ( quad_cache_data               ),
     // spi info
     .FBCi_MCLK                      ( BPSi_MCLK                     ),
     .FBCi_MOSI                      ( BPSi_MOSI                     ),
@@ -1423,16 +1447,16 @@ arbitrate_bpsi #(
     .fpga_message_up_i              ( fpga_message_up               ),
     .acc_encode_latch_i             ( acc_encode_latch              ),
     .acc_encode_latch_en_i          ( acc_encode_latch_en           ),
-    // calibrate voltage. dark current * R
-    .FBCi_cali_en_i                 ( FBCi_cali_en                  ),
-    .FBCi_cali_a_i                  ( FBCi_cali_a                   ),
-    .FBCi_cali_b_i                  ( FBCi_cali_b                   ),
-    .FBCr1_cali_en_i                ( FBCr1_cali_en                 ),
-    .FBCr1_cali_a_i                 ( FBCr1_cali_a                  ),
-    .FBCr1_cali_b_i                 ( FBCr1_cali_b                  ),
-    .FBCr2_cali_en_i                ( FBCr2_cali_en                 ),
-    .FBCr2_cali_a_i                 ( FBCr2_cali_a                  ),
-    .FBCr2_cali_b_i                 ( FBCr2_cali_b                  ),
+    // // calibrate voltage. dark current * R
+    // .FBCi_cali_en_i                 ( FBCi_cali_en                  ),
+    // .FBCi_cali_a_i                  ( FBCi_cali_a                   ),
+    // .FBCi_cali_b_i                  ( FBCi_cali_b                   ),
+    // .FBCr1_cali_en_i                ( FBCr1_cali_en                 ),
+    // .FBCr1_cali_a_i                 ( FBCr1_cali_a                  ),
+    // .FBCr1_cali_b_i                 ( FBCr1_cali_b                  ),
+    // .FBCr2_cali_en_i                ( FBCr2_cali_en                 ),
+    // .FBCr2_cali_a_i                 ( FBCr2_cali_a                  ),
+    // .FBCr2_cali_b_i                 ( FBCr2_cali_b                  ),
     // actual voltage
     .FBC_out_fifo_rst_i             ( FBC_out_fifo_rst              ),
     .fbc_udp_rate_switch_i          ( fbc_udp_rate_switch           ),
@@ -1446,8 +1470,8 @@ arbitrate_bpsi #(
     .FBCr2_out_a_i                  ( FBCr2_out_a                   ),
     .FBCr2_out_b_i                  ( FBCr2_out_b                   ),
     // Enocde
-    .encode_w_i                     ( w_data_out                    ),
-    .encode_x_i                     ( {4'd0,x_data_out[31:4]}       ),
+    .encode_w_i                     ( real_precise_encode_w                 ),
+    .encode_x_i                     ( {4'd0,real_precise_encode_x[31:4]}    ),
     // background voltage. dark current * R
     .FBCi_bg_en_i                   ( FBCi_bg_en                    ),
     .FBCi_bg_a_i                    ( FBCi_bg_a                     ),
@@ -1458,6 +1482,11 @@ arbitrate_bpsi #(
     .FBCr2_bg_en_i                  ( FBCr2_bg_en                   ),
     .FBCr2_bg_a_i                   ( FBCr2_bg_a                    ),
     .FBCr2_bg_b_i                   ( FBCr2_bg_b                    ),
+    
+    .quad_sensor_data_en_i          ( quad_sensor_data_en           ),
+    .quad_sensor_data_i             ( quad_sensor_data              ),
+    .quad_sensor_bg_data_en_i       ( quad_sensor_bg_data_en        ),
+    .quad_sensor_bg_data_i          ( quad_sensor_bg_data           ),
     
     .motor_data_in_en_i             ( motor_data_in_en              ), // Uop en
     .motor_data_out_i               ( motor_Ufeed_latch             ), // Ufeed
@@ -1524,12 +1553,18 @@ command_map command_map_inst(
     .ki_o                           ( bpsi_ki                       ),
     .kd_o                           ( bpsi_kd                       ),
     .motor_freq_o                   ( bpsi_motor_freq               ),
-    .bpsi_position_en_o             ( bpsi_position_en              ),
-    .sensor_ds_rate_o               ( sensor_ds_rate                ),
-    .sensor_mode_sel_o              ( sensor_mode_sel               ),
+    // .bpsi_position_en_o             ( bpsi_position_en              ),
+    // .sensor_ds_rate_o               ( sensor_ds_rate                ),
+    // .sensor_mode_sel_o              ( sensor_mode_sel               ),
     .fbc_bias_vol_en_o              ( fbc_bias_vol_en               ),
     .fbc_bias_voltage_o             ( fbc_bias_voltage              ),
-    .fbc_cali_uop_set_o             ( fbc_cali_uop_set              ),
+    // .fbc_cali_uop_set_o             ( fbc_cali_uop_set              ),
+    // .ascent_gradient_o              ( ascent_gradient               ),
+    // .slow_ascent_period_o           ( slow_ascent_period            ),
+    .quad_sensor_bg_en_o            ( quad_sensor_bg_en             ),
+    .sensor_config_en_o             ( sensor_config_en              ),
+    .sensor_config_cmd_o            ( sensor_config_cmd             ),
+    .sensor_config_test_o           ( sensor_config_test            ),
     .motor_Ufeed_latch_i            ( motor_Ufeed_latch             ),
     .motor_data_in_i                ( motor_data_in                 ), // Uop to motor
     .delta_position_i               ( delta_position                ),
@@ -1676,6 +1711,10 @@ command_map command_map_inst(
     .cfg_acc_use_o                  ( cfg_acc_use                   ),
     .cfg_fbc_rate_o                 ( cfg_fbc_rate                  ),
     .cfg_spindle_width_o            ( cfg_spindle_width             ),
+    .cfg_FBC_bypass_o               ( cfg_FBC_bypass                ),
+    .cfg_QPD_enable_o               ( cfg_QPD_enable                ),
+    .dbg_qpd_mode_o                 ( dbg_qpd_mode                  ),
+
     .encode_check_clean_o           ( encode_check_clean            ),
     .w_encode_err_lock_i            ( w_encode_err_lock             ),
     .w_encode_warn_lock_i           ( w_encode_warn_lock            ),
@@ -2255,6 +2294,7 @@ FBC_cache FBC_cache_inst(
     // clk & rst
     .clk_i                          ( clk_100m                              ),
     .rst_i                          ( rst_100m                              ),
+    .cfg_QPD_enable_i               ( cfg_QPD_enable                        ),
     // FBC actual voltage
     .FBCi_cache_vld_i               ( FBCi_cache_vld                        ),
     .FBCi_cache_data_i              ( FBCi_cache_data                       ),
@@ -2262,7 +2302,9 @@ FBC_cache FBC_cache_inst(
     .FBCr1_cache_data_i             ( FBCr1_cache_data                      ),
     .FBCr2_cache_vld_i              ( FBCr2_cache_vld                       ),
     .FBCr2_cache_data_i             ( FBCr2_cache_data                      ),
-    
+    // QPD actual voltage
+    .quad_cache_vld_i               ( quad_cache_vld                        ),
+    .quad_cache_data_i              ( quad_cache_data                       ),
     // Enocde
     .encode_w_i                     ( acc_demo_encode_w                     ),
     .encode_x_i                     ( {4'd0,acc_demo_encode_x[31:4]}        ),

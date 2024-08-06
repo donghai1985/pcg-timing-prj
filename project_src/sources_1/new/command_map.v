@@ -41,12 +41,19 @@ module command_map #(
     output  wire    [26-1:0]    ki_o                    ,
     output  wire    [26-1:0]    kd_o                    ,
     output  wire    [3:0]       motor_freq_o            ,
-    output  wire                bpsi_position_en_o      ,
-    output  wire    [2-1:0]     sensor_mode_sel_o       ,
-    output  wire    [11-1:0]    sensor_ds_rate_o        ,
+    // output  wire                bpsi_position_en_o      ,
+    // output  wire    [2-1:0]     sensor_mode_sel_o       ,
+    // output  wire    [11-1:0]    sensor_ds_rate_o        ,
     output  wire                fbc_bias_vol_en_o       ,
     output  wire    [15:0]      fbc_bias_voltage_o      ,
     output  wire    [15:0]      fbc_cali_uop_set_o      ,
+    // output  wire    [15:0]      ascent_gradient_o       ,
+    // output  wire    [15:0]      slow_ascent_period_o    ,
+    output  wire                quad_sensor_bg_en_o     ,
+    output  wire                sensor_config_en_o      ,
+    output  wire    [16-1:0]    sensor_config_cmd_o     ,
+    output  wire                sensor_config_test_o    ,
+
     input   wire    [15:0]      motor_Ufeed_latch_i     ,
     input   wire    [15:0]      motor_data_in_i         ,
     input   wire    [32-1:0]    delta_position_i        ,
@@ -208,6 +215,10 @@ module command_map #(
     output  wire    [2-1:0]     cfg_acc_use_o               ,
     output  wire                cfg_fbc_rate_o              ,
     output  wire                cfg_spindle_width_o         ,
+    output  wire                cfg_FBC_bypass_o            ,
+    output  wire                cfg_QPD_enable_o            ,
+    output  wire                dbg_qpd_mode_o              ,
+
     output  wire                encode_check_clean_o        ,
     input   wire                w_encode_err_lock_i         ,
     input   wire                w_encode_warn_lock_i        ,
@@ -225,6 +236,17 @@ module command_map #(
     output  wire    [4-1:0]     map_readback_cnt_o          ,
     output  wire    [4-1:0]     main_scan_cnt_o             ,
     output  wire                acc_encode_upload_o         ,
+    
+    output  wire                ad5592_1_dac_config_en_o    ,
+    output  wire    [3-1:0]     ad5592_1_dac_channel_o      ,
+    output  wire    [12-1:0]    ad5592_1_dac_data_o         ,
+    output  wire                ad5592_1_adc_config_en_o    ,
+    output  wire    [8-1:0]     ad5592_1_adc_channel_o      ,
+    input   wire                ad5592_1_spi_conf_ok_i      ,
+    input   wire                ad5592_1_init_i             ,
+    input   wire                ad5592_1_adc_data_en_i      ,
+    input   wire    [12-1:0]    ad5592_1_adc_data_i         ,
+
     output  wire                debug_info
 );
 
@@ -256,13 +278,20 @@ reg     [26-1:0]                kp                          = 'h10_0000;
 reg     [26-1:0]                ki                          = 'h0000;
 reg     [26-1:0]                kd                          = 'h0000;
 reg     [3:0]                   motor_freq                  = 'd0;
-reg                             bpsi_position_en            = 'd0;
-reg     [2-1:0]                 sensor_mode_sel             = 'd0;
-reg                             sensor_ds_rate_en           = 'd0;
-reg     [10-1:0]                sensor_ds_rate              = 'd15;
+// reg                             bpsi_position_en            = 'd0;
+// reg     [2-1:0]                 sensor_mode_sel             = 'b11;
+// reg                             sensor_ds_rate_en           = 'd0;
+// reg     [2-1:0]                 sensor_ds_rate              = 'd3;
 reg                             fbc_bias_vol_en             = 'd0;
-reg     [15:0]                  fbc_bias_voltage            = 'd0;       // default = 13107/65535*4.096 = 0.8192V
-reg     [15:0]                  fbc_cali_uop_set            = 'd0;       // default = 13107/65535*4.096 = 0.8192V
+reg     [15:0]                  fbc_bias_voltage            = 'd13107;       // default = 13107/65535*4.096 = 0.8192V
+// reg     [15:0]                  fbc_cali_uop_set            = 'd0;       // default = 13107/65535*4.096 = 0.8192V
+// reg     [15:0]                  ascent_gradient             = 'd100;
+// reg     [15:0]                  slow_ascent_period          = 'd3125;
+reg                             quad_sensor_bg_en           = 'd0;
+reg                             sensor_config_en            = 'd0;
+reg     [16-1:0]                sensor_config_cmd           = 'd0;
+reg                             sensor_config_test          = 'd0;
+
 reg     [32-1:0]                laser_uart_data             = 'd0;
 reg                             laser_uart_vld              = 'd0;
 reg     [32-1:0]                pmt_master_spi_data         = 'd0;
@@ -380,12 +409,21 @@ reg                             aurora_soft_rd_1            = 'd0;
 reg                             aurora_soft_rd_2            = 'd0;
 reg                             aurora_soft_rd_3            = 'd0;
 reg                             encode_check_clean          = 'd0;
+reg                             ad5592_1_dac_config_en      = 'd0;
+reg     [3-1:0]                 ad5592_1_dac_channel        = 'd0;
+reg     [12-1:0]                ad5592_1_dac_data           = 'd0;
+reg                             ad5592_1_adc_config_en      = 'd0;
+reg     [8-1:0]                 ad5592_1_adc_channel        = 'd0;
+reg     [12-1:0]                ad5592_1_adc_data           = 'd0;
 reg     [2-1:0]                 cfg_acc_use                 = 'd0;
 reg                             cfg_fbc_rate                = 'd0;
 reg                             cfg_spindle_width           = 'd0;
 reg                             acc_encode_upload           = 'd0;
 reg                             cali_register_clear         = 'd0;
 
+reg     [2-1:0]                 cfg_FBC_bypass              = 'd0;
+reg                             cfg_QPD_enable              = 'd0;
+reg                             dbg_qpd_mode                = 'd0;
 reg     [32-1:0]                readback_reg                = 'd0;
 reg                             readback_en                 = 'd0;
 reg     [2-1:0]                 readback_cnt                = 'd2;
@@ -459,18 +497,18 @@ always @(posedge clk_sys_i) begin
 
             // FBC register
             // 'h010E: FBC_fifo_rst            <= #TCQ command_data[0]     ;
-            'h0110: sensor_ds_rate          <= #TCQ command_data[9:0]   ;
+            // 'h0110: sensor_ds_rate          <= #TCQ command_data[9:0]   ;
 
             'h0116: bg_data_acq_en          <= #TCQ command_data[0]     ;
             'h0117: position_arm            <= #TCQ command_data[24:0]  ;
             'h0118: kp                      <= #TCQ command_data        ;
             'h0119: motor_freq              <= #TCQ command_data[3:0]   ;
-            'h011a: bpsi_position_en        <= #TCQ command_data[0]     ;
+            // 'h011a: bpsi_position_en        <= #TCQ command_data[0]     ;
             'h011b: fbc_bias_voltage        <= #TCQ command_data[15:0]  ;
-            'h011c: fbc_cali_uop_set        <= #TCQ command_data[15:0]  ;
+            // 'h011c: fbc_cali_uop_set        <= #TCQ command_data[15:0]  ;
             'h011d: ki                      <= #TCQ command_data        ;
             'h011e: kd                      <= #TCQ command_data        ;
-            'h011F: sensor_mode_sel         <= #TCQ command_data[1:0]   ;
+            // 'h011F: sensor_mode_sel         <= #TCQ command_data[1:0]   ;
 
             // scan register
             'h0120: eds_power_en            <= #TCQ command_data[0]     ;
@@ -557,6 +595,10 @@ always @(posedge clk_sys_i) begin
 
             'h032d: acc_skip_fifo_rd        <= #TCQ command_data        ;
             'h0330: timing_flag_supp        <= #TCQ command_data        ;
+            'h0331: sensor_config_cmd       <= #TCQ command_data        ;
+            'h0333: quad_sensor_bg_en       <= #TCQ command_data        ;
+            'h0334: dbg_qpd_mode            <= #TCQ command_data        ;
+            'h0335: sensor_config_test      <= #TCQ command_data        ;
             'h0336: fbc_udp_rate_switch     <= #TCQ command_data        ;
             'h0337: acc_encode_upload       <= #TCQ command_data        ;
             // 'h0338: arbitrate use
@@ -565,6 +607,9 @@ always @(posedge clk_sys_i) begin
             'h0351: cfg_acc_use             <= #TCQ command_data[1:0]   ;
             'h0352: cfg_fbc_rate            <= #TCQ command_data[0]     ;
             'h0353: cfg_spindle_width       <= #TCQ command_data[0]     ;
+
+            'h035b: cfg_FBC_bypass          <= #TCQ command_data[1:0]   ;
+            'h035c: cfg_QPD_enable          <= #TCQ command_data[0]     ;
 
             'h0409: aurora_soft_rd_1        <= #TCQ command_data[0]     ;
             'h040a: aurora_soft_rd_2        <= #TCQ command_data[0]     ;
@@ -583,8 +628,14 @@ always @(posedge clk_sys_i) begin
     else begin
         rd_mfpga_version        <= #TCQ 'd0;
         bg_data_acq_en          <= #TCQ 'd0;
-        bpsi_position_en        <= #TCQ 'd0;
+        quad_sensor_bg_en       <= #TCQ 'd0;
+        // bpsi_position_en        <= #TCQ 'd0;
+        // real_scan_start         <= #TCQ 'd0;
         scan_finish_comm_ack    <= #TCQ 'd0;
+        // scan_soft_reset         <= #TCQ 'd0;
+        // x_encode_zero_calib     <= #TCQ 'd0;
+        // pmt_encode_rd_en        <= #TCQ 'd0;
+        // acs_encode_rd_en        <= #TCQ 'd0;
         laser_analog_trigger    <= #TCQ 'd0;
         acc_skip_fifo_rd        <= #TCQ 'd0;
         eds_frame_cmd           <= #TCQ 'd0;
@@ -593,12 +644,12 @@ always @(posedge clk_sys_i) begin
     end
 end
 
-always @(posedge clk_sys_i) begin
-    if(command_sel=='h0110 && command_data_vld)
-        sensor_ds_rate_en <= #TCQ 'd1;
-    else 
-        sensor_ds_rate_en <= #TCQ 'd0;
-end
+// always @(posedge clk_sys_i) begin
+//     if(command_sel=='h0110 && command_data_vld)
+//         sensor_ds_rate_en <= #TCQ 'd1;
+//     else 
+//         sensor_ds_rate_en <= #TCQ 'd0;
+// end
 
 always @(posedge clk_sys_i) begin
     if(command_sel=='h011b && command_data_vld)
@@ -769,20 +820,29 @@ always @(posedge clk_sys_i) begin
 end
 
 
+// QSD sensor config enable
+always @(posedge clk_sys_i) begin
+    if(command_sel=='h0331 && command_data_vld)
+        sensor_config_en <= #TCQ 'd1;
+    else 
+        sensor_config_en <= #TCQ 'd0;
+end
+
+
 always @(posedge clk_sys_i) begin
     if(readback_en)begin
         case (readback_reg)
             // 'h010E:  register_data <= #TCQ FBC_fifo_rst         ;
-            'h0110:  register_data <= #TCQ sensor_ds_rate       ;
+            // 'h0110:  register_data <= #TCQ sensor_ds_rate       ;
             'h0115:  register_data <= #TCQ data_acq_en          ;
             'h0117:  register_data <= #TCQ position_arm         ;
             'h0118:  register_data <= #TCQ kp                   ;
             'h0119:  register_data <= #TCQ motor_freq           ;
             'h011B:  register_data <= #TCQ fbc_bias_voltage     ;
-            'h011C:  register_data <= #TCQ fbc_cali_uop_set     ;
+            // 'h011C:  register_data <= #TCQ fbc_cali_uop_set     ;
             'h011D:  register_data <= #TCQ ki                   ;
             'h011E:  register_data <= #TCQ kd                   ;
-            'h011F:  register_data <= #TCQ sensor_mode_sel      ;
+            // 'h011F:  register_data <= #TCQ sensor_mode_sel      ;
             
             'h0120:  register_data <= #TCQ eds_power_en         ;
             'h0121:  register_data <= #TCQ eds_frame_en_back_i  ;
@@ -879,6 +939,9 @@ always @(posedge clk_sys_i) begin
             'h032f:  register_data <= #TCQ acc_skip_fifo_data_i[32-1:0];
 
             'h0330:  register_data <= #TCQ timing_flag_supp         ;
+            'h0331:  register_data <= #TCQ sensor_config_cmd        ;
+            'h0334:  register_data <= #TCQ dbg_qpd_mode             ;
+            'h0335:  register_data <= #TCQ sensor_config_test       ;
             'h0336:  register_data <= #TCQ fbc_udp_rate_switch      ;
             'h0337:  register_data <= #TCQ {31'd0,acc_encode_upload};
             // 'h0338: arbitrate use
@@ -888,6 +951,15 @@ always @(posedge clk_sys_i) begin
             'h0351:  register_data <= #TCQ {30'd0,cfg_acc_use}      ;
             'h0352:  register_data <= #TCQ {31'd0,cfg_fbc_rate}     ;
             'h0353:  register_data <= #TCQ {31'd0,cfg_spindle_width};
+            // 'h0354:  register_data <= #TCQ ad5592_1_dac_config_en   ;
+            'h0355:  register_data <= #TCQ ad5592_1_dac_channel     ;
+            'h0356:  register_data <= #TCQ ad5592_1_dac_data        ;
+            // 'h0357:  register_data <= #TCQ ad5592_1_adc_config_en   ;
+            'h0358:  register_data <= #TCQ ad5592_1_adc_channel     ;
+            'h0359:  register_data <= #TCQ {30'd0,ad5592_1_spi_conf_ok_i,ad5592_1_init_i};
+            'h035a:  register_data <= #TCQ {24'd0,ad5592_1_adc_data};
+            'h035b:  register_data <= #TCQ {30'd0,cfg_FBC_bypass}   ;
+            'h035c:  register_data <= #TCQ {31'd0,cfg_QPD_enable}   ;
 
             'h0400:  register_data <= #TCQ eds_pack_cnt_2_i     ;
             'h0401:  register_data <= #TCQ encode_pack_cnt_2_i  ;
@@ -959,12 +1031,18 @@ assign kp_o                     = kp                            ;
 assign ki_o                     = ki                            ;
 assign kd_o                     = kd                            ;
 assign motor_freq_o             = motor_freq                    ;
-assign bpsi_position_en_o       = bpsi_position_en              ;
-assign sensor_mode_sel_o        = sensor_mode_sel               ;
-assign sensor_ds_rate_o         = {sensor_ds_rate_en,sensor_ds_rate};
+// assign bpsi_position_en_o       = bpsi_position_en              ;
+// assign sensor_mode_sel_o        = sensor_mode_sel               ;
+// assign sensor_ds_rate_o         = {sensor_ds_rate_en,sensor_ds_rate};
 assign fbc_bias_vol_en_o        = fbc_bias_vol_en               ;
 assign fbc_bias_voltage_o       = fbc_bias_voltage              ;
-assign fbc_cali_uop_set_o       = fbc_cali_uop_set              ;
+// assign fbc_cali_uop_set_o       = fbc_cali_uop_set              ;
+// assign ascent_gradient_o        = ascent_gradient               ;
+// assign slow_ascent_period_o     = slow_ascent_period            ;
+assign quad_sensor_bg_en_o      = quad_sensor_bg_en             ;
+assign sensor_config_en_o       = sensor_config_en              ; 
+assign sensor_config_cmd_o      = sensor_config_cmd             ;
+assign sensor_config_test_o     = sensor_config_test            ;
 assign eds_power_en_o           = eds_power_en                  ;
 assign eds_frame_en_o           = eds_frame_en                  ;
 assign eds_frame_sel_o          = eds_frame_sel                 ;
@@ -1071,13 +1149,21 @@ assign aurora_soft_rd_1_o         = aurora_soft_rd_1            ;
 assign aurora_soft_rd_2_o         = aurora_soft_rd_2            ;
 assign aurora_soft_rd_3_o         = aurora_soft_rd_3            ;
 assign encode_check_clean_o       = encode_check_clean          ;
-assign cfg_acc_use_o              = cfg_acc_use                 ;
-assign cfg_fbc_rate_o             = cfg_fbc_rate                ;
-assign cfg_spindle_width_o        = cfg_spindle_width           ;
-assign map_readback_cnt_o         = map_readback_cnt            ;
-assign main_scan_cnt_o            = main_scan_cnt               ;
-assign acc_encode_upload_o        = acc_encode_upload           ;
 
+assign ad5592_1_dac_config_en_o     = ad5592_1_dac_config_en    ;
+assign ad5592_1_dac_channel_o       = ad5592_1_dac_channel      ;
+assign ad5592_1_dac_data_o          = ad5592_1_dac_data         ;
+assign ad5592_1_adc_config_en_o     = ad5592_1_adc_config_en    ;
+assign ad5592_1_adc_channel_o       = ad5592_1_adc_channel      ;
+assign cfg_acc_use_o                = cfg_acc_use               ;
+assign cfg_fbc_rate_o               = cfg_fbc_rate              ;
+assign cfg_spindle_width_o          = cfg_spindle_width         ;
+assign cfg_FBC_bypass_o             = cfg_FBC_bypass            ;
+assign cfg_QPD_enable_o             = cfg_QPD_enable            ;
+assign dbg_qpd_mode_o               = dbg_qpd_mode              ;
+assign map_readback_cnt_o           = map_readback_cnt          ;
+assign main_scan_cnt_o              = main_scan_cnt             ;
+assign acc_encode_upload_o          = acc_encode_upload         ;
 // // FBC sensor response test
 // reg          fbc_response_flag  = 'd0;
 // reg [22-1:0] fbc_response_test_cnt = 'd0;

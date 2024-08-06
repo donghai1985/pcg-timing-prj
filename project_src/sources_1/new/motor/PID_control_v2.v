@@ -38,7 +38,7 @@ module PID_control_v2 #(
     input   wire        [PID_PARAMETER + EXTEND_BIT -1:0]   kd_i                    ,
     input   wire signed [POSITION_DATA:0]                   position_aim_i          ,
     input   wire        [MOTOR_VOL-1:0]                     fbc_bias_voltage_i      ,
-    input   wire        [MOTOR_VOL-1:0]                     fbc_cali_uop_set_i      ,
+    // input   wire        [MOTOR_VOL-1:0]                     fbc_cali_uop_set_i      ,
     input   wire                                            actual_data_en_i        ,
     input   wire signed [POSITION_DATA-1:0]                 actual_data_a_i         ,
     input   wire signed [POSITION_DATA-1:0]                 actual_data_b_i         ,
@@ -337,10 +337,11 @@ end
 
 // mult_result_vld delay 13 clk relative to divider_out_en.
 always @(posedge clk_i) begin
-    if(data_acq_en_i=='d3)begin
-            motor_data_in <= fbc_cali_uop_set_i;
-    end
-    else if(data_acq_en_i=='d2)begin
+    // if(data_acq_en_i=='d3)begin
+    //         motor_data_in <= fbc_cali_uop_set_i;
+    // end
+    // else 
+    if(data_acq_en_i=='d2)begin
         if(mult_result_vld && motor_pid_result[PID_RESULT_WID-1])
             motor_data_in <= 'd0;
         else if(mult_result_vld && (|motor_pid_result[PID_RESULT_WID-2:MOTOR_VOL]))
