@@ -199,9 +199,9 @@ module command_map #(
 
     input   wire                eds_sensor_training_done_i  ,
     input   wire                eds_sensor_training_result_i,
-    input   wire    [3-1:0]     aurora_empty_1_i            ,
-    input   wire    [3-1:0]     aurora_empty_2_i            ,
-    input   wire    [3-1:0]     aurora_empty_3_i            ,
+    input   wire    [4-1:0]     aurora_empty_1_i            ,
+    input   wire    [4-1:0]     aurora_empty_2_i            ,
+    input   wire    [4-1:0]     aurora_empty_3_i            ,
     output  wire                aurora_soft_rd_1_o          ,
     output  wire                aurora_soft_rd_2_o          ,
     output  wire                aurora_soft_rd_3_o          ,
@@ -224,7 +224,6 @@ module command_map #(
     output  wire                fbc_udp_rate_switch_o       ,
     output  wire    [4-1:0]     map_readback_cnt_o          ,
     output  wire    [4-1:0]     main_scan_cnt_o             ,
-    output  wire                acc_encode_upload_o         ,
     output  wire                debug_info
 );
 
@@ -383,8 +382,6 @@ reg                             encode_check_clean          = 'd0;
 reg     [2-1:0]                 cfg_acc_use                 = 'd0;
 reg                             cfg_fbc_rate                = 'd0;
 reg                             cfg_spindle_width           = 'd0;
-reg                             acc_encode_upload           = 'd0;
-reg                             cali_register_clear         = 'd0;
 
 reg     [32-1:0]                readback_reg                = 'd0;
 reg                             readback_en                 = 'd0;
@@ -458,7 +455,7 @@ always @(posedge clk_sys_i) begin
             'h0100: rd_mfpga_version        <= #TCQ 'd1                 ;
 
             // FBC register
-            // 'h010E: FBC_fifo_rst            <= #TCQ command_data[0]     ;
+            'h010E: FBC_fifo_rst            <= #TCQ command_data[0]     ;
             'h0110: sensor_ds_rate          <= #TCQ command_data[9:0]   ;
 
             'h0116: bg_data_acq_en          <= #TCQ command_data[0]     ;
@@ -553,14 +550,11 @@ always @(posedge clk_sys_i) begin
             'h0326: acc_demo_trim_time_pose <= #TCQ command_data        ;
             // 'h0327: acc_demo_Xencode_extend <= #TCQ command_data        ;
             'h0328: acc_demo_trim_time_nege <= #TCQ command_data        ;
-            // 'h032a: acc_demo_xencode_offset <= #TCQ command_data        ;
+            'h032a: acc_demo_xencode_offset <= #TCQ command_data        ;
 
             'h032d: acc_skip_fifo_rd        <= #TCQ command_data        ;
             'h0330: timing_flag_supp        <= #TCQ command_data        ;
             'h0336: fbc_udp_rate_switch     <= #TCQ command_data        ;
-            'h0337: acc_encode_upload       <= #TCQ command_data        ;
-            // 'h0338: arbitrate use
-            'h0339: cali_register_clear     <= #TCQ command_data        ;
 
             'h0351: cfg_acc_use             <= #TCQ command_data[1:0]   ;
             'h0352: cfg_fbc_rate            <= #TCQ command_data[0]     ;
@@ -576,20 +570,23 @@ always @(posedge clk_sys_i) begin
             default: /*default*/;
         endcase
     end
-    else if(cali_register_clear)begin
-        cali_register_clear     <= #TCQ 'd0;
-        acc_encode_upload       <= #TCQ 'd0;
-    end
     else begin
-        rd_mfpga_version        <= #TCQ 'd0;
-        bg_data_acq_en          <= #TCQ 'd0;
-        bpsi_position_en        <= #TCQ 'd0;
-        scan_finish_comm_ack    <= #TCQ 'd0;
+        rd_mfpga_version    <= #TCQ 'd0;
+        bg_data_acq_en      <= #TCQ 'd0;
+        bpsi_position_en    <= #TCQ 'd0;
+        // real_scan_start     <= #TCQ 'd0;
+        scan_finish_comm_ack<= #TCQ 'd0;
+        // scan_soft_reset     <= #TCQ 'd0;
+        // x_encode_zero_calib <= #TCQ 'd0;
+        // pmt_encode_rd_en    <= #TCQ 'd0;
+        // acs_encode_rd_en    <= #TCQ 'd0;
         laser_analog_trigger    <= #TCQ 'd0;
         acc_skip_fifo_rd        <= #TCQ 'd0;
+        // dbg_mem_rd_en           <= #TCQ 'd0;
+        // dbg_mem_start           <= #TCQ 'd0;
         eds_frame_cmd           <= #TCQ 'd0;
         encode_check_clean      <= #TCQ 'd0;
-        cali_register_clear     <= #TCQ 'd0;
+        // trig_fifo_rd            <= #TCQ 'd0;
     end
 end
 
@@ -772,7 +769,7 @@ end
 always @(posedge clk_sys_i) begin
     if(readback_en)begin
         case (readback_reg)
-            // 'h010E:  register_data <= #TCQ FBC_fifo_rst         ;
+            'h010E:  register_data <= #TCQ FBC_fifo_rst         ;
             'h0110:  register_data <= #TCQ sensor_ds_rate       ;
             'h0115:  register_data <= #TCQ data_acq_en          ;
             'h0117:  register_data <= #TCQ position_arm         ;
@@ -871,7 +868,7 @@ always @(posedge clk_sys_i) begin
             'h0327:  register_data <= #TCQ acc_demo_addr_latch_i    ;
             'h0328:  register_data <= #TCQ acc_demo_trim_time_nege  ;
             'h0329:  register_data <= #TCQ acc_demo_skip_cnt_i      ;
-            // 'h032a:  register_data <= #TCQ acc_demo_xencode_offset  ;
+            'h032a:  register_data <= #TCQ acc_demo_xencode_offset  ;
             // 'h032b:  register_data <= #TCQ acc_flag_phase_cnt_i     ;
             'h032c:  register_data <= #TCQ {eds_sensor_training_done_i,eds_sensor_training_result_i};
             'h032d:  register_data <= #TCQ acc_skip_fifo_ready_i;
@@ -880,19 +877,19 @@ always @(posedge clk_sys_i) begin
 
             'h0330:  register_data <= #TCQ timing_flag_supp         ;
             'h0336:  register_data <= #TCQ fbc_udp_rate_switch      ;
-            'h0337:  register_data <= #TCQ {31'd0,acc_encode_upload};
-            // 'h0338: arbitrate use
-            // 'h0339: register_data <= #TCQ cali_register_clear    ;
+            // 'h0337:  register_data <= #TCQ trig_fifo_ready_i        ;
+            // 'h0338:  register_data <= #TCQ trig_fifo_data_i[64-1:32];
+            // 'h0339:  register_data <= #TCQ trig_fifo_data_i[32-1:0] ;
             'h033a:  register_data <= #TCQ acc_trigger_num_i        ;
 
             'h0351:  register_data <= #TCQ {30'd0,cfg_acc_use}      ;
             'h0352:  register_data <= #TCQ {31'd0,cfg_fbc_rate}     ;
             'h0353:  register_data <= #TCQ {31'd0,cfg_spindle_width};
 
-            'h0400:  register_data <= #TCQ eds_pack_cnt_2_i     ;
-            'h0401:  register_data <= #TCQ encode_pack_cnt_2_i  ;
-            'h0402:  register_data <= #TCQ eds_pack_cnt_1_i     ;
-            'h0403:  register_data <= #TCQ encode_pack_cnt_1_i  ;
+            'h0400:  register_data <= #TCQ eds_pack_cnt_1_i     ;
+            'h0401:  register_data <= #TCQ encode_pack_cnt_1_i  ;
+            'h0402:  register_data <= #TCQ eds_pack_cnt_2_i     ;
+            'h0403:  register_data <= #TCQ encode_pack_cnt_2_i  ;
             'h0404:  register_data <= #TCQ eds_pack_cnt_3_i     ;
             'h0405:  register_data <= #TCQ encode_pack_cnt_3_i  ;
             'h0406:  register_data <= #TCQ aurora_empty_1_i     ;
@@ -980,7 +977,7 @@ assign pmt_adc_start_data_o     = pmt_adc_start_data            ;
 assign pmt_adc_start_vld_o      = pmt_adc_start_vld             ;
 assign pmt_adc_start_hold_o     = pmt_adc_start_hold            ;
 assign rd_mfpga_version_o       = rd_mfpga_version              ;
-assign FBC_fifo_rst_o           = (data_acq_en=='d0)            ;
+assign FBC_fifo_rst_o           = FBC_fifo_rst                  ;
 assign scan_soft_reset_o        = scan_soft_reset_pose          ; 
 assign real_scan_start_o        = real_scan_start               ;
 assign real_scan_sel_o          = real_scan_sel                 ;
@@ -1076,8 +1073,6 @@ assign cfg_fbc_rate_o             = cfg_fbc_rate                ;
 assign cfg_spindle_width_o        = cfg_spindle_width           ;
 assign map_readback_cnt_o         = map_readback_cnt            ;
 assign main_scan_cnt_o            = main_scan_cnt               ;
-assign acc_encode_upload_o        = acc_encode_upload           ;
-
 // // FBC sensor response test
 // reg          fbc_response_flag  = 'd0;
 // reg [22-1:0] fbc_response_test_cnt = 'd0;

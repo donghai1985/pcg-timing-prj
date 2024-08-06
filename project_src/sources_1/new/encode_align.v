@@ -183,7 +183,7 @@ always @(posedge clk_i) begin
 end
 
 always @(posedge clk_i) begin
-    if(align_data_count >= 'd3498) // 35us
+    if(align_data_count >= 'd2998) // 30us
         align_rd_en <= #TCQ align_wr_en;
     else 
         align_rd_en <= #TCQ 'd0;

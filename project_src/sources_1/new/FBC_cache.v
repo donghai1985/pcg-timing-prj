@@ -76,7 +76,7 @@ localparam              CACHE_NUM           = 4;
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 reg                     pmt_scan_en_d       = 'd0;
 reg                     real_scan_flag_d    = 'd0;
-reg                     real_scan_flag_latch= 'd0;
+(*dont_touch = "true"*)reg                     real_scan_flag_latch= 'd0;
 
 reg                     rd_en               = 'd0;
 reg                     rd_en_d             = 'd0;
@@ -139,7 +139,7 @@ assign cache_fifo_din[1] = {1'b1,2'd1,5'd0,FBCi_cache_data_i[47:24],8'd0,FBCi_ca
 assign cache_fifo_din[2] = {1'b1,2'd2,5'd0,FBCr1_cache_data_i[47:24],8'd0,FBCr1_cache_data_i[23:0]};
 assign cache_fifo_din[3] = {1'b1,2'd3,5'd0,FBCr2_cache_data_i[47:24],8'd0,FBCr2_cache_data_i[23:0]};
 
-assign cache_fifo_wr[0]  = FBCr2_cache_vld_i && real_scan_flag_d;
+assign cache_fifo_wr[0]  = FBCi_cache_vld_i && real_scan_flag_d;
 assign cache_fifo_wr[1]  = FBCi_cache_vld_i && real_scan_flag_d;
 assign cache_fifo_wr[2]  = FBCr1_cache_vld_i && real_scan_flag_d;
 assign cache_fifo_wr[3]  = FBCr2_cache_vld_i && real_scan_flag_d;

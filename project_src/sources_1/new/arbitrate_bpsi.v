@@ -34,9 +34,6 @@ module arbitrate_bpsi #(
     input    wire                           readback_vld_i              ,
     input    wire    [64-1:0]               fpga_message_up_data_i      ,
     input    wire                           fpga_message_up_i           ,
-    input    wire    [64-1:0]               acc_encode_latch_i          ,
-    input    wire                           acc_encode_latch_en_i       ,
-
     // calibrate voltage. dark current * R
     input    wire                           FBCi_cali_en_i              ,
     input    wire    [23:0]                 FBCi_cali_a_i               ,
@@ -139,10 +136,7 @@ localparam          [16-1:0]                HEARTBEAT_NUM               = 'd10;
 localparam          [16-1:0]                FPGA_ACT_MESS_TYPE          = 'h0340;
 localparam          [16-1:0]                FPGA_ACT_MESS_NUM           = 'd10;
 
-localparam          [16-1:0]                ACC_ENCODE_UP_TYPE          = 'h0338;
-localparam          [16-1:0]                ACC_ENCODE_UP_NUM           = 'd10;
-
-localparam                                  ARBITRATE_NUM               = 13;    // control arbitrate channel
+localparam                                  ARBITRATE_NUM               = 12;    // control arbitrate channel
 genvar i;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -319,7 +313,7 @@ xpm_sync_fifo #(
 )u_xpm_sync_fifo (
     .wr_clk_i               ( clk_i                                 ),
     .rst_i                  ( rst_i || FBC_out_fifo_rst_i           ), // synchronous to wr_clk
-    .wr_en_i                ( FBCr2_out_en_i                        ),
+    .wr_en_i                ( FBCi_out_en_i                         ),
     .wr_data_i              ( {encode_w_i,encode_x_i}               ),
 
     .rd_en_i                ( fbc_encode_rd                         ),
@@ -373,11 +367,11 @@ endgenerate
 // FBCi,FBCr1,FBCr2 data ready. 
 // generate a transmission every 100 times.
 // fifo width is 3byte,twice write en,for save resources.
-always @(posedge clk_i) FBCi_wr_en_d0   <= #TCQ fbc_udp_rate_switch_i ? FBCr2_out_en_i : FBCi_out_en_i;
+always @(posedge clk_i) FBCi_wr_en_d0   <= #TCQ FBCi_out_en_i;
 always @(posedge clk_i) FBCi_wr_en_d1   <= #TCQ FBCi_wr_en_d0;
-always @(posedge clk_i) FBCr1_wr_en_d0  <= #TCQ fbc_udp_rate_switch_i ? FBCr2_out_en_i : FBCr1_out_en_i;
+always @(posedge clk_i) FBCr1_wr_en_d0  <= #TCQ fbc_udp_rate_switch_i ? FBCi_out_en_i : FBCr1_out_en_i;
 always @(posedge clk_i) FBCr1_wr_en_d1  <= #TCQ FBCr1_wr_en_d0;
-always @(posedge clk_i) FBCr2_wr_en_d0  <= #TCQ FBCr2_out_en_i;
+always @(posedge clk_i) FBCr2_wr_en_d0  <= #TCQ fbc_udp_rate_switch_i ? FBCi_out_en_i : FBCr2_out_en_i;
 always @(posedge clk_i) FBCr2_wr_en_d1  <= #TCQ FBCr2_wr_en_d0;
 
 always @(posedge clk_i) FBCi_data_b     <= #TCQ FBCi_out_b_i;
@@ -613,16 +607,25 @@ endgenerate
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate new_arbitrate enable end
 
-reg [64-1:0] acc_encode_latch = 'd0;
-always @(posedge clk_i) begin
-    if(acc_encode_latch_en_i && (~arbitr_result[12]))
-        acc_encode_latch <= #TCQ acc_encode_latch_i;
-end
-
 // generate arbitrate enable , alwaye modify when arbitrate channel add.
+`ifdef FBC_UDP_OFF
 assign bpsi_en          = {  
-                             acc_encode_latch_en_i
-                            ,fpga_message_up_i
+                             fpga_message_up_i
+                            ,heartbeat_en_i
+                            ,readback_vld_i
+                            ,rd_mfpga_version_i
+                            ,spi_slave_ack_en[2]
+                            ,spi_slave_ack_en[1]
+                            ,spi_slave_ack_en[0]
+                            ,laser_rx_en
+                            ,1'b0 //fbc_vol_arbitr_en
+                            ,1'b0 //FBC_cali_arbitr_en
+                            ,1'b0 //FBC_bg_arbitr_en
+                            ,1'b0 //fbc_arbitr_en 
+                        };
+`else
+assign bpsi_en          = {  
+                             fpga_message_up_i
                             ,heartbeat_en_i
                             ,readback_vld_i
                             ,rd_mfpga_version_i
@@ -634,7 +637,7 @@ assign bpsi_en          = {
                             ,FBC_cali_arbitr_en
                             ,FBC_bg_arbitr_en
                             ,fbc_arbitr_en };
-
+`endif // FBC_UDP_OFF
 assign arbitr_result    = bpsi_type & arbitrate;
 
 // arbitr trigger
@@ -893,16 +896,6 @@ always @(posedge clk_i) begin
         fpga_act_mess_cnt <= #TCQ 'd0;
 end
 
-reg [3:0] acc_encode_upload_cnt = 'd0;
-always @(posedge clk_i) begin
-    if(arbitr_result[12])begin
-        if(acc_encode_upload_cnt < ACC_ENCODE_UP_NUM + 1)
-            acc_encode_upload_cnt <= #TCQ acc_encode_upload_cnt + 1;
-    end
-    else 
-        acc_encode_upload_cnt <= #TCQ 'd0;
-end
-
 always @(posedge clk_i) begin
     if(arbitr_result[0])begin
         if(fbc_tx_cnt=='d0)
@@ -991,13 +984,6 @@ always @(posedge clk_i) begin
             default:slave_tx_byte <= #TCQ fpga_message_up_data_i[(4'd9-fpga_act_mess_cnt)*8 +: 8];
         endcase
     end
-    else if(arbitr_result[12] && acc_encode_upload_cnt<ACC_ENCODE_UP_NUM)begin
-        case(acc_encode_upload_cnt)
-            'd0 : slave_tx_byte <= #TCQ ACC_ENCODE_UP_TYPE[15:8];
-            'd1 : slave_tx_byte <= #TCQ ACC_ENCODE_UP_TYPE[7:0];
-            default:slave_tx_byte <= #TCQ acc_encode_latch[(4'd9-acc_encode_upload_cnt)*8 +: 8];
-        endcase
-    end
 end
 
 wire fbc_tx_byte_en ;
@@ -1028,8 +1014,6 @@ always @(*) begin
         slave_tx_byte_en = (heartbeat_cnt>'d0) && (heartbeat_cnt < HEARTBEAT_NUM + 1);
     else if(arbitr_result[11])
         slave_tx_byte_en = (fpga_act_mess_cnt>'d0) && (fpga_act_mess_cnt < FPGA_ACT_MESS_NUM + 1);
-    else if(arbitr_result[12])
-        slave_tx_byte_en = (acc_encode_upload_cnt>'d0) && (acc_encode_upload_cnt < ACC_ENCODE_UP_NUM + 1);
     else 
         slave_tx_byte_en = 'd0;
 end
@@ -1057,8 +1041,6 @@ always @(posedge clk_i) begin
         slave_tx_byte_num <= #TCQ HEARTBEAT_NUM;
     if(arbitr_result[11])
         slave_tx_byte_num <= #TCQ FPGA_ACT_MESS_NUM;
-    if(arbitr_result[12])
-        slave_tx_byte_num <= #TCQ ACC_ENCODE_UP_NUM;
 end
 
 always @(posedge clk_i) begin

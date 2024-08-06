@@ -20,6 +20,6 @@ set_false_path -from [get_clocks -of_objects [get_pins pll_inst/inst/mmcm_adv_in
 set_false_path -from [get_pins FBC_cache_inst/pmt_scan_en_d_reg/C] -to [get_pins u_ddr_top/FBC_vin_ctrl_inst/mem_vin_buffer_ctrl_inst/laser_start_d0_reg/D]
 set_false_path -from [get_pins FBC_cache_inst/real_scan_flag_latch_reg/C] -to [get_pins u_ddr_top/FBC_vin_ctrl_inst/mem_vin_buffer_ctrl_inst/laser_start_d0_reg/D]
 
-set_false_path -from [get_pins aurora_64b66b_exdes_inst_2/aurora_64b66b_0_block_i/support_reset_logic_i/gt_rst_r_reg/C] -to [get_pins aurora_64b66b_exdes_inst_2/aurora_64b66b_0_block_i/support_reset_logic_i/u_rst_sync_gt/stg1_aurora_64b66b_0_cdc_to_reg/D]
+set_false_path -from [get_pins aurora_64b66b_exdes_inst_2/aurora_64b66b_0_block_i/support_reset_logic_i/gt_rst_r_reg/C] -to [get_pins aurora_64b66b_exdes_inst_2/aurora_64b66b_0_block_i/support_reset_logic_i/u_rst_sync_gt/stg1_aurora_64b66b_1_cdc_to_reg/D]
 set_false_path -from [get_pins aurora_64b66b_exdes_inst_1/aurora_64b66b_0_block_i/support_reset_logic_i/gt_rst_r_reg/C] -to [get_pins aurora_64b66b_exdes_inst_1/aurora_64b66b_0_block_i/support_reset_logic_i/u_rst_sync_gt/stg1_aurora_64b66b_0_cdc_to_reg/D]
-set_false_path -from [get_pins aurora_64b66b_exdes_inst_3/aurora_64b66b_0_block_i/support_reset_logic_i/gt_rst_r_reg/C] -to [get_pins aurora_64b66b_exdes_inst_3/aurora_64b66b_0_block_i/support_reset_logic_i/u_rst_sync_gt/stg1_aurora_64b66b_1_cdc_to_reg/D]
+set_false_path -from [get_pins aurora_64b66b_exdes_inst_3/aurora_64b66b_0_block_i/support_reset_logic_i/gt_rst_r_reg/C] -to [get_pins aurora_64b66b_exdes_inst_3/aurora_64b66b_0_block_i/support_reset_logic_i/u_rst_sync_gt/stg1_aurora_64b66b_0_cdc_to_reg/D]

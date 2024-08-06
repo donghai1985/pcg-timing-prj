@@ -36,12 +36,15 @@ module slave_comm(
     // info
     input    wire           SLAVE_MSG_CLK           ,
     output   wire           SLAVE_MSG_TX_FSX        ,
-    output   wire           SLAVE_MSG_TX            ,
+    output   wire           SLAVE_MSG_TX0           ,
+    output   wire           SLAVE_MSG_TX1           ,
+    output   wire           SLAVE_MSG_TX2           ,
+    output   wire           SLAVE_MSG_TX3           ,
     input    wire           SLAVE_MSG_RX_FSX        ,
     input    wire           SLAVE_MSG_RX            
 );
 
-slave_comm_tx slave_comm_tx_inst(
+slave_comm_x4_tx slave_comm_tx_inst(
     .clk_sys_i                  ( clk_sys_i                 ),
     .rst_i                      ( rst_i                     ),
     .slave_tx_en_i              ( slave_tx_en_i             ),
@@ -52,7 +55,10 @@ slave_comm_tx slave_comm_tx_inst(
 
     .SLAVE_MSG_CLK              ( SLAVE_MSG_CLK             ),
     .SLAVE_MSG_TX_FSX           ( SLAVE_MSG_TX_FSX          ),
-    .SLAVE_MSG_TX               ( SLAVE_MSG_TX              )
+    .SLAVE_MSG_TX0              ( SLAVE_MSG_TX0             ),
+    .SLAVE_MSG_TX1              ( SLAVE_MSG_TX1             ),
+    .SLAVE_MSG_TX2              ( SLAVE_MSG_TX2             ),
+    .SLAVE_MSG_TX3              ( SLAVE_MSG_TX3             )
 );
 
 slave_comm_rx slave_comm_rx_inst(

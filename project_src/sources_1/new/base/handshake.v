@@ -33,8 +33,8 @@ module handshake #(
     input   wire  [DATA_WIDTH-1:0]  src_data_i      ,
     input   wire                    src_vld_i       ,
 
-    output  reg   [DATA_WIDTH-1:0]  dest_data_o     = 'd0,
-    output  reg                     dest_vld_o      = 'd0
+    output  reg   [DATA_WIDTH-1:0]  dest_data_o     ,
+    output  reg                     dest_vld_o      
 );
 
 
