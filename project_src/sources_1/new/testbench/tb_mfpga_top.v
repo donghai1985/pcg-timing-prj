@@ -355,8 +355,8 @@ wire [7:0]              eth_rec_data_task            ;
 wire                    eth_rec_byte_num_en_task     ;
 wire [15:0]             eth_rec_byte_num_task        ;
 
-register_ctrl('h0125,'h0000_0005);
-register_ctrl('h0200,'h0000_0125);
+// register_ctrl('h0125,'h0000_0005);
+// register_ctrl('h0200,'h0000_0125);
 
 
 task register_ctrl(
