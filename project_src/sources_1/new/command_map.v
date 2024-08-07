@@ -273,9 +273,9 @@ reg     [26-1:0]                ki                          = 'h0000;
 reg     [26-1:0]                kd                          = 'h0000;
 reg     [3:0]                   motor_freq                  = 'd0;
 // reg                             bpsi_position_en            = 'd0;
-reg     [2-1:0]                 sensor_mode_sel             = 'b11;
+// reg     [2-1:0]                 sensor_mode_sel             = 'b11;
 // reg                             sensor_ds_rate_en           = 'd0;
-reg     [2-1:0]                 sensor_ds_rate              = 'd3;
+// reg     [2-1:0]                 sensor_ds_rate              = 'd3;
 reg                             fbc_bias_vol_en             = 'd0;
 reg     [15:0]                  fbc_bias_voltage            = 'd13107;       // default = 13107/65535*4.096 = 0.8192V
 // reg     [15:0]                  fbc_cali_uop_set            = 'd0;       // default = 13107/65535*4.096 = 0.8192V
@@ -488,7 +488,7 @@ always @(posedge clk_sys_i) begin
 
             // FBC register
             'h010E: FBC_fifo_rst            <= #TCQ command_data[0]     ;
-            'h0110: sensor_ds_rate          <= #TCQ command_data[1:0]   ;
+            // 'h0110: sensor_ds_rate          <= #TCQ command_data[1:0]   ;
 
             'h0116: bg_data_acq_en          <= #TCQ command_data[0]     ;
             'h0117: position_arm            <= #TCQ command_data[24:0]  ;
@@ -499,7 +499,7 @@ always @(posedge clk_sys_i) begin
             // 'h011c: fbc_cali_uop_set        <= #TCQ command_data[15:0]  ;
             'h011d: ki                      <= #TCQ command_data        ;
             'h011e: kd                      <= #TCQ command_data        ;
-            'h011F: sensor_mode_sel         <= #TCQ command_data[1:0]   ;
+            // 'h011F: sensor_mode_sel         <= #TCQ command_data[1:0]   ;
 
             // scan register
             'h0120: eds_power_en            <= #TCQ command_data[0]     ;
@@ -830,7 +830,7 @@ always @(posedge clk_sys_i) begin
     if(readback_en)begin
         case (readback_reg)
             'h010E:  register_data <= #TCQ FBC_fifo_rst         ;
-            'h0110:  register_data <= #TCQ sensor_ds_rate       ;
+            // 'h0110:  register_data <= #TCQ sensor_ds_rate       ;
             'h0115:  register_data <= #TCQ data_acq_en          ;
             'h0117:  register_data <= #TCQ position_arm         ;
             'h0118:  register_data <= #TCQ kp                   ;
@@ -839,7 +839,7 @@ always @(posedge clk_sys_i) begin
             // 'h011C:  register_data <= #TCQ fbc_cali_uop_set     ;
             'h011D:  register_data <= #TCQ ki                   ;
             'h011E:  register_data <= #TCQ kd                   ;
-            'h011F:  register_data <= #TCQ sensor_mode_sel      ;
+            // 'h011F:  register_data <= #TCQ sensor_mode_sel      ;
             
             'h0120:  register_data <= #TCQ eds_power_en         ;
             'h0121:  register_data <= #TCQ eds_frame_en_back_i  ;
@@ -1037,8 +1037,8 @@ assign ki_o                     = ki                            ;
 assign kd_o                     = kd                            ;
 assign motor_freq_o             = motor_freq                    ;
 // assign bpsi_position_en_o       = bpsi_position_en              ;
-assign sensor_mode_sel_o        = sensor_mode_sel               ;
-assign sensor_ds_rate_o         = sensor_ds_rate                ;
+// assign sensor_mode_sel_o        = sensor_mode_sel               ;
+// assign sensor_ds_rate_o         = sensor_ds_rate                ;
 assign fbc_bias_vol_en_o        = fbc_bias_vol_en               ;
 assign fbc_bias_voltage_o       = fbc_bias_voltage              ;
 // assign fbc_cali_uop_set_o       = fbc_cali_uop_set              ;

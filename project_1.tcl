@@ -173,18 +173,17 @@ proc checkRequiredFiles { origin_dir} {
  "[file normalize "$origin_dir/project_src/sources_1/ip/hmc7044_cfg_rom/hmc7044_cfg_rom.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/encode_align_fifo/encode_align_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/encode_x_align_fifo/encode_x_align_fifo.xci"]"\
- "[file normalize "$origin_dir/project_src/sources_1/ip/aurora_64b66b_1/aurora_64b66b_1.xci"]"\
+ "[file normalize "$origin_dir/project_src/sources_1/ip/aurora_64b66b_0/aurora_64b66b_0.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/cache_rd_fifo/cache_rd_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/sync_eds_encode_fifo/sync_eds_encode_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/eds_to_aurora_fifo/eds_to_aurora_fifo.xci"]"\
- "[file normalize "$origin_dir/project_src/sources_1/ip/aurora_64b66b_0/aurora_64b66b_0.xci"]"\
+ "[file normalize "$origin_dir/project_src/sources_1/ip/aurora_64b66b_1/aurora_64b66b_1.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/ddr3_mig/ddr3_mig.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/FBC_vout_buffer_fifo/FBC_vout_buffer_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/FBC_vin_buffer_fifo/FBC_vin_buffer_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/fbc_cache_fifo/fbc_cache_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/laser_uart_fifo/laser_uart_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/cache_bit_ram/cache_bit_ram.xci"]"\
- "[file normalize "$origin_dir/project_src/sources_1/ip/acc_demo_encode_mem/acc_demo_encode_mem.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/msg_comm_rx_ram/msg_comm_rx_ram.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/msg_comm_tx_fifo/msg_comm_tx_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/spi_slave_ack_fifo/spi_slave_ack_fifo.xci"]"\
@@ -200,7 +199,6 @@ proc checkRequiredFiles { origin_dir} {
  "[file normalize "$origin_dir/project_src/sources_1/new/ddr/FBC_vout_ctrl.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/motor/PID_control_v2.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/serial/acc_ctrl_rx_drv.v"]"\
- "[file normalize "$origin_dir/project_src/sources_1/new/acc_demo_ctrl.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/acc_demo_flag_trim.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/acc_time_ctrl_v2.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/ad5445_config.v"]"\
@@ -434,18 +432,17 @@ set files [list \
  [file normalize "${origin_dir}/project_src/sources_1/ip/hmc7044_cfg_rom/hmc7044_cfg_rom.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/encode_align_fifo/encode_align_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/encode_x_align_fifo/encode_x_align_fifo.xci"] \
- [file normalize "${origin_dir}/project_src/sources_1/ip/aurora_64b66b_1/aurora_64b66b_1.xci"] \
+ [file normalize "${origin_dir}/project_src/sources_1/ip/aurora_64b66b_0/aurora_64b66b_0.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/cache_rd_fifo/cache_rd_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/sync_eds_encode_fifo/sync_eds_encode_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/eds_to_aurora_fifo/eds_to_aurora_fifo.xci"] \
- [file normalize "${origin_dir}/project_src/sources_1/ip/aurora_64b66b_0/aurora_64b66b_0.xci"] \
+ [file normalize "${origin_dir}/project_src/sources_1/ip/aurora_64b66b_1/aurora_64b66b_1.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/ddr3_mig/ddr3_mig.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/FBC_vout_buffer_fifo/FBC_vout_buffer_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/FBC_vin_buffer_fifo/FBC_vin_buffer_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/fbc_cache_fifo/fbc_cache_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/laser_uart_fifo/laser_uart_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/cache_bit_ram/cache_bit_ram.xci"] \
- [file normalize "${origin_dir}/project_src/sources_1/ip/acc_demo_encode_mem/acc_demo_encode_mem.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/msg_comm_rx_ram/msg_comm_rx_ram.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/msg_comm_tx_fifo/msg_comm_tx_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/spi_slave_ack_fifo/spi_slave_ack_fifo.xci"] \
@@ -461,7 +458,6 @@ set files [list \
  [file normalize "${origin_dir}/project_src/sources_1/new/ddr/FBC_vout_ctrl.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/motor/PID_control_v2.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/serial/acc_ctrl_rx_drv.v"] \
- [file normalize "${origin_dir}/project_src/sources_1/new/acc_demo_ctrl.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/acc_demo_flag_trim.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/acc_time_ctrl_v2.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/ad5445_config.v"] \
@@ -590,7 +586,7 @@ if { ![get_property "is_locked" $file_obj] } {
   set_property -name "synth_checkpoint_mode" -value "Singular" -objects $file_obj
 }
 
-set file "$origin_dir/project_src/sources_1/ip/aurora_64b66b_1/aurora_64b66b_1.xci"
+set file "$origin_dir/project_src/sources_1/ip/aurora_64b66b_0/aurora_64b66b_0.xci"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
@@ -626,7 +622,7 @@ if { ![get_property "is_locked" $file_obj] } {
   set_property -name "synth_checkpoint_mode" -value "Singular" -objects $file_obj
 }
 
-set file "$origin_dir/project_src/sources_1/ip/aurora_64b66b_0/aurora_64b66b_0.xci"
+set file "$origin_dir/project_src/sources_1/ip/aurora_64b66b_1/aurora_64b66b_1.xci"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
@@ -681,15 +677,6 @@ if { ![get_property "is_locked" $file_obj] } {
 }
 
 set file "$origin_dir/project_src/sources_1/ip/cache_bit_ram/cache_bit_ram.xci"
-set file [file normalize $file]
-set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
-set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
-set_property -name "registered_with_manager" -value "1" -objects $file_obj
-if { ![get_property "is_locked" $file_obj] } {
-  set_property -name "synth_checkpoint_mode" -value "Singular" -objects $file_obj
-}
-
-set file "$origin_dir/project_src/sources_1/ip/acc_demo_encode_mem/acc_demo_encode_mem.xci"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
@@ -821,6 +808,14 @@ set_property -name "file_type" -value "XDC" -objects $file_obj
 set file "[file normalize "$origin_dir/project_src/constrs_1/new/timing.xdc"]"
 set file_added [add_files -norecurse -fileset $obj [list $file]]
 set file "$origin_dir/project_src/constrs_1/new/timing.xdc"
+set file [file normalize $file]
+set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
+set_property -name "file_type" -value "XDC" -objects $file_obj
+
+# Add/Import constrs file and set constrs file properties
+set file "[file normalize "$origin_dir/project_src/constrs_1/new/mfpga_io_v2.xdc"]"
+set file_added [add_files -norecurse -fileset $obj [list $file]]
+set file "$origin_dir/project_src/constrs_1/new/mfpga_io_v2.xdc"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
 set_property -name "file_type" -value "XDC" -objects $file_obj

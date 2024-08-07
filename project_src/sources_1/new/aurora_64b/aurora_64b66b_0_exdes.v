@@ -204,6 +204,7 @@ wire                    encode_tx_prog_empty    ;
 // wire                    encode_tx_wr_rst_busy   ;
 // wire                    encode_tx_rd_rst_busy   ;
 
+wire                    eds_precise_encode_wr_en;
 wire                    eds_encode_rd_en        ;
 wire                    eds_encode_full         ;
 wire                    eds_encode_empty        ;
@@ -215,18 +216,19 @@ wire                    eds_frame_en_sync       ;
 wire                    pmt_start_en_sync       ;
 
 wire                    eds_fifo_rst            ;
+wire                    eds_fifo_wrst           ;
 wire                    encode_fifo_rst         ;
 wire    [32-1:0]        eds_pack_cnt            ;
 wire    [32-1:0]        encode_pack_cnt         ;
 
 wire                    aurora_soft_rd          ;
+wire                    eds_encode_inter_flag   ;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //////////////////////////////////////////////////////////////////////////////////
 // *********** Instance Module
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 assign  eds_fifo_rst = aurora_rst || aurora_eds_end;
-wire eds_fifo_wrst;
 xpm_cdc_single #(
     .DEST_SYNC_FF(2),   // DECIMAL; range: 2-10
     .INIT_SYNC_FF(0),   // DECIMAL; 0=disable simulation init values, 1=enable simulation init values
@@ -286,7 +288,6 @@ localparam [12-1:0] EDS_ENCODE_INTE2 = 'd2083;
 reg [3-1:0]  eds_encdeo_inter_sel = 'd1;
 reg [12-1:0] eds_encode_cnt = 'd0;
 
-wire eds_encode_inter_flag;
 assign eds_encode_inter_flag = ((eds_encode_cnt == EDS_ENCODE_INTE0) && eds_encdeo_inter_sel[0])
                                 || ((eds_encode_cnt == EDS_ENCODE_INTE1) && eds_encdeo_inter_sel[1])
                                 || ((eds_encode_cnt == EDS_ENCODE_INTE2) && eds_encdeo_inter_sel[2]);

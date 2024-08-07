@@ -656,23 +656,6 @@ endgenerate
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate new_arbitrate enable end
 
 // generate arbitrate enable , alwaye modify when arbitrate channel add.
-`ifdef FBC_UDP_OFF
-assign bpsi_en          = {  
-                             fpga_message_up_i
-                            ,heartbeat_en_i
-                            ,spi_slave_ack_en[3]
-                            ,readback_vld_i
-                            ,rd_mfpga_version_i
-                            ,spi_slave_ack_en[2]
-                            ,spi_slave_ack_en[1]
-                            ,spi_slave_ack_en[0]
-                            ,laser_rx_en
-                            ,1'b0 //fbc_vol_arbitr_en
-                            ,1'b0 
-                            ,1'b0 //bg_arbitr_en
-                            ,1'b0 //fbc_arbitr_en 
-                        };
-`else
 assign bpsi_en          = {  
                              fpga_message_up_i
                             ,heartbeat_en_i
@@ -687,7 +670,7 @@ assign bpsi_en          = {
                             ,quad_arbitr_en
                             ,bg_arbitr_en
                             ,fbc_arbitr_en };
-`endif // FBC_UDP_OFF
+
 assign arbitr_result    = bpsi_type & arbitrate;
 
 // arbitr trigger
