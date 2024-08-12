@@ -245,7 +245,7 @@ assign fbc_cache_vld_o  = fbc_cache_vld;
 assign fbc_cache_data_o = fbc_cache_data;
 
 always @(posedge clk_i) begin
-    if(~fbc_vout_empty_i && (|aurora_fbc_almost_full_i))
+    if(~fbc_vout_empty_i && (~(aurora_fbc_almost_full_i==3'b111)))
         fbc_vout_rd_seq <= #TCQ 'd1;
     else 
         fbc_vout_rd_seq <= #TCQ 'd0;

@@ -56,6 +56,7 @@ module aurora_64b66b_tx #(
     output                  aurora_tx_idle_o                ,
     output  [32-1:0]        eds_pack_cnt_o                  ,
     output  [32-1:0]        encode_pack_cnt_o               ,
+    output  [32-1:0]        fbc_pack_cnt_o                  ,
     
     // System Interface
     input                   USER_CLK                        ,
@@ -178,9 +179,6 @@ always @ (posedge USER_CLK)begin
     fbc_up_start_d1 <= #TCQ fbc_up_start_d0;
 end
 
-// assign pmt_start_pose   = pmt_start_en_d0 && (~pmt_start_en_d1);
-// assign eds_frame_pose   = eds_frame_en_d0 && (~eds_frame_en_d1);
-
 always @(posedge USER_CLK) begin
     if(reset_c)
         tx_state <= #TCQ TX_IDLE;
@@ -194,11 +192,11 @@ always @(*) begin
     tx_state_next = tx_state;
     case(tx_state)
         TX_IDLE: begin
-            if(eds_frame_en_d0)
+            if(eds_frame_en_d1)
                 tx_state_next = TX_EDS_START;
-            else if(pmt_start_en_d0)
+            else if(pmt_start_en_d1)
                 tx_state_next = TX_ENCODE_START;
-            else if(fbc_up_start_d0)
+            else if(fbc_up_start_d1)
                 tx_state_next = TX_FBC_START;
         end 
 
@@ -236,7 +234,7 @@ always @(*) begin
         end
 
         TX_ENCODE_WITE: begin
-            if(~pmt_start_en_d0)
+            if(~pmt_start_en_d1)
                 tx_state_next = TX_ENCODE_END;
             else if(~encode_tx_prog_empty_i)
                 tx_state_next = TX_ENCODE_DATA;
@@ -264,7 +262,7 @@ always @(*) begin
         end
 
         TX_FBC_WITE: begin
-            if(~fbc_up_start_d0)
+            if(~fbc_up_start_d1)
                 tx_state_next = TX_FBC_END;
             else if(~aurora_fbc_prog_empty_i)
                 tx_state_next = TX_FBC_DATA;
@@ -272,7 +270,7 @@ always @(*) begin
 
         TX_FBC_DATA: begin
             if(tx_tlast && tx_tvalid && tx_tready_i)begin
-                // if(aurora_fbc_empty_i && (~fbc_up_start_d0))
+                // if(aurora_fbc_empty_i && (~fbc_up_start_d1))
                 //     tx_state_next = TX_FBC_END;
                 // else 
                     tx_state_next = TX_FBC_WITE;
@@ -549,6 +547,7 @@ assign tx_tlast_o           = tx_tlast;
 // check eds pack number
 reg [32-1:0] eds_pack_cnt = 'd0;
 reg [32-1:0] encode_pack_cnt = 'd0;
+reg [32-1:0] fbc_pack_cnt = 'd0;
 
 always @(posedge USER_CLK) begin
     if(tx_state==TX_EDS_START)
@@ -573,8 +572,26 @@ always @(posedge USER_CLK) begin
     end
 end
 
+always @(posedge USER_CLK) begin
+    if(tx_state==TX_FBC_START)
+        fbc_pack_cnt <= #TCQ 'd0;
+    else if(tx_state==TX_FBC_WITE && tx_state_next==TX_FBC_DATA)begin
+        if(fbc_pack_cnt[31])
+            fbc_pack_cnt <= #TCQ fbc_pack_cnt;
+        else 
+            fbc_pack_cnt <= #TCQ fbc_pack_cnt + 1;
+    end
+end
+
+reg [8-1:0] fbc_job_cnt = 'd0;
+always @(posedge USER_CLK) begin
+    if(tx_state==TX_IDLE && tx_state_next == TX_FBC_START)
+        fbc_job_cnt <= #TCQ fbc_job_cnt + 1;
+end
+
 assign eds_pack_cnt_o    = eds_pack_cnt;
 assign encode_pack_cnt_o = encode_pack_cnt;
+assign fbc_pack_cnt_o    = {fbc_pack_cnt[24-1:0],fbc_job_cnt[8-1:0]};
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 

@@ -154,6 +154,9 @@ module command_map #(
     input   wire    [32-1:0]    encode_pack_cnt_2_i     ,
     input   wire    [32-1:0]    eds_pack_cnt_3_i        ,
     input   wire    [32-1:0]    encode_pack_cnt_3_i     ,
+    input   wire    [32-1:0]    fbc_pack_cnt_1_i        ,
+    input   wire    [32-1:0]    fbc_pack_cnt_2_i        ,
+    input   wire    [32-1:0]    fbc_pack_cnt_3_i        ,
 
     output  wire                laser_control_o         ,
     output  wire                laser_out_switch_o      ,
@@ -976,9 +979,9 @@ always @(posedge clk_sys_i) begin
             'h040d:  register_data <= #TCQ {30'd0,w_encode_err_lock_i,w_encode_warn_lock_i} ;
             'h040e:  register_data <= #TCQ {14'd0,w_encode_continuity_max_i}                ;
             'h040f:  register_data <= #TCQ {14'd0,w_encode_continuity_cnt_i}                ;
-            // 'h0410:  register_data <= #TCQ {14'd0,w_src_encode_continuity_max_i}            ;
-            // 'h0411:  register_data <= #TCQ {14'd0,w_src_encode_continuity_cnt_i}            ;
-            // 'h0412:  register_data <= #TCQ {14'd0,w_eds_encode_continuity_max_i}            ;
+            'h0410:  register_data <= #TCQ fbc_pack_cnt_1_i     ;
+            'h0411:  register_data <= #TCQ fbc_pack_cnt_2_i     ;
+            'h0412:  register_data <= #TCQ fbc_pack_cnt_3_i     ;
             // 'h0413:  register_data <= #TCQ {14'd0,w_eds_encode_continuity_cnt_i}            ;
 
             // 'h0420:  register_data <= #TCQ dbg_mem_state_i;

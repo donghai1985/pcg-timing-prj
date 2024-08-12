@@ -63,6 +63,7 @@ module aurora_64b66b_0_exdes #(
     output              aurora_tx_idle_o                ,
     output  [32-1:0]    eds_pack_cnt_o                  ,
     output  [32-1:0]    encode_pack_cnt_o               ,
+    output  [32-1:0]    fbc_pack_cnt_o                  ,
 
     // Reset and clk
     input               RESET                           ,
@@ -220,6 +221,7 @@ wire                    eds_fifo_wrst           ;
 wire                    encode_fifo_rst         ;
 wire    [32-1:0]        eds_pack_cnt            ;
 wire    [32-1:0]        encode_pack_cnt         ;
+wire    [32-1:0]        fbc_pack_cnt            ;
 
 wire                    aurora_soft_rd          ;
 wire                    eds_encode_inter_flag   ;
@@ -495,6 +497,7 @@ aurora_64b66b_tx aurora_64b66b_tx_inst(
     .aurora_tx_idle_o           ( aurora_tx_idle                ),
     .eds_pack_cnt_o             ( eds_pack_cnt                  ),
     .encode_pack_cnt_o          ( encode_pack_cnt               ),
+    .fbc_pack_cnt_o             ( fbc_pack_cnt                  ),
     
     // System Interface
     .USER_CLK                   ( user_clk                      ),
@@ -785,6 +788,26 @@ xpm_cdc_single #(
     .dest_clk(pmt_clk_i),         // 1-bit input: Destination clock.
     .src_clk(user_clk),           // 1-bit input: Source clock.
     .src_in_bin(encode_pack_cnt)      // WIDTH-bit input: Binary input bus that will be synchronized to the
+                                 // destination clock domain.
+
+ );
+
+  xpm_cdc_gray #(
+    .DEST_SYNC_FF(2),          // DECIMAL; range: 2-10
+    .INIT_SYNC_FF(0),          // DECIMAL; 0=disable simulation init values, 1=enable simulation init values
+    .REG_OUTPUT(1),            // DECIMAL; 0=disable registered output, 1=enable registered output
+    .SIM_ASSERT_CHK(0),        // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
+    .SIM_LOSSLESS_GRAY_CHK(0), // DECIMAL; 0=disable lossless check, 1=enable lossless check
+    .WIDTH(32)                  // DECIMAL; range: 2-32
+ )
+ xpm_cdc_fbc_pack_inst (
+    .dest_out_bin(fbc_pack_cnt_o), // WIDTH-bit output: Binary input bus (src_in_bin) synchronized to
+                                 // destination clock domain. This output is combinatorial unless REG_OUTPUT
+                                 // is set to 1.
+
+    .dest_clk(pmt_clk_i),         // 1-bit input: Destination clock.
+    .src_clk(user_clk),           // 1-bit input: Source clock.
+    .src_in_bin(fbc_pack_cnt)      // WIDTH-bit input: Binary input bus that will be synchronized to the
                                  // destination clock domain.
 
  );

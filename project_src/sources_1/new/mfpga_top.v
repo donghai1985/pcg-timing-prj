@@ -347,7 +347,7 @@ module mfpga_top(
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v3.1.1  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v3.1.2  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
 
 wire                slave_tx_ack                    ;
 wire                slave_tx_byte_en                ;
@@ -799,6 +799,7 @@ wire    [3-1:0]     aurora_tx_idle                  ;
 
 wire    [32-1:0]    eds_pack_cnt        [0:2]       ;
 wire    [32-1:0]    encode_pack_cnt     [0:2]       ;
+wire    [32-1:0]    fbc_pack_cnt        [0:2]       ;
 // wire    [32-1:0]    eds_pack_cnt_2      [0:2]       ;
 // wire    [32-1:0]    encode_pack_cnt_2   [0:2]       ;
 // wire    [32-1:0]    eds_pack_cnt_3      [0:2]       ;
@@ -1482,12 +1483,15 @@ command_map command_map_inst(
     .lpo_encode_end_o               ( lpo_encode_end                ),
     .scan_state_i                   ( scan_state                    ),
 
-    .eds_pack_cnt_1_i               ( eds_pack_cnt[0]                ),
-    .encode_pack_cnt_1_i            ( encode_pack_cnt[0]             ),
-    .eds_pack_cnt_2_i               ( eds_pack_cnt[1]                ),
-    .encode_pack_cnt_2_i            ( encode_pack_cnt[1]             ),
-    .eds_pack_cnt_3_i               ( eds_pack_cnt[2]                ),
-    .encode_pack_cnt_3_i            ( encode_pack_cnt[2]             ),
+    .eds_pack_cnt_1_i               ( eds_pack_cnt[0]               ),
+    .encode_pack_cnt_1_i            ( encode_pack_cnt[0]            ),
+    .eds_pack_cnt_2_i               ( eds_pack_cnt[1]               ),
+    .encode_pack_cnt_2_i            ( encode_pack_cnt[1]            ),
+    .eds_pack_cnt_3_i               ( eds_pack_cnt[2]               ),
+    .encode_pack_cnt_3_i            ( encode_pack_cnt[2]            ),
+    .fbc_pack_cnt_1_i               ( fbc_pack_cnt[0]               ),
+    .fbc_pack_cnt_2_i               ( fbc_pack_cnt[1]               ),
+    .fbc_pack_cnt_3_i               ( fbc_pack_cnt[2]               ),
 
     .laser_control_o                ( laser_control                 ),
     .laser_out_switch_o             ( laser_out_switch              ),
@@ -2212,6 +2216,7 @@ aurora_64b66b_0_exdes aurora_64b66b_exdes_inst_3(
     .aurora_tx_idle_o               ( aurora_tx_idle[2]                 ),
     .eds_pack_cnt_o                 ( eds_pack_cnt[2]                   ),
     .encode_pack_cnt_o              ( encode_pack_cnt[2]                ),
+    .fbc_pack_cnt_o                 ( fbc_pack_cnt[2]                   ),
     // Reset and clk
     .RESET                          ( aurora_rst[2]                     ),
     .PMA_INIT                       ( gt_rst                            ),
@@ -2273,6 +2278,7 @@ aurora_64b66b_0_exdes aurora_64b66b_exdes_inst_1(
     .aurora_tx_idle_o               ( aurora_tx_idle[0]                 ),
     .eds_pack_cnt_o                 ( eds_pack_cnt[0]                   ),
     .encode_pack_cnt_o              ( encode_pack_cnt[0]                ),
+    .fbc_pack_cnt_o                 ( fbc_pack_cnt[0]                   ),
     // Reset and clk
     .RESET                          ( aurora_rst[0]                     ),
     .PMA_INIT                       ( gt_rst                            ),
@@ -2334,6 +2340,7 @@ aurora_64b66b_1_exdes aurora_64b66b_exdes_inst_2(
     .aurora_tx_idle_o               ( aurora_tx_idle[1]                 ),
     .eds_pack_cnt_o                 ( eds_pack_cnt[1]                   ),
     .encode_pack_cnt_o              ( encode_pack_cnt[1]                ),
+    .fbc_pack_cnt_o                 ( fbc_pack_cnt[1]                   ),
     // Reset and clk
     .RESET                          ( aurora_rst[1]                     ),
     .PMA_INIT                       ( gt_rst                            ),
