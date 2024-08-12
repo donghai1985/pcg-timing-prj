@@ -932,7 +932,7 @@ end
 
 reg [3:0] fpga_act_mess_cnt = 'd0;
 always @(posedge clk_i) begin
-    if(arbitr_result[11])begin
+    if(arbitr_result[12])begin
         if(fpga_act_mess_cnt < FPGA_ACT_MESS_NUM + 1)
             fpga_act_mess_cnt <= #TCQ fpga_act_mess_cnt + 1;
     end
