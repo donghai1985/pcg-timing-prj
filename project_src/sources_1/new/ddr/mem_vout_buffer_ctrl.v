@@ -58,6 +58,8 @@ localparam                      BURST_FRAME_START       = 3'd1;
 localparam                      BURSTING                = 3'd2;
 localparam                      BURST_END               = 3'd3;
 localparam                      BURST_FRAME_END         = 3'd4;
+
+localparam                      WAIT_WIDTH              = 27;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +78,7 @@ reg                             pre_laser_done          = 'd0;
 reg     [18-1:0]                wr_burst_line_fix       = 'd0;
 reg     [18-1:0]                rd_burst_line           = 'd0;
 reg                             fbc_start_temp          = 'd0;
-reg     [25-1:0]                fbc_start_wait          = 'd0;
+reg     [WAIT_WIDTH-1:0]        fbc_start_wait          = 'd0;
 
 reg                             rd_ddr_req              = 'd0;  
 reg     [ 8-1:0]                rd_ddr_len              = 'd0;  
@@ -173,7 +175,7 @@ always@(*)begin
             if(frame_start)  // fifo reset finish
                 burst_state_next = BURST_FRAME_WAIT;
         BURST_FRAME_WAIT:
-            if(fbc_start_wait[24])
+            if(fbc_start_wait[WAIT_WIDTH-1])
                 burst_state_next = BURST_FRAME_START;
         BURST_FRAME_START:
             if(~ddr_fifo_prog_full)

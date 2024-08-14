@@ -356,7 +356,7 @@ module mfpga_top(
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.7.0  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.7.1  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
 
 
 wire                slave_tx_ack                    ;
