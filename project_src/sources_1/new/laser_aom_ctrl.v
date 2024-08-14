@@ -39,6 +39,7 @@ module laser_aom_ctrl #(
     input                           laser_analog_mode_sel_i ,
     input                           laser_analog_trigger_i  ,
 
+    input                           pmt_scan_en_i           ,
     input                           acc_force_on_i          ,
     input                           acc_job_control_i       ,
     input                           acc_job_init_vol_trig_i ,
@@ -286,18 +287,21 @@ end
 reg     acc_job_control_d0 = 'd0;
 reg     acc_aom_flag_d0 = 'd0;
 reg     acc_force_on_d0 = 'd0;
+reg     pmt_scan_en_d   = 'd0;
 always @(posedge clk_i) acc_job_control_d0 <= #TCQ acc_job_control_i;
 always @(posedge clk_i) acc_aom_flag_d0 <= #TCQ acc_aom_flag_i;
 always @(posedge clk_i) acc_force_on_d0 <= #TCQ acc_force_on_i;
+always @(posedge clk_i) pmt_scan_en_d <= #TCQ pmt_scan_en_i;
 
 wire acc_job_ctrl_pose = ~acc_job_control_d0 && acc_job_control_i;
 wire acc_aom_flag_pose = ~acc_aom_flag_d0 && acc_aom_flag_i ;
 wire acc_aom_flag_nege = acc_aom_flag_d0 && (~acc_aom_flag_i);
 wire acc_force_on_pose = ~acc_force_on_d0 && acc_force_on_i ;
 wire acc_force_on_nege = acc_force_on_d0 && (~acc_force_on_i);
+wire pmt_scan_en_nege = pmt_scan_en_d && (~pmt_scan_en_i);
 
 always @(posedge clk_i) begin
-    if(acc_job_init_vol_trig_i || acc_job_ctrl_pose || acc_aom_flag_nege || acc_force_on_nege)begin
+    if(acc_job_init_vol_trig_i || acc_job_ctrl_pose || acc_aom_flag_nege || acc_force_on_nege || pmt_scan_en_nege)begin
         acc_job_aom_en      <= #TCQ 'd1;
         acc_job_aom_voltage <= #TCQ acc_job_init_vol_i;
     end

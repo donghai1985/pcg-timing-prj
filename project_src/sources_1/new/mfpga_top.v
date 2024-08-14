@@ -356,7 +356,7 @@ module mfpga_top(
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.7.1  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.7.2  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
 
 
 wire                slave_tx_ack                    ;
@@ -1999,6 +1999,7 @@ laser_aom_ctrl laser_aom_ctrl_inst(
     .laser_analog_mode_sel_i        ( laser_analog_mode_sel         ),
     .laser_analog_trigger_i         ( laser_analog_trigger          ),
 
+    .pmt_scan_en_i                  ( |pmt_scan_en                  ),
     .acc_force_on_i                 ( acc_force_on                  ),
     .acc_job_control_i              ( acc_job_control               ),
     // .acc_job_init_switch_i          ( acc_job_init_switch           ),
