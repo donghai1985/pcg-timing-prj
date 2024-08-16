@@ -356,7 +356,7 @@ module mfpga_top(
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.7.2  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.8.0  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
 
 
 wire                slave_tx_ack                    ;
@@ -411,8 +411,7 @@ wire    [16-1:0]    acc_demo_trim_time_pose         ;
 wire    [16-1:0]    acc_demo_trim_time_nege         ;
 wire    [32-1:0]    acc_demo_xencode_offset         ;
 wire                acc_demo_trim_ctrl              ;
-wire                acc_demo_trim_flag              ; 
-wire    [32-1:0]    acc_trigger_num                 ;
+wire                acc_demo_trim_flag              ;
 
 wire                acc_demo_mode                   ;
 wire                acc_demo_wren                   ;
@@ -560,9 +559,19 @@ wire    [96-1:0]    quad_cache_data                 ;
 wire    [4-1:0]     map_readback_cnt                ;
 wire    [4-1:0]     main_scan_cnt                   ;
 wire                acc_encode_upload               ;
-wire                acc_encode_latch_en             ;
-wire    [64-1:0]    acc_encode_latch                ;
+wire                acc_trigger_latch_en            ;
+wire    [64*4-1:0]  acc_trigger_latch               ;
+wire    [32-1:0]    acc_trigger_num                 ;
+
+// readback ddr
+wire    [32-1:0]    ddr_rd_addr                     ;
+wire                ddr_rd_en                       ;
+wire                ddr_readback_vld                ;
+wire                ddr_readback_last               ;
+wire    [64-1:0]    ddr_readback_data               ;
+
 wire                rd_mfpga_version                ;
+wire                heartbeat_bypass                ;
 wire    [64-1:0]    heartbeat_data                  ;
 wire                heartbeat_en                    ;
 wire    [64-1:0]    fpga_message_up_data            ;
@@ -1428,6 +1437,7 @@ fpga_heart_beat fpga_heart_beat_inst(
     .map_readback_cnt_i             ( map_readback_cnt              ),
     .main_scan_cnt_i                ( main_scan_cnt                 ),
 
+    .heartbeat_bypass_i             ( heartbeat_bypass              ),
     .heartbeat_data_o               ( heartbeat_data                ),
     .heartbeat_en_o                 ( heartbeat_en                  )
 );
@@ -1445,8 +1455,9 @@ arbitrate_bpsi #(
     .readback_vld_i                 ( readback_vld                  ),
     .fpga_message_up_data_i         ( fpga_message_up_data          ),
     .fpga_message_up_i              ( fpga_message_up               ),
-    .acc_encode_latch_i             ( acc_encode_latch              ),
-    .acc_encode_latch_en_i          ( acc_encode_latch_en           ),
+    .ddr_readback_vld_i             ( ddr_readback_vld              ),
+    .ddr_readback_last_i            ( ddr_readback_last             ),
+    .ddr_readback_data_i            ( ddr_readback_data             ),
     // // calibrate voltage. dark current * R
     // .FBCi_cali_en_i                 ( FBCi_cali_en                  ),
     // .FBCi_cali_a_i                  ( FBCi_cali_a                   ),
@@ -1728,7 +1739,18 @@ command_map command_map_inst(
     .fbc_udp_rate_switch_o          ( fbc_udp_rate_switch           ),
     .map_readback_cnt_o             ( map_readback_cnt              ),
     .main_scan_cnt_o                ( main_scan_cnt                 ),
-    .acc_encode_upload_o            ( acc_encode_upload             ),
+    .heartbeat_bypass_o             ( heartbeat_bypass              ),
+    .ad5592_1_dac_config_en_o       ( ad5592_1_dac_config_en        ),
+    .ad5592_1_dac_channel_o         ( ad5592_1_dac_channel          ),
+    .ad5592_1_dac_data_o            ( ad5592_1_dac_data             ),
+    .ad5592_1_adc_config_en_o       ( ad5592_1_adc_config_en        ),
+    .ad5592_1_adc_channel_o         ( ad5592_1_adc_channel          ),
+    .ad5592_1_spi_conf_ok_i         ( ad5592_1_spi_conf_ok          ),
+    .ad5592_1_init_i                ( ad5592_1_init                 ),
+    .ad5592_1_adc_data_en_i         ( ad5592_1_adc_data_en          ),
+    .ad5592_1_adc_data_i            ( ad5592_1_adc_data             ),
+    .ddr_rd_addr_o                  ( ddr_rd_addr                   ),
+    .ddr_rd_en_o                    ( ddr_rd_en                     ),
 
     .debug_info                     (                               )
 );
@@ -1933,10 +1955,10 @@ acc_demo_flag_trim acc_demo_flag_trim_inst(
     .clk_i                          ( clk_100m                      ),
     .rst_i                          ( rst_100m                      ),
 
-    .acc_encode_upload_i            ( acc_encode_upload             ),
-    .pmt_precise_encode_i           ( {pmt_precise_encode_w_temp,pmt_precise_encode_x_temp}),
-    .acc_encode_latch_en_o          ( acc_encode_latch_en           ),
-    .acc_encode_latch_o             ( acc_encode_latch              ),
+    // .acc_encode_upload_i            ( acc_encode_upload             ),
+    // .pmt_precise_encode_i           ( {pmt_precise_encode_w_temp,pmt_precise_encode_x_temp}),
+    // .acc_encode_latch_en_o          ( acc_encode_latch_en           ),
+    // .acc_encode_latch_o             ( acc_encode_latch              ),
 
     .pmt_scan_en_i                  ( |pmt_scan_en                  ),
     .acc_demo_flag_i                ( acc_pmt_flag || acc_demo_flag ),
@@ -2307,8 +2329,8 @@ FBC_cache FBC_cache_inst(
     .quad_cache_vld_i               ( quad_cache_vld                        ),
     .quad_cache_data_i              ( quad_cache_data                       ),
     // Enocde
-    .encode_w_i                     ( acc_demo_encode_w                     ),
-    .encode_x_i                     ( {4'd0,acc_demo_encode_x[31:4]}        ),
+    .encode_w_i                     ( real_precise_encode_w                 ),
+    .encode_x_i                     ( {4'd0,real_precise_encode_x[31:4]}    ),
 
     .pmt_scan_en_i                  ( |pmt_scan_en                          ),
     .real_scan_flag_i               ( main_scan_start                       ),
@@ -2331,6 +2353,20 @@ FBC_cache FBC_cache_inst(
     .aurora_fbc_almost_full_3_i     ( aurora_fbc_almost_full_3              )
 );
 
+acc_dump_latch acc_dump_latch_inst(
+    // clk & rst
+    .clk_i                          ( clk_100m                              ),
+    .rst_i                          ( rst_100m                              ),
+
+    .pmt_scan_en_i                  ( |pmt_scan_en                          ),
+    .acc_flag_i                     ( acc_pmt_flag || acc_demo_flag         ),
+    .pmt_precise_encode_i           ( {acc_demo_encode_w,4'd0,acc_demo_encode_x[31:4]} ),
+
+    .acc_trigger_num_o              ( acc_trigger_num                       ),
+    .acc_trigger_latch_en_o         ( acc_trigger_latch_en                  ),
+    .acc_trigger_latch_o            ( acc_trigger_latch                     )
+);
+
 ddr_top u_ddr_top(
     .clk_i                          ( clk_100m                          ),
     .rst_i                          ( rst_100m                          ),
@@ -2346,6 +2382,16 @@ ddr_top u_ddr_top(
     .fbc_vout_rd_seq_i              ( fbc_vout_rd_seq                   ),
     .fbc_vout_rd_vld_o              ( fbc_vout_rd_vld                   ),
     .fbc_vout_rd_data_o             ( fbc_vout_rd_data                  ),
+
+    .pmt_scan_en_i                  ( |pmt_scan_en                      ),
+    .acc_trigger_latch_en_i         ( acc_trigger_latch_en              ),
+    .acc_trigger_latch_i            ( acc_trigger_latch                 ),
+
+    .ddr_rd_addr_i                  ( ddr_rd_addr                       ),
+    .ddr_rd_en_i                    ( ddr_rd_en                         ),
+    .ddr_readback_vld_o             ( ddr_readback_vld                  ),
+    .ddr_readback_last_o            ( ddr_readback_last                 ),
+    .ddr_readback_data_o            ( ddr_readback_data                 ),
 
     .init_calib_complete_o          ( ddr3_init_done                    ),
     .ddr3_addr                      ( DDR3_A_ADD                        ),

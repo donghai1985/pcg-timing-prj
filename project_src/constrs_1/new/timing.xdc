@@ -23,3 +23,10 @@ set_false_path -from [get_pins FBC_cache_inst/real_scan_flag_latch_reg/C] -to [g
 set_false_path -from [get_pins aurora_64b66b_exdes_inst_2/aurora_64b66b_0_block_i/support_reset_logic_i/gt_rst_r_reg/C] -to [get_pins aurora_64b66b_exdes_inst_2/aurora_64b66b_0_block_i/support_reset_logic_i/u_rst_sync_gt/stg1_aurora_64b66b_0_cdc_to_reg/D]
 set_false_path -from [get_pins aurora_64b66b_exdes_inst_1/aurora_64b66b_0_block_i/support_reset_logic_i/gt_rst_r_reg/C] -to [get_pins aurora_64b66b_exdes_inst_1/aurora_64b66b_0_block_i/support_reset_logic_i/u_rst_sync_gt/stg1_aurora_64b66b_0_cdc_to_reg/D]
 set_false_path -from [get_pins aurora_64b66b_exdes_inst_3/aurora_64b66b_0_block_i/support_reset_logic_i/gt_rst_r_reg/C] -to [get_pins aurora_64b66b_exdes_inst_3/aurora_64b66b_0_block_i/support_reset_logic_i/u_rst_sync_gt/stg1_aurora_64b66b_1_cdc_to_reg/D]
+
+set_false_path -from [get_pins {scan_flag_generate_inst/genblk1[2].pmt_scan_en_reg[2]/C}] -to [get_pins u_ddr_top/acc_dump_vin_ctrl_inst/acc_dump_vin_buffer_ctrl_inst/laser_start_d0_reg/D]
+set_false_path -from [get_pins {scan_flag_generate_inst/genblk1[1].pmt_scan_en_reg[1]/C}] -to [get_pins u_ddr_top/acc_dump_vin_ctrl_inst/acc_dump_vin_buffer_ctrl_inst/laser_start_d0_reg/D]
+set_false_path -from [get_pins {scan_flag_generate_inst/genblk1[0].pmt_scan_en_reg[0]/C}] -to [get_pins u_ddr_top/acc_dump_vin_ctrl_inst/acc_dump_vin_buffer_ctrl_inst/laser_start_d0_reg/D]
+set_false_path -from [get_pins {u_ddr_top/readback_vout_buffer_inst/handshake_burst_line_inst/dest_ff_reg[1]/C}] -to [get_pins u_ddr_top/readback_vout_buffer_inst/handshake_burst_line_inst/handshake_flag_reg/D]
+set_false_path -from [get_pins u_ddr_top/readback_vout_buffer_inst/handshake_burst_line_inst/handshake_flag_reg/C] -to [get_pins {u_ddr_top/readback_vout_buffer_inst/handshake_burst_line_inst/dest_ff_reg[0]/D}]
+set_false_path -from [get_pins {u_ddr_top/readback_vout_buffer_inst/handshake_burst_line_inst/handshake_data_reg[*]/C}] -to [get_pins {u_ddr_top/readback_vout_buffer_inst/handshake_burst_line_inst/dest_data_o_reg[*]/D}]

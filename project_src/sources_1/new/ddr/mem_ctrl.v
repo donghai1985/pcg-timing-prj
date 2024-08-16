@@ -41,9 +41,16 @@ module mem_ctrl#(
     input                           ch0_wr_ddr_req          ,
     input   [8-1:0]                 ch0_wr_ddr_len          ,
     input   [ADDR_WIDTH-1:0]        ch0_wr_ddr_addr         ,
-    output                          ch0_wr_ddr_data_req     , 
+    output                          ch0_wr_ddr_data_req     ,
     input   [MEM_DATA_BITS-1:0]     ch0_wr_ddr_data         ,
     output                          ch0_wr_ddr_finish       ,
+    
+    input                           ch1_wr_ddr_req          ,
+    input   [8-1:0]                 ch1_wr_ddr_len          ,
+    input   [ADDR_WIDTH-1:0]        ch1_wr_ddr_addr         ,
+    output                          ch1_wr_ddr_data_req     ,
+    input   [MEM_DATA_BITS-1:0]     ch1_wr_ddr_data         ,
+    output                          ch1_wr_ddr_finish       ,
     
     // read channel interface 
     input                           ch0_rd_ddr_req          ,
@@ -142,6 +149,29 @@ mem_write_arbi#(
     .ch0_wr_ddr_data                ( ch0_wr_ddr_data               ),
     .ch0_wr_ddr_finish              ( ch0_wr_ddr_finish             ),
     
+    .ch1_wr_ddr_req                 ( ch1_wr_ddr_req                ),
+    .ch1_wr_ddr_len                 ( ch1_wr_ddr_len                ),
+    .ch1_wr_ddr_addr                ( ch1_wr_ddr_addr               ),
+    .ch1_wr_ddr_data_req            ( ch1_wr_ddr_data_req           ),
+    .ch1_wr_ddr_data                ( ch1_wr_ddr_data               ),
+    .ch1_wr_ddr_finish              ( ch1_wr_ddr_finish             ),
+    
+    .ch2_wr_ddr_req                 ( 0                             ),
+    // .ch2_wr_ddr_req                 ( ch2_wr_ddr_req                ),
+    // .ch2_wr_ddr_len                 ( ch2_wr_ddr_len                ),
+    // .ch2_wr_ddr_addr                ( ch2_wr_ddr_addr               ),
+    // .ch2_wr_ddr_data_req            ( ch2_wr_ddr_data_req           ),
+    // .ch2_wr_ddr_data                ( ch2_wr_ddr_data               ),
+    // .ch2_wr_ddr_finish              ( ch2_wr_ddr_finish             ),
+
+    .ch3_wr_ddr_req                 ( 0                             ),
+    // .ch3_wr_ddr_req                 ( ch3_wr_ddr_req                ),
+    // .ch3_wr_ddr_len                 ( ch3_wr_ddr_len                ),
+    // .ch3_wr_ddr_addr                ( ch3_wr_ddr_addr               ),
+    // .ch3_wr_ddr_data_req            ( ch3_wr_ddr_data_req           ),
+    // .ch3_wr_ddr_data                ( ch3_wr_ddr_data               ),
+    // .ch3_wr_ddr_finish              ( ch3_wr_ddr_finish             ),
+
     .wr_ddr_req                     ( wr_ddr_req                    ),
     .wr_ddr_len                     ( wr_ddr_len                    ),
     .wr_ddr_addr                    ( wr_ddr_addr                   ),

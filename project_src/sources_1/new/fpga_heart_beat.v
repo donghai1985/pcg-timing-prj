@@ -44,6 +44,7 @@ module fpga_heart_beat #(
     input       [4-1:0]         map_readback_cnt_i      ,
     input       [4-1:0]         main_scan_cnt_i         ,
 
+    input                       heartbeat_bypass_i      ,
     output      [64-1:0]        heartbeat_data_o        ,
     output                      heartbeat_en_o          
 );
@@ -118,7 +119,7 @@ always @(posedge clk_i) begin
                             };
 end
 
-assign heartbeat_en_o   = heartbeat_en  ;
+assign heartbeat_en_o   = heartbeat_en  && (~heartbeat_bypass_i);
 assign heartbeat_data_o = heartbeat_data;
 
 // fpga action up message

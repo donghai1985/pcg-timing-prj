@@ -34,8 +34,9 @@ module arbitrate_bpsi #(
     input    wire                           readback_vld_i              ,
     input    wire    [64-1:0]               fpga_message_up_data_i      ,
     input    wire                           fpga_message_up_i           ,
-    input    wire    [64-1:0]               acc_encode_latch_i          ,
-    input    wire                           acc_encode_latch_en_i       ,
+    input    wire                           ddr_readback_vld_i          ,
+    input    wire                           ddr_readback_last_i         ,
+    input    wire    [64-1:0]               ddr_readback_data_i         ,
 
     // // calibrate voltage. dark current * R
     // input    wire                           FBCi_cali_en_i              ,
@@ -144,8 +145,8 @@ localparam          [16-1:0]                HEARTBEAT_NUM               = 'd10;
 localparam          [16-1:0]                FPGA_ACT_MESS_TYPE          = 'h0340;
 localparam          [16-1:0]                FPGA_ACT_MESS_NUM           = 'd10;
 
-localparam          [16-1:0]                ACC_ENCODE_UP_TYPE          = 'h0338;
-localparam          [16-1:0]                ACC_ENCODE_UP_NUM           = 'd10;
+localparam          [16-1:0]                DDR_READBACK_TYPE           = 'h035E;
+// localparam          [16-1:0]                DDR_READBACK_NUM            = 'd128;  // 128*64 = 1024*8
 
 localparam          [16-1:0]                QUAD_SENSOR_TYPE            = 'h0332;
 localparam          [16-1:0]                QUAD_SENSOR_NUM             = FBC_ACTUAL_DATA_NUM * 12 + 2 + FBC_ACTUAL_DATA_NUM*8;
@@ -233,6 +234,12 @@ reg                                         FBCr2_bg_ready              = 'd0;
 // reg                                         FBCr2_cali_ready            = 'd0;
 reg                                         quad_sensor_rd              = 'd0;
 
+
+// ddr readback channel
+reg                                         ddr_readback_rd             = 'd0;
+reg                 [16-1:0]                ddr_readback_cnt            = 'd0;
+reg                 [16-1:0]                ddr_readback_num            = 'd0;
+
 reg                 [ 6-1:0]                spi_slave_ack_cnt [2:0] ;
 reg                 [ 6-1:0]                spi_slave_ack_num [2:0] ;
 reg                                         spi_ack_rd_en     [2:0] ;
@@ -276,6 +283,9 @@ wire                [ 8-1:0]                laser_rx_dout       ;
 
 wire                                        quad_sensor_vld     ;
 wire                [96+64-1:0]             quad_sensor_data    ;
+
+wire                                        ddr_readback_vld    ;
+wire                [64-1:0]                ddr_readback_data   ;
 
 wire                                        spi_slave_ack_en [3:0];
 wire                [32-1:0]                spi_ack_rd_dout  [3:0];
@@ -398,6 +408,25 @@ generate
         );
     end
 endgenerate
+
+xpm_sync_fifo #(
+    .ECC_MODE               ( "no_ecc"                              ),
+    .FIFO_MEMORY_TYPE       ( "block"                               ), // "auto" "block" "distributed"
+    .READ_MODE              ( "fwft"                                ),
+    .FIFO_WRITE_DEPTH       ( 256                                   ),
+    .WRITE_DATA_WIDTH       ( 64                                    ),
+    .READ_DATA_WIDTH        ( 64                                    ),
+    .USE_ADV_FEATURES       ( "1808"                                )
+)ddr_readback_inst (
+    .wr_clk_i               ( clk_i                                 ),
+    .rst_i                  ( rst_i                                 ), // synchronous to wr_clk
+    .wr_en_i                ( ddr_readback_vld_i                    ),
+    .wr_data_i              ( ddr_readback_data_i                   ),
+
+    .rd_en_i                ( ddr_readback_rd                       ),
+    .fifo_rd_vld_o          ( ddr_readback_vld                      ),
+    .fifo_rd_data_o         ( ddr_readback_data                     )
+);
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -659,15 +688,30 @@ endgenerate
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate new_arbitrate enable end
 
-reg [64-1:0] acc_encode_latch = 'd0;
+wire          ddr_readback_irq ;
+// generate new arbitrate enable
+// ddr readback
 always @(posedge clk_i) begin
-    if(acc_encode_latch_en_i && (~arbitr_result[12]))
-        acc_encode_latch <= #TCQ acc_encode_latch_i;
+    if(rst_i)
+        ddr_readback_cnt <= #TCQ 'd0;
+    else if(ddr_readback_last_i)
+        ddr_readback_cnt <= #TCQ 'd0;
+    else if(ddr_readback_vld_i)
+        ddr_readback_cnt <= #TCQ ddr_readback_cnt + 1;
 end
+
+always @(posedge clk_i) begin
+    if(ddr_readback_last_i)
+        ddr_readback_num <= #TCQ ddr_readback_cnt + 1;
+end
+
+assign ddr_readback_irq = ddr_readback_last_i;
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate ddr readback enable end
 
 // generate arbitrate enable , alwaye modify when arbitrate channel add.
 assign bpsi_en          = {  
-                             acc_encode_latch_en_i
+                             ddr_readback_irq
                             ,fpga_message_up_i
                             ,heartbeat_en_i
                             ,readback_vld_i
@@ -934,15 +978,35 @@ always @(posedge clk_i) begin
         fpga_act_mess_cnt <= #TCQ 'd0;
 end
 
-reg [3:0] acc_encode_upload_cnt = 'd0;
+reg [3-1:0] ddr_readback_tx_byte_cnt = 'd7;
+reg [16-1:0] ddr_readback_tx_cnt = 'd0;
 always @(posedge clk_i) begin
-    if(arbitr_result[12])begin
-        if(acc_encode_upload_cnt < ACC_ENCODE_UP_NUM + 1)
-            acc_encode_upload_cnt <= #TCQ acc_encode_upload_cnt + 1;
+    if(arbitr_result[12] && (ddr_readback_tx_cnt >= 'd1) && (ddr_readback_tx_cnt < ddr_readback_num + 2))begin
+        if(ddr_readback_tx_byte_cnt == 'd7)
+            ddr_readback_tx_byte_cnt <= #TCQ 'd0;
+        else 
+            ddr_readback_tx_byte_cnt <= #TCQ ddr_readback_tx_byte_cnt + 1;
     end
     else 
-        acc_encode_upload_cnt <= #TCQ 'd0;
+        ddr_readback_tx_byte_cnt <= #TCQ 'd7;
 end
+
+always @(posedge clk_i) begin
+    if(arbitr_result[12])begin
+        if(ddr_readback_tx_byte_cnt == 'd7)
+            ddr_readback_tx_cnt <= #TCQ ddr_readback_tx_cnt + 1;
+    end
+    else 
+        ddr_readback_tx_cnt <= #TCQ 'd0;
+end
+
+always @(posedge clk_i) begin
+    if((arbitr_result[12]) && (ddr_readback_tx_cnt < ddr_readback_num + 2) && slave_tx_byte_en && (ddr_readback_tx_byte_cnt == 'd6))
+        ddr_readback_rd  <= #TCQ 'd1;
+    else 
+        ddr_readback_rd  <= #TCQ 'd0;
+end
+
 
 reg [5-1:0] quad_sensor_byte_cnt = 'd19;
 reg [16-1:0] quad_sensor_cnt = 'd0;
@@ -1068,11 +1132,11 @@ always @(posedge clk_i) begin
             default:slave_tx_byte <= #TCQ fpga_message_up_data_i[(4'd9-fpga_act_mess_cnt)*8 +: 8];
         endcase
     end
-    else if(arbitr_result[12] && acc_encode_upload_cnt<ACC_ENCODE_UP_NUM)begin
-        case(acc_encode_upload_cnt)
-            'd0 : slave_tx_byte <= #TCQ ACC_ENCODE_UP_TYPE[15:8];
-            'd1 : slave_tx_byte <= #TCQ ACC_ENCODE_UP_TYPE[7:0];
-            default:slave_tx_byte <= #TCQ acc_encode_latch[(4'd9-acc_encode_upload_cnt)*8 +: 8];
+    else if(arbitr_result[12])begin
+        case(ddr_readback_tx_cnt)
+            'd0 : slave_tx_byte <= #TCQ DDR_READBACK_TYPE[15:8];
+            'd1 : slave_tx_byte <= #TCQ DDR_READBACK_TYPE[7:0];
+            default:slave_tx_byte <= #TCQ ddr_readback_data[('d7-ddr_readback_tx_byte_cnt)*8 +: 8];
         endcase
     end
 end
@@ -1086,6 +1150,11 @@ wire quad_tx_byte_en ;
 assign quad_tx_byte_en = (quad_sensor_cnt>'d0) && (quad_sensor_cnt < FBC_ACTUAL_DATA_NUM + 2);
 reg quad_tx_byte_en_d = 'd0;
 always @(posedge clk_i) quad_tx_byte_en_d <= #TCQ quad_tx_byte_en;
+
+wire ddr_readback_tx_byte_en ;
+assign ddr_readback_tx_byte_en = (ddr_readback_tx_cnt>'d0) && (ddr_readback_tx_cnt < ddr_readback_num + 2);
+reg ddr_readback_tx_byte_en_d = 'd0;
+always @(posedge clk_i) ddr_readback_tx_byte_en_d <= #TCQ ddr_readback_tx_byte_en;
 
 always @(*) begin
     if(arbitr_result[0])
@@ -1113,7 +1182,7 @@ always @(*) begin
     else if(arbitr_result[11])
         slave_tx_byte_en = (fpga_act_mess_cnt>'d0) && (fpga_act_mess_cnt < FPGA_ACT_MESS_NUM + 1);
     else if(arbitr_result[12])
-        slave_tx_byte_en = (acc_encode_upload_cnt>'d0) && (acc_encode_upload_cnt < ACC_ENCODE_UP_NUM + 1);
+        slave_tx_byte_en = ddr_readback_tx_byte_en_d || ddr_readback_tx_byte_en;
     else 
         slave_tx_byte_en = 'd0;
 end
@@ -1144,7 +1213,7 @@ always @(posedge clk_i) begin
     if(arbitr_result[11])
         slave_tx_byte_num <= #TCQ FPGA_ACT_MESS_NUM;
     if(arbitr_result[12])
-        slave_tx_byte_num <= #TCQ ACC_ENCODE_UP_NUM;
+        slave_tx_byte_num <= #TCQ {ddr_readback_num,3'b0} + 2;
 end
 
 always @(posedge clk_i) begin

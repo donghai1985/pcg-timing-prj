@@ -67,8 +67,6 @@ reg             [ 8-1:0]    crc_new_data                = 'hff;
 reg             [ 3-1:0]    tx_bit_cnt                  = 'd0;
 
 reg                         msg_data_rd_last            = 'd0;
-reg                         slave_tx_byte_num_en_sync   = 'd0;
-reg             [15:0]      slave_tx_byte_num_sync      = 'd0;  
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +78,8 @@ wire                        msg_tx_fifo_full ;
 wire                        msg_tx_fifo_empty;
 wire                        crc_vld ;
 
+wire                        slave_tx_byte_num_en_sync   ;
+wire            [16-1:0]    slave_tx_byte_num_sync      ;
 wire                        slave_tx_ack;
 wire                        slave_tx_ack_sync;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -88,48 +88,33 @@ wire                        slave_tx_ack_sync;
 // *********** Instance Module
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 msg_comm_tx_fifo msg_comm_tx_fifo_inst(
-    .rst       ( 1'b0              ),
-    .wr_clk    ( clk_sys_i         ),
-    .din       ( slave_tx_data_i   ),
-    .wr_en     ( slave_tx_en_i     ),
-    .rd_clk    ( SLAVE_MSG_CLK     ),
-    .rd_en     ( msg_tx_fifo_rd    ),
-    .dout      ( msg_tx_fifo_dout  ),
-    .full      ( msg_tx_fifo_full  ),
-    .empty     ( msg_tx_fifo_empty )
+    .rst            ( 1'b0                              ),
+    .wr_clk         ( clk_sys_i                         ),
+    .din            ( slave_tx_data_i                   ),
+    .wr_en          ( slave_tx_en_i                     ),
+    .rd_clk         ( SLAVE_MSG_CLK                     ),
+    .rd_en          ( msg_tx_fifo_rd                    ),
+    .dout           ( msg_tx_fifo_dout                  ),
+    .full           ( msg_tx_fifo_full                  ),
+    .empty          ( msg_tx_fifo_empty                 )
 );
 
-reg handshake_en_sync_d0;
-reg handshake_en_sync_d1;
-reg handshake_en_sync_d2;
-reg handshake_en_sync_d3;
 
-reg [16-1:0] slave_tx_byte_num_ff;
-always @(posedge clk_sys_i) begin
-    if(slave_tx_byte_num_en_i)
-        slave_tx_byte_num_ff <= slave_tx_byte_num_i;
-end
+handshake #(
+    .DATA_WIDTH     ( 16                                )
+)handshake_inst(
+    // clk & rst
+    .src_clk_i      ( clk_sys_i                         ),
+    .src_rst_i      ( 0                                 ),
+    .dest_clk_i     ( SLAVE_MSG_CLK                     ),
+    .dest_rst_i     ( 0                                 ),
+    
+    .src_data_i     ( slave_tx_byte_num_i               ),
+    .src_vld_i      ( slave_tx_byte_num_en_i            ),
 
-reg handshake_en = 'd0;
-always @(posedge clk_sys_i ) begin
-    if(slave_tx_byte_num_en_i)
-        handshake_en <= 'd1;
-    else if(handshake_en_sync_d2 && ~handshake_en_sync_d3)
-        handshake_en <= 'd0;
-end
-
-always @(posedge SLAVE_MSG_CLK) handshake_en_sync_d0 <= handshake_en;
-always @(posedge SLAVE_MSG_CLK) handshake_en_sync_d1 <= handshake_en_sync_d0;
-always @(posedge clk_sys_i)     handshake_en_sync_d2 <= handshake_en_sync_d1;
-always @(posedge clk_sys_i)     handshake_en_sync_d3 <= handshake_en_sync_d2;
-
-always @(posedge SLAVE_MSG_CLK ) begin
-    if(handshake_en_sync_d0 && ~handshake_en_sync_d1)
-        slave_tx_byte_num_sync <= slave_tx_byte_num_ff;
-end
-
-always @(posedge SLAVE_MSG_CLK ) slave_tx_byte_num_en_sync <= handshake_en_sync_d0 && ~handshake_en_sync_d1;
-
+    .dest_data_o    ( slave_tx_byte_num_sync            ),
+    .dest_vld_o     ( slave_tx_byte_num_en_sync         )
+);
 
 xpm_cdc_pulse #(
    .DEST_SYNC_FF(2),   // DECIMAL; range: 2-10

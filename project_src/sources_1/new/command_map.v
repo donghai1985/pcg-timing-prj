@@ -235,7 +235,7 @@ module command_map #(
     output  wire                fbc_udp_rate_switch_o       ,
     output  wire    [4-1:0]     map_readback_cnt_o          ,
     output  wire    [4-1:0]     main_scan_cnt_o             ,
-    output  wire                acc_encode_upload_o         ,
+    output  wire                heartbeat_bypass_o          ,
     
     output  wire                ad5592_1_dac_config_en_o    ,
     output  wire    [3-1:0]     ad5592_1_dac_channel_o      ,
@@ -246,6 +246,10 @@ module command_map #(
     input   wire                ad5592_1_init_i             ,
     input   wire                ad5592_1_adc_data_en_i      ,
     input   wire    [12-1:0]    ad5592_1_adc_data_i         ,
+
+    // readback ddr
+    output  wire    [32-1:0]    ddr_rd_addr_o               ,
+    output  wire                ddr_rd_en_o                 ,
 
     output  wire                debug_info
 );
@@ -415,10 +419,12 @@ reg     [12-1:0]                ad5592_1_dac_data           = 'd0;
 reg                             ad5592_1_adc_config_en      = 'd0;
 reg     [8-1:0]                 ad5592_1_adc_channel        = 'd0;
 reg     [12-1:0]                ad5592_1_adc_data           = 'd0;
+reg     [32-1:0]                ddr_rd_addr                 = 'd0;
+reg                             ddr_rd_en                   = 'd0;
 reg     [2-1:0]                 cfg_acc_use                 = 'd0;
 reg                             cfg_fbc_rate                = 'd0;
 reg                             cfg_spindle_width           = 'd0;
-reg                             acc_encode_upload           = 'd0;
+reg                             heartbeat_bypass            = 'd0;
 reg                             cali_register_clear         = 'd0;
 
 reg     [2-1:0]                 cfg_FBC_bypass              = 'd0;
@@ -600,16 +606,22 @@ always @(posedge clk_sys_i) begin
             'h0334: dbg_qpd_mode            <= #TCQ command_data        ;
             'h0335: sensor_config_test      <= #TCQ command_data        ;
             'h0336: fbc_udp_rate_switch     <= #TCQ command_data        ;
-            'h0337: acc_encode_upload       <= #TCQ command_data        ;
             // 'h0338: arbitrate use
             'h0339: cali_register_clear     <= #TCQ command_data        ;
+            'h033a: heartbeat_bypass        <= #TCQ command_data        ;
 
             'h0351: cfg_acc_use             <= #TCQ command_data[1:0]   ;
             'h0352: cfg_fbc_rate            <= #TCQ command_data[0]     ;
             'h0353: cfg_spindle_width       <= #TCQ command_data[0]     ;
+            'h0354: ad5592_1_dac_config_en  <= #TCQ command_data        ;
+            'h0355: ad5592_1_dac_channel    <= #TCQ command_data        ;
+            'h0356: ad5592_1_dac_data       <= #TCQ command_data        ;
+            'h0357: ad5592_1_adc_config_en  <= #TCQ command_data        ;
+            'h0358: ad5592_1_adc_channel    <= #TCQ command_data        ;
 
             'h035b: cfg_FBC_bypass          <= #TCQ command_data[1:0]   ;
             'h035c: cfg_QPD_enable          <= #TCQ command_data[0]     ;
+            'h035d: ddr_rd_addr             <= #TCQ command_data        ;
 
             'h0409: aurora_soft_rd_1        <= #TCQ command_data[0]     ;
             'h040a: aurora_soft_rd_2        <= #TCQ command_data[0]     ;
@@ -623,7 +635,6 @@ always @(posedge clk_sys_i) begin
     end
     else if(cali_register_clear)begin
         cali_register_clear     <= #TCQ 'd0;
-        acc_encode_upload       <= #TCQ 'd0;
     end
     else begin
         rd_mfpga_version        <= #TCQ 'd0;
@@ -641,15 +652,18 @@ always @(posedge clk_sys_i) begin
         eds_frame_cmd           <= #TCQ 'd0;
         encode_check_clean      <= #TCQ 'd0;
         cali_register_clear     <= #TCQ 'd0;
+        ad5592_1_dac_config_en  <= #TCQ 'd0;
+        ad5592_1_adc_config_en  <= #TCQ 'd0;
     end
 end
 
-// always @(posedge clk_sys_i) begin
-//     if(command_sel=='h0110 && command_data_vld)
-//         sensor_ds_rate_en <= #TCQ 'd1;
-//     else 
-//         sensor_ds_rate_en <= #TCQ 'd0;
-// end
+// readback DDR cmmand
+always @(posedge clk_sys_i) begin
+    if(command_sel=='h035d && command_data_vld)
+        ddr_rd_en   <= #TCQ 'd1;
+    else
+        ddr_rd_en   <= #TCQ 'd0;
+end
 
 always @(posedge clk_sys_i) begin
     if(command_sel=='h011b && command_data_vld)
@@ -943,10 +957,9 @@ always @(posedge clk_sys_i) begin
             'h0334:  register_data <= #TCQ dbg_qpd_mode             ;
             'h0335:  register_data <= #TCQ sensor_config_test       ;
             'h0336:  register_data <= #TCQ fbc_udp_rate_switch      ;
-            'h0337:  register_data <= #TCQ {31'd0,acc_encode_upload};
             // 'h0338: arbitrate use
             // 'h0339: register_data <= #TCQ cali_register_clear    ;
-            'h033a:  register_data <= #TCQ acc_trigger_num_i        ;
+            'h033a:  register_data <= #TCQ {31'd0,heartbeat_bypass} ;
 
             'h0351:  register_data <= #TCQ {30'd0,cfg_acc_use}      ;
             'h0352:  register_data <= #TCQ {31'd0,cfg_fbc_rate}     ;
@@ -960,6 +973,8 @@ always @(posedge clk_sys_i) begin
             'h035a:  register_data <= #TCQ {24'd0,ad5592_1_adc_data};
             'h035b:  register_data <= #TCQ {30'd0,cfg_FBC_bypass}   ;
             'h035c:  register_data <= #TCQ {31'd0,cfg_QPD_enable}   ;
+            'h035d:  register_data <= #TCQ ddr_rd_addr              ;
+            'h035f:  register_data <= #TCQ acc_trigger_num_i        ;
 
             'h0400:  register_data <= #TCQ eds_pack_cnt_2_i     ;
             'h0401:  register_data <= #TCQ encode_pack_cnt_2_i  ;
@@ -1155,6 +1170,8 @@ assign ad5592_1_dac_channel_o       = ad5592_1_dac_channel      ;
 assign ad5592_1_dac_data_o          = ad5592_1_dac_data         ;
 assign ad5592_1_adc_config_en_o     = ad5592_1_adc_config_en    ;
 assign ad5592_1_adc_channel_o       = ad5592_1_adc_channel      ;
+assign ddr_rd_addr_o                = ddr_rd_addr               ;
+assign ddr_rd_en_o                  = ddr_rd_en                 ;
 assign cfg_acc_use_o                = cfg_acc_use               ;
 assign cfg_fbc_rate_o               = cfg_fbc_rate              ;
 assign cfg_spindle_width_o          = cfg_spindle_width         ;
@@ -1163,7 +1180,7 @@ assign cfg_QPD_enable_o             = cfg_QPD_enable            ;
 assign dbg_qpd_mode_o               = dbg_qpd_mode              ;
 assign map_readback_cnt_o           = map_readback_cnt          ;
 assign main_scan_cnt_o              = main_scan_cnt             ;
-assign acc_encode_upload_o          = acc_encode_upload         ;
+assign heartbeat_bypass_o           = heartbeat_bypass          ;
 // // FBC sensor response test
 // reg          fbc_response_flag  = 'd0;
 // reg [22-1:0] fbc_response_test_cnt = 'd0;

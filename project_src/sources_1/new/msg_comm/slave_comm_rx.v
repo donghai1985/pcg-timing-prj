@@ -155,36 +155,32 @@ always @(posedge SLAVE_MSG_CLK) comm_rx_last_d = comm_rx_last;
 
 wire rx_sync_result = comm_rx_last_d && (~crc_check_result);
 
-always @(posedge SLAVE_MSG_CLK) begin
-    if(rx_sync_result)begin
-        comm_rx_last_ff <= 'd1;
-    end
-    else if(comm_rx_last_ff_d2 && (~comm_rx_last_ff_d3))begin
-        comm_rx_last_ff <= 'd0;
-    end
-end
 
+wire rx_start_sync;
+wire [16-1:0] rx_start_num_sync ;
 
-always @(posedge clk_sys_i) comm_rx_last_ff_d0 <= comm_rx_last_ff;
-always @(posedge clk_sys_i) comm_rx_last_ff_d1 <= comm_rx_last_ff_d0;
-always @(posedge SLAVE_MSG_CLK) comm_rx_last_ff_d2 <= comm_rx_last_ff_d1;
-always @(posedge SLAVE_MSG_CLK) comm_rx_last_ff_d3 <= comm_rx_last_ff_d2;
+handshake #(
+    .DATA_WIDTH                 ( 16                    )
+)handshake_inst(
+    // clk & rst
+    .src_clk_i                  ( SLAVE_MSG_CLK         ),
+    .src_rst_i                  ( 0                     ),
+    .dest_clk_i                 ( clk_sys_i             ),
+    .dest_rst_i                 ( 0                     ),
+    
+    .src_data_i                 ( comm_rx_data_num      ),
+    .src_vld_i                  ( rx_sync_result        ),
 
-always @(posedge clk_sys_i ) begin
-    if(~comm_rx_last_ff_d1 && comm_rx_last_ff_d0)
-        comm_rx_data_num_sync <= comm_rx_data_num;
-end
-
-always @(posedge clk_sys_i ) begin
-    comm_rx_last_sync <= ~comm_rx_last_ff_d1 && comm_rx_last_ff_d0;
-end
+    .dest_data_o                ( rx_start_num_sync     ),
+    .dest_vld_o                 ( rx_start_sync         )
+);
 
 
 // read message data
 always @(posedge clk_sys_i) begin
-    if(comm_rx_last_sync)
+    if(rx_start_sync)
         st_read_ram <= 'd1;
-    else if(msg_rx_ram_raddr==comm_rx_data_num_sync - 2)
+    else if(msg_rx_ram_raddr==rx_start_num_sync - 2)
         st_read_ram <= 'd0;
 end
 
