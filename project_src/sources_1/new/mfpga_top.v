@@ -356,7 +356,7 @@ module mfpga_top(
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.8.0  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.8.1  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
 
 
 wire                slave_tx_ack                    ;
@@ -520,6 +520,7 @@ wire    [2:0]       PMT_SPI_MISO_N                  ;
     // actual voltage
 wire                FBC_out_fifo_rst                ;
 wire                fbc_udp_rate_switch             ;
+wire                FBC_out_vld                     ;
 wire                FBCi_out_en                     ;
 wire    [23:0]      FBCi_out_a                      ;
 wire    [23:0]      FBCi_out_b                      ;
@@ -1367,13 +1368,14 @@ bpsi_top_if_v2 bpsi_top_if_v2_inst(
     // .FBCr2_cali_a_o                 ( FBCr2_cali_a                  ),
     // .FBCr2_cali_b_o                 ( FBCr2_cali_b                  ),
     // actual voltage
-    .FBCi_out_en_o                  ( FBCi_out_en                   ),
+    .FBC_out_vld_o                  ( FBC_out_vld                   ),
+    // .FBCi_out_en_o                  ( FBCi_out_en                   ),
     .FBCi_out_a_o                   ( FBCi_out_a                    ),
     .FBCi_out_b_o                   ( FBCi_out_b                    ),
-    .FBCr1_out_en_o                 ( FBCr1_out_en                  ),
+    // .FBCr1_out_en_o                 ( FBCr1_out_en                  ),
     .FBCr1_out_a_o                  ( FBCr1_out_a                   ),
     .FBCr1_out_b_o                  ( FBCr1_out_b                   ),
-    .FBCr2_out_en_o                 ( FBCr2_out_en                  ),
+    // .FBCr2_out_en_o                 ( FBCr2_out_en                  ),
     .FBCr2_out_a_o                  ( FBCr2_out_a                   ),
     .FBCr2_out_b_o                  ( FBCr2_out_b                   ),
     // background voltage. dark current * R
@@ -1470,14 +1472,15 @@ arbitrate_bpsi #(
     // .FBCr2_cali_b_i                 ( FBCr2_cali_b                  ),
     // actual voltage
     .FBC_out_fifo_rst_i             ( FBC_out_fifo_rst              ),
-    .fbc_udp_rate_switch_i          ( fbc_udp_rate_switch           ),
-    .FBCi_out_en_i                  ( FBCi_out_en                   ),
+    // .fbc_udp_rate_switch_i          ( fbc_udp_rate_switch           ),
+    .FBC_out_vld_i                  ( FBC_out_vld                   ),
+    // .FBCi_out_en_i                  ( FBCi_out_en                   ),
     .FBCi_out_a_i                   ( FBCi_out_a                    ),
     .FBCi_out_b_i                   ( FBCi_out_b                    ),
-    .FBCr1_out_en_i                 ( FBCr1_out_en                  ),
+    // .FBCr1_out_en_i                 ( FBCr1_out_en                  ),
     .FBCr1_out_a_i                  ( FBCr1_out_a                   ),
     .FBCr1_out_b_i                  ( FBCr1_out_b                   ),
-    .FBCr2_out_en_i                 ( FBCr2_out_en                  ),
+    // .FBCr2_out_en_i                 ( FBCr2_out_en                  ),
     .FBCr2_out_a_i                  ( FBCr2_out_a                   ),
     .FBCr2_out_b_i                  ( FBCr2_out_b                   ),
     // Enocde

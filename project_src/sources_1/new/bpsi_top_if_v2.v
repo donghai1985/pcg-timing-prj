@@ -45,8 +45,8 @@ module bpsi_top_if_v2#(
     input   wire                motor_bias_vol_en_i         ,
     input   wire    [15:0]      fbc_bias_voltage_i          , // 
     // input   wire    [15:0]      fbc_cali_uop_set_i          , // Uop set
-    // input   wire    [16-1:0]    ascent_gradient_i           ,
-    // input   wire    [16-1:0]    slow_ascent_period_i        ,
+    input   wire    [16-1:0]    ascent_gradient_i           ,
+    input   wire    [16-1:0]    slow_ascent_period_i        ,
 
     input   wire                quad_sensor_bg_en_i         ,
     input   wire                sensor_config_en_i          ,
@@ -79,13 +79,14 @@ module bpsi_top_if_v2#(
     // output  wire    [23:0]      FBCr2_cali_b_o              ,
     
     // actual voltage
-    output  wire                FBCi_out_en_o               ,
+    output  wire                FBC_out_vld_o               ,
+    // output  wire                FBCi_out_en_o               ,
     output  wire    [23:0]      FBCi_out_a_o                ,
     output  wire    [23:0]      FBCi_out_b_o                ,
-    output  wire                FBCr1_out_en_o              ,
+    // output  wire                FBCr1_out_en_o              ,
     output  wire    [23:0]      FBCr1_out_a_o               ,
     output  wire    [23:0]      FBCr1_out_b_o               ,
-    output  wire                FBCr2_out_en_o              ,
+    // output  wire                FBCr2_out_en_o              ,
     output  wire    [23:0]      FBCr2_out_a_o               ,
     output  wire    [23:0]      FBCr2_out_b_o               ,
 
@@ -141,6 +142,21 @@ module bpsi_top_if_v2#(
 // *********** Define Register Signal
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+reg                                 data_acq_en_d0          = 'd0;
+reg                                 data_acq_en_d1          = 'd0;
+reg                                 set_data_acq_en         = 'd0;
+reg                                 fbc_sensor_enable       = 'd0;
+reg                                 FBC_out_vld             = 'd0;
+reg         [24-1:0]                FBCi_out_a              = 'd0;
+reg         [24-1:0]                FBCi_out_b              = 'd0;
+reg         [24-1:0]                FBCr1_out_a             = 'd0;
+reg         [24-1:0]                FBCr1_out_b             = 'd0;
+reg         [24-1:0]                FBCr2_out_a             = 'd0;
+reg         [24-1:0]                FBCr2_out_b             = 'd0;
+
+reg                                 FBC_first_wait          = 'd0;
+reg         [16-1:0]                FBC_time_tick_cnt       = 'd0;
+reg         [24-1:0]                FBC_vld_tick_cnt        = 'd0;
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -182,6 +198,7 @@ wire                                quad_cache_vld          ;
 // wire                                dbg_mem_vld             ; 
 // wire        [DBG_MEM_WIDTH-1:0]     dbg_mem_data            ;
 // wire        [32-1:0]                actu_position           ;
+wire                                FBC_out_enable          ;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -426,9 +443,9 @@ assign FBCr1_MISO_qpd   = cfg_QPD_enable_i ? FBCr1_MISO : 'd0;
 assign FBCr1_SCLK_fbc   = cfg_QPD_enable_i ? 'd0 : FBCr1_SCLK;
 assign FBCr1_MISO_fbc   = cfg_QPD_enable_i ? 'd0 : FBCr1_MISO;
 
-assign FBCi_out_en_o            = FBCi_out_en;
-assign FBCr1_out_en_o           = (cfg_FBC_bypass_i[1] || cfg_QPD_enable_i) ? FBCi_out_en : FBCr1_out_en;
-assign FBCr2_out_en_o           = cfg_FBC_bypass_i[0] ? FBCi_out_en : FBCr2_out_en;
+// assign FBCi_out_en_o            = FBCi_out_en;
+// assign FBCr1_out_en_o           = (cfg_FBC_bypass_i[1] || cfg_QPD_enable_i) ? FBCi_out_en : FBCr1_out_en;
+// assign FBCr2_out_en_o           = cfg_FBC_bypass_i[0] ? FBCi_out_en : FBCr2_out_en;
 
 assign FBCi_bg_en_o             = FBCi_bg_en; 
 assign FBCr1_bg_en_o            = (cfg_FBC_bypass_i[1] || cfg_QPD_enable_i) ? FBCi_bg_en : FBCr1_bg_en; 
@@ -443,6 +460,56 @@ assign quad_sensor_bg_data_en_o = cfg_QPD_enable_i ? quad_sensor_bg_data_en : 'd
 assign quad_cache_vld_o         = cfg_QPD_enable_i ? quad_cache_vld : 'd0; 
 
 
+always @(posedge clk_sys_i)begin
+    data_acq_en_d0  <= #TCQ (|data_acq_en_i)     ;
+    data_acq_en_d1  <= #TCQ data_acq_en_d0       ;
+end
+
+always @(posedge clk_sys_i)begin
+    set_data_acq_en <= #TCQ data_acq_en_d1 ^ data_acq_en_d0;
+end
+
+always @(posedge clk_sys_i) begin
+    if(set_data_acq_en)
+        fbc_sensor_enable <= #TCQ data_acq_en_d1;
+end
+
+always @(posedge clk_sys_i) begin
+    if(~fbc_sensor_enable)
+        FBC_first_wait <= #TCQ 'd0;
+    else if(FBC_time_tick_cnt >= 'd49_999)
+        FBC_first_wait <= #TCQ 'd0;
+    else if(FBCi_out_en || FBCr1_out_en || FBCr2_out_en)
+        FBC_first_wait <= #TCQ 'd1;
+end
+
+always @(posedge clk_sys_i) begin
+    if(~fbc_sensor_enable)
+        FBC_time_tick_cnt <= #TCQ 'd0;
+    else if(FBC_first_wait)
+        FBC_time_tick_cnt <= #TCQ FBC_time_tick_cnt + 1;
+    else 
+        FBC_time_tick_cnt <= #TCQ FBC_time_tick_cnt;
+end
+
+assign FBC_out_enable = FBC_time_tick_cnt >= 'd49_999; // 500us
+
+always @(posedge clk_sys_i) begin
+    if(FBC_out_enable)begin
+        if(FBC_vld_tick_cnt >= 'd99_999)  // 1ms
+            FBC_vld_tick_cnt <= #TCQ 'd0;
+        else 
+            FBC_vld_tick_cnt <= #TCQ FBC_vld_tick_cnt + 1;
+    end
+    else
+            FBC_vld_tick_cnt <= #TCQ 'd0;
+end
+
+always @(posedge clk_sys_i) begin
+    FBC_out_vld <= #TCQ FBC_vld_tick_cnt=='d0 && FBC_out_enable;
+end
+
+assign FBC_out_vld_o = FBC_out_vld;
 // assign FBCi_cache_vld_o   = FBCi_out_en_o;
 // assign FBCi_cache_data_o  = {FBCi_out_a_o,FBCi_out_b_o};
 // assign FBCr1_cache_vld_o  = FBCr1_out_en_o;

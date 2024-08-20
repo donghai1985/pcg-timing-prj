@@ -52,13 +52,14 @@ module arbitrate_bpsi #(
     // actual voltage
     input    wire                           FBC_out_fifo_rst_i          ,
     input    wire                           fbc_udp_rate_switch_i       ,
-    input    wire                           FBCi_out_en_i               ,
+    input    wire                           FBC_out_vld_i               ,
+    // input    wire                           FBCi_out_en_i               ,
     input    wire    [23:0]                 FBCi_out_a_i                ,
     input    wire    [23:0]                 FBCi_out_b_i                ,
-    input    wire                           FBCr1_out_en_i              ,
+    // input    wire                           FBCr1_out_en_i              ,
     input    wire    [23:0]                 FBCr1_out_a_i               ,
     input    wire    [23:0]                 FBCr1_out_b_i               ,
-    input    wire                           FBCr2_out_en_i              ,
+    // input    wire                           FBCr2_out_en_i              ,
     input    wire    [23:0]                 FBCr2_out_a_i               ,
     input    wire    [23:0]                 FBCr2_out_b_i               ,
     // Enocde
@@ -158,12 +159,15 @@ genvar i;
 //////////////////////////////////////////////////////////////////////////////////
 // *********** Define Register Signal
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-reg                                         FBCi_wr_en_d0               = 'd0;
-reg                                         FBCi_wr_en_d1               = 'd0;
-reg                                         FBCr1_wr_en_d0              = 'd0;
-reg                                         FBCr1_wr_en_d1              = 'd0;
-reg                                         FBCr2_wr_en_d0              = 'd0;
-reg                                         FBCr2_wr_en_d1              = 'd0;
+// reg                                         FBCi_wr_en_d0               = 'd0;
+// reg                                         FBCi_wr_en_d1               = 'd0;
+// reg                                         FBCr1_wr_en_d0              = 'd0;
+// reg                                         FBCr1_wr_en_d1              = 'd0;
+// reg                                         FBCr2_wr_en_d0              = 'd0;
+// reg                                         FBCr2_wr_en_d1              = 'd0;
+
+reg                                         FBC_out_vld_d0              = 'd0;
+reg                                         FBC_out_vld_d1              = 'd0;
 
 reg                 [24-1:0]                FBCi_data_b                 = 'd0;
 reg                 [24-1:0]                FBCr1_data_b                = 'd0;
@@ -173,9 +177,10 @@ reg                 [24-1:0]                FBCi_din                    = 'd0;
 reg                 [24-1:0]                FBCr1_din                   = 'd0;
 reg                 [24-1:0]                FBCr2_din                   = 'd0;
 
-reg                 [ 7-1:0]                FBCi_cnt                    = 'd0;
-reg                 [ 7-1:0]                FBCr1_cnt                   = 'd0;
-reg                 [ 7-1:0]                FBCr2_cnt                   = 'd0;
+// reg                 [ 7-1:0]                FBCi_cnt                    = 'd0;
+// reg                 [ 7-1:0]                FBCr1_cnt                   = 'd0;
+// reg                 [ 7-1:0]                FBCr2_cnt                   = 'd0;
+reg                 [ 7-1:0]                FBC_src_cnt                 = 'd0;
 reg                 [ 7-1:0]                quad_cnt                    = 'd0;
 
 reg                                         FBCi_rd_en                  = 'd0;
@@ -305,7 +310,7 @@ bpsi_fbc_fifo bpsi_fbci_fifo_inst(
   .clk                      ( clk_i                                 ),
   .srst                     ( rst_i || FBC_out_fifo_rst_i           ),
   .din                      ( FBCi_din                              ),
-  .wr_en                    ( FBCi_wr_en_d1 || FBCi_wr_en_d0        ),
+  .wr_en                    ( FBC_out_vld_d1 || FBC_out_vld_d0      ),
   .rd_en                    ( FBCi_rd_en                            ),
   .dout                     ( FBCi_dout                             ),
   .full                     ( FBCi_full                             ),
@@ -316,7 +321,7 @@ bpsi_fbc_fifo bpsi_fbcr1_fifo_inst(
   .clk                      ( clk_i                                 ),
   .srst                     ( rst_i || FBC_out_fifo_rst_i           ),
   .din                      ( FBCr1_din                             ),
-  .wr_en                    ( FBCr1_wr_en_d1 || FBCr1_wr_en_d0      ),
+  .wr_en                    ( FBC_out_vld_d1 || FBC_out_vld_d0      ),
   .rd_en                    ( FBCr1_rd_en                           ),
   .dout                     ( FBCr1_dout                            ),
   .full                     ( FBCr1_full                            ),
@@ -327,7 +332,7 @@ bpsi_fbc_fifo bpsi_fbcr2_fifo_inst(
   .clk                      ( clk_i                                 ),
   .srst                     ( rst_i || FBC_out_fifo_rst_i           ),
   .din                      ( FBCr2_din                             ),
-  .wr_en                    ( FBCr2_wr_en_d1 || FBCr2_wr_en_d0      ),
+  .wr_en                    ( FBC_out_vld_d1 || FBC_out_vld_d0      ),
   .rd_en                    ( FBCr2_rd_en                           ),
   .dout                     ( FBCr2_dout                            ),
   .full                     ( FBCr2_full                            ),
@@ -437,97 +442,38 @@ xpm_sync_fifo #(
 // FBCi,FBCr1,FBCr2 data ready. 
 // generate a transmission every 100 times.
 // fifo width is 3byte,twice write en,for save resources.
-always @(posedge clk_i) FBCi_wr_en_d0   <= #TCQ fbc_udp_rate_switch_i ? FBCr2_out_en_i : FBCi_out_en_i;
-always @(posedge clk_i) FBCi_wr_en_d1   <= #TCQ FBCi_wr_en_d0;
-always @(posedge clk_i) FBCr1_wr_en_d0  <= #TCQ fbc_udp_rate_switch_i ? FBCr2_out_en_i : FBCr1_out_en_i;
-always @(posedge clk_i) FBCr1_wr_en_d1  <= #TCQ FBCr1_wr_en_d0;
-always @(posedge clk_i) FBCr2_wr_en_d0  <= #TCQ FBCr2_out_en_i;
-always @(posedge clk_i) FBCr2_wr_en_d1  <= #TCQ FBCr2_wr_en_d0;
+always @(posedge clk_i) FBC_out_vld_d0   <= #TCQ FBC_out_vld_i;
+always @(posedge clk_i) FBC_out_vld_d1   <= #TCQ FBC_out_vld_d0;
 
 always @(posedge clk_i) FBCi_data_b     <= #TCQ FBCi_out_b_i;
 always @(posedge clk_i) FBCr1_data_b    <= #TCQ FBCr1_out_b_i;
 always @(posedge clk_i) FBCr2_data_b    <= #TCQ FBCr2_out_b_i;
+
 always @(posedge clk_i) begin
-    if(FBCi_out_en_i)
-        FBCi_din <= #TCQ FBCi_out_a_i;
-    else if(FBCi_wr_en_d0)
-        FBCi_din <= #TCQ FBCi_data_b;
-end
-always @(posedge clk_i) begin
-    if(FBCr1_out_en_i)
+    if(FBC_out_vld_i)begin
+        FBCi_din  <= #TCQ FBCi_out_a_i;
         FBCr1_din <= #TCQ FBCr1_out_a_i;
-    else if(FBCr1_wr_en_d0)
-        FBCr1_din <= #TCQ FBCr1_data_b;
-end
-always @(posedge clk_i) begin
-    if(FBCr2_out_en_i)
         FBCr2_din <= #TCQ FBCr2_out_a_i;
-    else if(FBCr2_wr_en_d0)
+    end
+    else if(FBC_out_vld_d0)begin
+        FBCi_din  <= #TCQ FBCi_data_b;
+        FBCr1_din <= #TCQ FBCr1_data_b;
         FBCr2_din <= #TCQ FBCr2_data_b;
-end
-
-always @(posedge clk_i) begin
-    if(rst_i || FBC_out_fifo_rst_i)
-        FBCi_cnt <= #TCQ 'd0;
-    else if(FBCi_wr_en_d1)begin
-        if(FBCi_cnt == FBC_ACTUAL_DATA_NUM - 1)
-            FBCi_cnt <= #TCQ 'd0;
-        else 
-            FBCi_cnt <= #TCQ FBCi_cnt + 1;
     end
 end
 
 always @(posedge clk_i) begin
     if(rst_i || FBC_out_fifo_rst_i)
-        FBCr1_cnt <= #TCQ 'd0;
-    else if(FBCr1_wr_en_d1)begin
-        if(FBCr1_cnt == FBC_ACTUAL_DATA_NUM - 1)
-            FBCr1_cnt <= #TCQ 'd0;
-        else 
-            FBCr1_cnt <= #TCQ FBCr1_cnt + 1;
+        FBC_src_cnt <= #TCQ 'd0;
+    else if(FBC_out_vld_d1)begin
+        if(FBC_src_cnt == FBC_ACTUAL_DATA_NUM - 1)
+            FBC_src_cnt <= #TCQ 'd0;
+        else
+            FBC_src_cnt <= #TCQ FBC_src_cnt + 1;
     end
 end
 
-always @(posedge clk_i) begin
-    if(rst_i || FBC_out_fifo_rst_i)
-        FBCr2_cnt <= #TCQ 'd0;
-    else if(FBCr2_wr_en_d1)begin
-        if(FBCr2_cnt == FBC_ACTUAL_DATA_NUM - 1)
-            FBCr2_cnt <= #TCQ 'd0;
-        else 
-            FBCr2_cnt <= #TCQ FBCr2_cnt + 1;
-    end
-end
-
-always @(posedge clk_i) begin
-    if(rst_i || FBC_out_fifo_rst_i)
-        fbc_i_full <= #TCQ 'd0;
-    else if(FBCi_arbitr_en)
-        fbc_i_full <= #TCQ 'd1;
-    else if(fbc_arbitr_en)
-        fbc_i_full <= #TCQ 'd0;
-end
-always @(posedge clk_i) begin
-    if(rst_i || FBC_out_fifo_rst_i)
-        fbc_r1_full <= #TCQ 'd0;
-    else if(FBCr1_arbitr_en)
-        fbc_r1_full <= #TCQ 'd1;
-    else if(fbc_arbitr_en)
-        fbc_r1_full <= #TCQ 'd0;
-end
-always @(posedge clk_i) begin
-    if(rst_i || FBC_out_fifo_rst_i)
-        fbc_r2_full <= #TCQ 'd0;
-    else if(FBCr2_arbitr_en)
-        fbc_r2_full <= #TCQ 'd1;
-    else if(fbc_arbitr_en)
-        fbc_r2_full <= #TCQ 'd0;
-end
-assign FBCi_arbitr_en = (FBCi_cnt == FBC_ACTUAL_DATA_NUM - 1) && FBCi_wr_en_d1;
-assign FBCr1_arbitr_en = (FBCr1_cnt == FBC_ACTUAL_DATA_NUM - 1) && FBCr1_wr_en_d1;
-assign FBCr2_arbitr_en = (FBCr2_cnt == FBC_ACTUAL_DATA_NUM - 1) && FBCr2_wr_en_d1;
-
-assign fbc_arbitr_en = fbc_i_full && fbc_r1_full && fbc_r2_full;
+assign fbc_arbitr_en = (FBC_src_cnt == FBC_ACTUAL_DATA_NUM - 1) && FBC_out_vld_d1;
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate fbc_sensor enable end
 
 // qbd quad sensor data ready
