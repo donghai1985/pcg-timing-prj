@@ -90,6 +90,7 @@ localparam                  TX_FBC_END          = 'd14      ;
 localparam                  TX_FBC_RESET        = 'd15      ;
 
 localparam                  EDS_LINE_LENGTH     = 'd512 + 1 ;
+localparam                  RESET_DELAY_WID     = 'd8 ;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +107,7 @@ reg     [7:0]               eds_delay_cnt       = 'd0       ;
 reg                         eds_frame_en_d0     = 'd0       ;
 reg                         eds_frame_en_d1     = 'd0       ;
 
-reg     [7:0]               rst_delay_cnt       = 'd0       ;
+reg     [RESET_DELAY_WID:0] rst_delay_cnt       = 'd0       ;
 reg                         pmt_start_en_d0     = 'd0       ;
 reg                         pmt_start_en_d1     = 'd0       ;
 
@@ -225,7 +226,7 @@ always @(*) begin
         end
 
         TX_EDS_RESET: begin
-            if(rst_delay_cnt[7])
+            if(rst_delay_cnt[RESET_DELAY_WID])
                 tx_state_next = TX_IDLE;
         end
 
@@ -253,7 +254,7 @@ always @(*) begin
         end
 
         TX_ENCODE_RESET: begin
-            if(rst_delay_cnt[7])
+            if(rst_delay_cnt[RESET_DELAY_WID])
                 tx_state_next = TX_IDLE;
         end
 
@@ -285,7 +286,7 @@ always @(*) begin
         end
 
         TX_FBC_RESET: begin
-            if(rst_delay_cnt[7])
+            if(rst_delay_cnt[RESET_DELAY_WID])
                 tx_state_next = TX_IDLE;
         end
 
@@ -492,7 +493,7 @@ begin
                 tx_tlast <= #TCQ 'd0;
         end
         TX_ENCODE_DATA: begin
-            if(len_cnt == 'd1024)
+            if(len_cnt == 'd512)
                 tx_tlast <= #TCQ tx_tready_i && tx_tvalid;
             else if(tx_tlast && tx_tvalid && tx_tready_i)
                 tx_tlast <= #TCQ 'd0;
@@ -505,7 +506,7 @@ begin
         end
 
         TX_FBC_DATA: begin
-            if(len_cnt == 'd1024)
+            if(len_cnt == 'd512)
                 tx_tlast <= #TCQ tx_tready_i && tx_tvalid;
             else if(tx_tlast && tx_tvalid && tx_tready_i)
                 tx_tlast <= #TCQ 'd0;

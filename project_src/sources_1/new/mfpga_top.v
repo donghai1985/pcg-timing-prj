@@ -356,7 +356,7 @@ module mfpga_top(
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.8.1  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.8.2  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
 
 
 wire                slave_tx_ack                    ;
@@ -486,6 +486,11 @@ wire                eds_scan_en_sync                ;
 wire                eds_sensor_data_en              ;
 wire    [127:0]     eds_sensor_data                 ;
 wire    [127:0]     eds_sensor_data_temp            ;
+wire                eds_post_vld                    ;
+wire    [64-1:0]    eds_post_data                   ;
+wire    [32-1:0]    eds_error_cnt                   ;
+wire                eds_error_vld                   ;
+wire    [16-1:0]    eds_error_data                  ;
 wire                eds_sensor_training_done        ;
 wire                eds_sensor_training_result      ;
 
@@ -1525,6 +1530,9 @@ arbitrate_bpsi #(
 
     .rd_mfpga_version_i             ( rd_mfpga_version              ),
 
+    .eds_error_vld_i                ( eds_error_vld                 ),
+    .eds_error_data_i               ( eds_error_data                ),
+
     .slave_tx_ack_i                 ( slave_tx_ack                  ),
     .slave_tx_byte_en_o             ( slave_tx_byte_en              ),
     .slave_tx_byte_o                ( slave_tx_byte                 ),
@@ -1754,6 +1762,7 @@ command_map command_map_inst(
     .ad5592_1_adc_data_i            ( ad5592_1_adc_data             ),
     .ddr_rd_addr_o                  ( ddr_rd_addr                   ),
     .ddr_rd_en_o                    ( ddr_rd_en                     ),
+    .eds_error_cnt_i                ( eds_error_cnt                 ),
 
     .debug_info                     (                               )
 );
@@ -2289,6 +2298,24 @@ eds_top_if	eds_top_if_inst(
 
 assign	eds_sensor_data		=	{eds_sensor_data_temp[63:0],eds_sensor_data_temp[127:64]};
 
+eds_post_process eds_post_process_inst(
+    // clk & rst 
+    .clk_i                      ( clk_100m                              ),
+    .rst_i                      ( rst_100m                              ),
+
+    .eds_clk_i                  ( eds_clk                               ),
+    .eds_frame_en_i             ( eds_frame_en                          ),
+    .eds_sensor_data_en_i       ( eds_sensor_data_en                    ),
+    .eds_sensor_data_i          ( eds_sensor_data                       ),
+
+    .eds_post_vld_o             ( eds_post_vld                          ),
+    .eds_post_data_o            ( eds_post_data                         ),
+    .eds_error_cnt_o            ( eds_error_cnt                         ),
+    .eds_error_vld_o            ( eds_error_vld                         ),  // negedge = last
+    .eds_error_data_o           ( eds_error_data                        )
+);
+
+
 reset_generate reset_generate_inst(
     .nrst_i                     ( pll_2_locked                          ),
 
@@ -2420,10 +2447,10 @@ aurora_64b66b_0_exdes aurora_64b66b_exdes_inst_1(
     .aurora_empty_o                 ( aurora_empty_1                    ),
     .aurora_soft_rd_i               ( aurora_soft_rd_1                  ),
     // eds
-    .eds_clk_i                      ( eds_clk                           ),  // eds clk -> 100m/6
+    .eds_clk_i                      ( clk_100m                          ),  // eds clk -> 100m/6
     .clk_h_i                        ( clk_300m                          ),  // eds clk_h -> 300m
-    .eds_sensor_vld_i               ( eds_sensor_data_en                ),
-    .eds_sensor_data_i              ( eds_sensor_data                   ),
+    .eds_sensor_vld_i               ( eds_post_vld                      ),
+    .eds_sensor_data_i              ( eds_post_data                     ),
     .eds_frame_en_i                 ( eds_frame_en && eds_frame_sel[1]  ),
     .pcie_eds_end_o                 ( pcie_eds_frame_end_1              ),
 
@@ -2481,10 +2508,10 @@ aurora_64b66b_0_exdes aurora_64b66b_exdes_inst_2(
     .aurora_empty_o                 ( aurora_empty_2                    ),
     .aurora_soft_rd_i               ( aurora_soft_rd_2                  ),
     // eds
-    .eds_clk_i                      ( eds_clk                           ),  // eds clk -> 100m/6
+    .eds_clk_i                      ( clk_100m                          ),  // eds clk -> 100m/6
     .clk_h_i                        ( clk_300m                          ),  // eds clk_h -> 300m
-    .eds_sensor_vld_i               ( eds_sensor_data_en                ),
-    .eds_sensor_data_i              ( eds_sensor_data                   ),
+    .eds_sensor_vld_i               ( eds_post_vld                      ),
+    .eds_sensor_data_i              ( eds_post_data                     ),
     .eds_frame_en_i                 ( eds_frame_en && eds_frame_sel[0]  ),
     .pcie_eds_end_o                 ( pcie_eds_frame_end_2              ),
 
@@ -2542,10 +2569,10 @@ aurora_64b66b_1_exdes aurora_64b66b_exdes_inst_3(
     .aurora_empty_o                 ( aurora_empty_3                    ),
     .aurora_soft_rd_i               ( aurora_soft_rd_3                  ),
     // eds
-    .eds_clk_i                      ( eds_clk                           ),  // eds clk -> 100m/6
+    .eds_clk_i                      ( clk_100m                          ),  // eds clk -> 100m/6
     .clk_h_i                        ( clk_300m                          ),  // eds clk_h -> 300m
-    .eds_sensor_vld_i               ( eds_sensor_data_en                ),
-    .eds_sensor_data_i              ( eds_sensor_data                   ),
+    .eds_sensor_vld_i               ( eds_post_vld                      ),
+    .eds_sensor_data_i              ( eds_post_data                     ),
     .eds_frame_en_i                 ( eds_frame_en && eds_frame_sel[2]  ),
     .pcie_eds_end_o                 ( pcie_eds_frame_end_3              ),
 

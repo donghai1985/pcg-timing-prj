@@ -11,6 +11,22 @@
 // Tool Versions: 
 // Description: 
 // 
+//          handshake #(
+//              .DATA_WIDTH                     ( DATA_WIDTH                )
+//          )handshake_inst(
+//              // clk & rst
+//              .src_clk_i                      ( src_clk_i                 ),
+//              .src_rst_i                      ( src_rst_i                 ),
+//              .dest_clk_i                     ( dest_clk_i                ),
+//              .dest_rst_i                     ( dest_rst_i                ),
+
+//              .src_data_i                     ( src_data_i                ),
+//              .src_vld_i                      ( src_vld_i                 ),
+
+//              .dest_data_o                    ( dest_data_o               ),
+//              .dest_vld_o                     ( dest_vld_o                )
+//          );
+// 
 // Dependencies: 
 // 
 // Revision:

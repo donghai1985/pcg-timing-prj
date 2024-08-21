@@ -251,6 +251,8 @@ module command_map #(
     output  wire    [32-1:0]    ddr_rd_addr_o               ,
     output  wire                ddr_rd_en_o                 ,
 
+    input   wire    [32-1:0]    eds_error_cnt_i             ,
+
     output  wire                debug_info
 );
 
@@ -975,6 +977,8 @@ always @(posedge clk_sys_i) begin
             'h035c:  register_data <= #TCQ {31'd0,cfg_QPD_enable}   ;
             'h035d:  register_data <= #TCQ ddr_rd_addr              ;
             'h035f:  register_data <= #TCQ acc_trigger_num_i        ;
+
+            'h0361:  register_data <= #TCQ eds_error_cnt_i          ;
 
             'h0400:  register_data <= #TCQ eds_pack_cnt_2_i     ;
             'h0401:  register_data <= #TCQ encode_pack_cnt_2_i  ;

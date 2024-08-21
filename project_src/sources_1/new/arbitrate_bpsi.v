@@ -106,6 +106,9 @@ module arbitrate_bpsi #(
     // read mfpga version
     input    wire                           rd_mfpga_version_i          ,
 
+    // eds error row
+    input    wire                           eds_error_vld_i             ,
+    input    wire   [16-1:0]                eds_error_data_i            ,
     // slave comm
     input    wire                           slave_tx_ack_i              ,
     output   wire                           slave_tx_byte_num_en_o      ,
@@ -152,7 +155,8 @@ localparam          [16-1:0]                DDR_READBACK_TYPE           = 'h035E
 localparam          [16-1:0]                QUAD_SENSOR_TYPE            = 'h0332;
 localparam          [16-1:0]                QUAD_SENSOR_NUM             = FBC_ACTUAL_DATA_NUM * 12 + 2 + FBC_ACTUAL_DATA_NUM*8;
 
-localparam                                  ARBITRATE_NUM               = 13;    // control arbitrate channel
+localparam          [16-1:0]                EDS_ERROR_TYPE              = 'h0360;
+localparam                                  ARBITRATE_NUM               = 14;    // control arbitrate channel
 genvar i;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -245,6 +249,9 @@ reg                                         ddr_readback_rd             = 'd0;
 reg                 [16-1:0]                ddr_readback_cnt            = 'd0;
 reg                 [16-1:0]                ddr_readback_num            = 'd0;
 
+// eds error channel
+reg                                         eds_error_rd                = 'd0;
+
 reg                 [ 6-1:0]                spi_slave_ack_cnt [2:0] ;
 reg                 [ 6-1:0]                spi_slave_ack_num [2:0] ;
 reg                                         spi_ack_rd_en     [2:0] ;
@@ -291,6 +298,9 @@ wire                [96+64-1:0]             quad_sensor_data    ;
 
 wire                                        ddr_readback_vld    ;
 wire                [64-1:0]                ddr_readback_data   ;
+
+wire                                        eds_error_vld       ;
+wire                [16-1:0]                eds_error_data      ;
 
 wire                                        spi_slave_ack_en [3:0];
 wire                [32-1:0]                spi_ack_rd_dout  [3:0];
@@ -431,6 +441,25 @@ xpm_sync_fifo #(
     .rd_en_i                ( ddr_readback_rd                       ),
     .fifo_rd_vld_o          ( ddr_readback_vld                      ),
     .fifo_rd_data_o         ( ddr_readback_data                     )
+);
+
+xpm_sync_fifo #(
+    .ECC_MODE               ( "no_ecc"                              ),
+    .FIFO_MEMORY_TYPE       ( "block"                               ), // "auto" "block" "distributed"
+    .READ_MODE              ( "fwft"                                ),
+    .FIFO_WRITE_DEPTH       ( 2048                                  ),
+    .WRITE_DATA_WIDTH       ( 16                                    ),
+    .READ_DATA_WIDTH        ( 16                                    ),
+    .USE_ADV_FEATURES       ( "1808"                                )
+)eds_error_row_inst (
+    .wr_clk_i               ( clk_i                                 ),
+    .rst_i                  ( rst_i                                 ), // synchronous to wr_clk
+    .wr_en_i                ( eds_error_vld_i                       ),
+    .wr_data_i              ( eds_error_data_i                      ),
+
+    .rd_en_i                ( eds_error_rd                          ),
+    .fifo_rd_vld_o          ( eds_error_vld                         ),
+    .fifo_rd_data_o         ( eds_error_data                        )
 );
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -637,27 +666,46 @@ endgenerate
 wire          ddr_readback_irq ;
 // generate new arbitrate enable
 // ddr readback
-always @(posedge clk_i) begin
-    if(rst_i)
-        ddr_readback_cnt <= #TCQ 'd0;
-    else if(ddr_readback_last_i)
-        ddr_readback_cnt <= #TCQ 'd0;
-    else if(ddr_readback_vld_i)
-        ddr_readback_cnt <= #TCQ ddr_readback_cnt + 1;
-end
+// always @(posedge clk_i) begin
+//     if(rst_i)
+//         ddr_readback_cnt <= #TCQ 'd0;
+//     else if(ddr_readback_last_i)
+//         ddr_readback_cnt <= #TCQ 'd0;
+//     else if(ddr_readback_vld_i)
+//         ddr_readback_cnt <= #TCQ ddr_readback_cnt + 1;
+// end
 
-always @(posedge clk_i) begin
-    if(ddr_readback_last_i)
-        ddr_readback_num <= #TCQ ddr_readback_cnt + 1;
-end
+// always @(posedge clk_i) begin
+//     if(ddr_readback_last_i)
+//         ddr_readback_num <= #TCQ ddr_readback_cnt + 1;
+// end
 
 assign ddr_readback_irq = ddr_readback_last_i;
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< generate ddr readback enable end
 
+wire [2-1:0] eds_error_action ;
+assign eds_error_action = {eds_error_vld_i,eds_error_rd};
+
+reg [12-1:0] eds_error_cnt = 'd0;
+always @(posedge clk_i) begin
+    if(eds_error_action==2'b10)
+        eds_error_cnt <= #TCQ eds_error_cnt + 1;
+    else if(eds_error_action==2'b01)
+        eds_error_cnt <= #TCQ eds_error_cnt - 1;
+    else
+        eds_error_cnt <= #TCQ eds_error_cnt;
+end
+
+reg eds_error_irq = 'd0;
+always @(posedge clk_i) begin
+    eds_error_irq <= #TCQ (~arbitr_result[13]) && (eds_error_cnt >= 511);
+end
+
 // generate arbitrate enable , alwaye modify when arbitrate channel add.
 assign bpsi_en          = {  
-                             ddr_readback_irq
+                             eds_error_irq
+                            ,ddr_readback_irq
                             ,fpga_message_up_i
                             ,heartbeat_en_i
                             ,readback_vld_i
@@ -927,7 +975,7 @@ end
 reg [3-1:0] ddr_readback_tx_byte_cnt = 'd7;
 reg [16-1:0] ddr_readback_tx_cnt = 'd0;
 always @(posedge clk_i) begin
-    if(arbitr_result[12] && (ddr_readback_tx_cnt >= 'd1) && (ddr_readback_tx_cnt < ddr_readback_num + 2))begin
+    if(arbitr_result[12] && (ddr_readback_tx_cnt >= 'd1) && (ddr_readback_tx_cnt < 'd128 + 2))begin
         if(ddr_readback_tx_byte_cnt == 'd7)
             ddr_readback_tx_byte_cnt <= #TCQ 'd0;
         else 
@@ -947,10 +995,39 @@ always @(posedge clk_i) begin
 end
 
 always @(posedge clk_i) begin
-    if((arbitr_result[12]) && (ddr_readback_tx_cnt < ddr_readback_num + 2) && slave_tx_byte_en && (ddr_readback_tx_byte_cnt == 'd6))
+    if((arbitr_result[12]) && (ddr_readback_tx_cnt < 'd128 + 2) && slave_tx_byte_en && (ddr_readback_tx_byte_cnt == 'd6))
         ddr_readback_rd  <= #TCQ 'd1;
     else 
         ddr_readback_rd  <= #TCQ 'd0;
+end
+
+reg [2-1:0] eds_error_tx_byte_cnt = 'd1;
+reg [16-1:0] eds_error_tx_cnt = 'd0;
+always @(posedge clk_i) begin
+    if(arbitr_result[13] && (eds_error_tx_cnt >= 'd1) && (eds_error_tx_cnt < 'd512 + 2))begin
+        if(eds_error_tx_byte_cnt == 'd1)
+            eds_error_tx_byte_cnt <= #TCQ 'd0;
+        else 
+            eds_error_tx_byte_cnt <= #TCQ eds_error_tx_byte_cnt + 1;
+    end
+    else 
+        eds_error_tx_byte_cnt <= #TCQ 'd1;
+end
+
+always @(posedge clk_i) begin
+    if(arbitr_result[13])begin
+        if(eds_error_tx_byte_cnt == 'd1)
+            eds_error_tx_cnt <= #TCQ eds_error_tx_cnt + 1;
+    end
+    else 
+        eds_error_tx_cnt <= #TCQ 'd0;
+end
+
+always @(posedge clk_i) begin
+    if((arbitr_result[13]) && (eds_error_tx_cnt < 'd512 + 2) && slave_tx_byte_en && (eds_error_tx_byte_cnt == 'd0))
+        eds_error_rd  <= #TCQ 'd1;
+    else 
+        eds_error_rd  <= #TCQ 'd0;
 end
 
 
@@ -1085,6 +1162,13 @@ always @(posedge clk_i) begin
             default:slave_tx_byte <= #TCQ ddr_readback_data[('d7-ddr_readback_tx_byte_cnt)*8 +: 8];
         endcase
     end
+    else if(arbitr_result[13])begin
+        case(eds_error_tx_cnt)
+            'd0 : slave_tx_byte <= #TCQ EDS_ERROR_TYPE[15:8];
+            'd1 : slave_tx_byte <= #TCQ EDS_ERROR_TYPE[7:0];
+            default:slave_tx_byte <= #TCQ eds_error_data[('d1-eds_error_tx_byte_cnt)*8 +: 8];
+        endcase
+    end
 end
 
 wire fbc_tx_byte_en ;
@@ -1098,9 +1182,14 @@ reg quad_tx_byte_en_d = 'd0;
 always @(posedge clk_i) quad_tx_byte_en_d <= #TCQ quad_tx_byte_en;
 
 wire ddr_readback_tx_byte_en ;
-assign ddr_readback_tx_byte_en = (ddr_readback_tx_cnt>'d0) && (ddr_readback_tx_cnt < ddr_readback_num + 2);
+assign ddr_readback_tx_byte_en = (ddr_readback_tx_cnt>'d0) && (ddr_readback_tx_cnt < 'd128 + 2);
 reg ddr_readback_tx_byte_en_d = 'd0;
 always @(posedge clk_i) ddr_readback_tx_byte_en_d <= #TCQ ddr_readback_tx_byte_en;
+
+wire eds_error_tx_byte_en ;
+assign eds_error_tx_byte_en = (eds_error_tx_cnt>'d0) && (eds_error_tx_cnt < 'd512 + 2);
+reg eds_error_tx_byte_en_d = 'd0;
+always @(posedge clk_i) eds_error_tx_byte_en_d <= #TCQ eds_error_tx_byte_en;
 
 always @(*) begin
     if(arbitr_result[0])
@@ -1129,6 +1218,8 @@ always @(*) begin
         slave_tx_byte_en = (fpga_act_mess_cnt>'d0) && (fpga_act_mess_cnt < FPGA_ACT_MESS_NUM + 1);
     else if(arbitr_result[12])
         slave_tx_byte_en = ddr_readback_tx_byte_en_d || ddr_readback_tx_byte_en;
+    else if(arbitr_result[13])
+        slave_tx_byte_en = eds_error_tx_byte_en_d || eds_error_tx_byte_en;
     else 
         slave_tx_byte_en = 'd0;
 end
@@ -1159,7 +1250,9 @@ always @(posedge clk_i) begin
     if(arbitr_result[11])
         slave_tx_byte_num <= #TCQ FPGA_ACT_MESS_NUM;
     if(arbitr_result[12])
-        slave_tx_byte_num <= #TCQ {ddr_readback_num,3'b0} + 2;
+        slave_tx_byte_num <= #TCQ 'd1026;  // {ddr_readback_num,3'b0} + 2;  // 1026
+    if(arbitr_result[13])
+        slave_tx_byte_num <= #TCQ 'd1026;
 end
 
 always @(posedge clk_i) begin

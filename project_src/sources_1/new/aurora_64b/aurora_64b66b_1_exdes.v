@@ -32,7 +32,7 @@ module aurora_64b66b_1_exdes #(
     input               eds_clk_i                       ,  // eds clk -> 100m/6
     input               clk_h_i                         ,  // eds clk_h -> 300m
     input               eds_sensor_vld_i                ,
-    input   [128-1:0]   eds_sensor_data_i               ,
+    input   [64-1:0]    eds_sensor_data_i               ,
     input               eds_frame_en_i                  ,
     output              pcie_eds_end_o                  ,
 
@@ -181,6 +181,8 @@ wire                    eds_tx_en               ;
 wire    [63:0]          eds_tx_data             ;
 wire                    eds_tx_full             ;
 wire                    eds_tx_empty            ;
+wire                    eds_tx_almost_empty     ;
+wire                    eds_tx_almost_full      ;
 wire                    eds_tx_prog_empty       ;
 // wire                    eds_wr_rst_busy         ;
 // wire                    eds_rd_rst_busy         ;
@@ -189,6 +191,7 @@ wire                    aurora_fbc_en           ;
 wire    [64-1:0]        aurora_fbc_data         ;
 wire                    aurora_fbc_full         ;
 wire                    aurora_fbc_empty        ;
+wire                    aurora_fbc_almost_empty ;
 wire                    aurora_fbc_almost_full  ;
 wire                    aurora_fbc_prog_empty   ;
 // wire                    aurora_fbc_wr_rst_busy  ;
@@ -241,43 +244,26 @@ xpm_cdc_single #(
     .src_clk(user_clk),   // 1-bit input: optional; required when SRC_INPUT_REG = 1
     .src_in(eds_fifo_rst)      // 1-bit input: Input signal to be synchronized to dest_clk domain.
  );
-eds_to_aurora_fifo eds_to_aurora_fifo_inst(
-    .rst                        ( eds_fifo_wrst                 ),
-    .wr_clk                     ( eds_clk_i                     ),
-    .rd_clk                     ( user_clk                      ),
-    .din                        ( eds_sensor_data_i             ),
-    .wr_en                      ( eds_sensor_vld_i && eds_data_wr_en),
-    .rd_en                      ( eds_tx_en || aurora_soft_rd   ),
-    .dout                       ( eds_tx_data                   ),
-    .full                       ( eds_tx_full                   ),
-    .empty                      ( eds_tx_empty                  ),
-    .prog_empty                 ( eds_tx_prog_empty             ),
-    .wr_rst_busy                ( eds_wr_rst_busy               ),  // output wire wr_rst_busy
-    .rd_rst_busy                ( eds_rd_rst_busy               )   // output wire rd_rst_busy
-);
-// xpm_async_fifo #(
-//     .ECC_MODE                   ( "no_ecc"                              ),
-//     .FIFO_MEMORY_TYPE           ( "block"                               ), // "auto" "block" "distributed"
-//     .READ_MODE                  ( "fwft"                                ),
-//     .FIFO_WRITE_DEPTH           ( 8192                                  ),
-//     .PROG_EMPTY_THRESH          ( 1020                                  ),
-//     .WRITE_DATA_WIDTH           ( 128                                   ),
-//     .READ_DATA_WIDTH            ( 64                                    ),
-//     .RELATED_CLOCKS             ( 1                                     ), // write clk same source of read clk
-//     .USE_ADV_FEATURES           ( "0200"                                )
-// )eds_to_aurora_fifo_inst (
-//     .wr_clk_i                   ( eds_clk_i                             ),
-//     .rst_i                      ( eds_fifo_wrst                         ), // synchronous to wr_clk
-//     .wr_en_i                    ( eds_sensor_vld_i && eds_data_wr_en    ),
-//     .wr_data_i                  ( eds_sensor_data_i                     ),
-//     .fifo_full_o                ( eds_tx_full                           ),
 
-//     .rd_clk_i                   ( user_clk                              ),
-//     .rd_en_i                    ( eds_tx_en                             ),
-//     .fifo_rd_data_o             ( eds_tx_data                           ),
-//     .fifo_empty_o               ( eds_tx_empty                          ),
-//     .fifo_prog_empty_o          ( eds_tx_prog_empty                     )
-// );
+cache_rd_fifo eds_to_aurora_fifo_inst(
+    .rst                        ( eds_fifo_wrst                                 ),
+    .wr_clk                     ( eds_clk_i                                     ),
+    .rd_clk                     ( user_clk                                      ),
+    .din                        ( eds_sensor_data_i                             ),
+    .wr_en                      ( eds_sensor_vld_i && eds_frame_en_i            ),
+    .rd_en                      ( eds_tx_en || aurora_soft_rd                   ),
+    .dout                       ( eds_tx_data                                   ),
+    .full                       ( eds_tx_full                                   ),
+    .empty                      ( eds_tx_empty                                  ),
+    .almost_empty               ( eds_tx_almost_empty                           ),  // flag indicating 1 word from empty
+    .almost_full                ( eds_tx_almost_full                            ),
+    .prog_empty                 ( eds_tx_prog_empty                             ),
+    .sbiterr                    ( eds_tx_sbiterr                                ),  // output wire sbiterr
+    .dbiterr                    ( eds_tx_dbiterr                                ),  // output wire dbiterr
+    .wr_rst_busy                ( eds_wr_rst_busy                               ),  // output wire wr_rst_busy
+    .rd_rst_busy                ( eds_rd_rst_busy                               )   // output wire rd_rst_busy
+);
+
 
 // 100m -> 48k  100000/48 = 2083.3
 localparam [12-1:0] EDS_ENCODE_INTE0 = 'd2082;
@@ -367,100 +353,56 @@ xpm_cdc_single #(
     .src_clk(user_clk),   // 1-bit input: optional; required when SRC_INPUT_REG = 1
     .src_in(encode_fifo_rst)      // 1-bit input: Input signal to be synchronized to dest_clk domain.
  );
+ 
 cache_rd_fifo encode_to_aurora_fifo_inst(
-    .rst                        ( encode_fifo_wrst              ),
-    .wr_clk                     ( pmt_clk_i                     ),
-    .rd_clk                     ( user_clk                      ),
-    .din                        ( pmt_encode_data_i             ),
-    .wr_en                      ( pmt_encode_vld_i              ),
-    .rd_en                      ( encode_tx_en || aurora_soft_rd),
-    .dout                       ( encode_tx_data                ),
-    .full                       ( encode_tx_full                ),
-    .empty                      ( encode_tx_empty               ),
-    .almost_empty               ( encode_tx_almost_empty        ),  // flag indicating 1 word from empty
-    .almost_full                ( encode_tx_almost_full         ),
-    .prog_empty                 ( encode_tx_prog_empty          ),
-    .wr_rst_busy                ( encode_tx_wr_rst_busy         ),  // output wire wr_rst_busy
-    .rd_rst_busy                ( encode_tx_rd_rst_busy         )   // output wire rd_rst_busy
+    .rst                        ( encode_fifo_wrst                                  ),
+    .wr_clk                     ( pmt_clk_i                                         ),
+    .rd_clk                     ( user_clk                                          ),
+    .din                        ( pmt_encode_data_i                                 ),
+    .wr_en                      ( pmt_encode_vld_i                                  ),
+    .rd_en                      ( encode_tx_en || aurora_soft_rd                    ),
+    .dout                       ( encode_tx_data                                    ),
+    .full                       ( encode_tx_full                                    ),
+    .empty                      ( encode_tx_empty                                   ),
+    .almost_empty               ( encode_tx_almost_empty                            ),  // flag indicating 1 word from empty
+    .almost_full                ( encode_tx_almost_full                             ),
+    .prog_empty                 ( encode_tx_prog_empty                              ),
+    .sbiterr                    ( encode_tx_sbiterr                                 ),  // output wire sbiterr
+    .dbiterr                    ( encode_tx_dbiterr                                 ),  // output wire dbiterr
+    .wr_rst_busy                ( encode_tx_wr_rst_busy                             ),  // output wire wr_rst_busy
+    .rd_rst_busy                ( encode_tx_rd_rst_busy                             )   // output wire rd_rst_busy
 );
-// xpm_async_fifo #(
-//     .ECC_MODE                   ( "no_ecc"                              ),
-//     .FIFO_MEMORY_TYPE           ( "block"                               ), // "auto" "block" "distributed"
-//     .READ_MODE                  ( "fwft"                                ),
-//     .FIFO_WRITE_DEPTH           ( 2048                                  ),
-//     .PROG_EMPTY_THRESH          ( 1020                                  ),
-//     .WRITE_DATA_WIDTH           ( 64                                    ),
-//     .READ_DATA_WIDTH            ( 64                                    ),
-//     .RELATED_CLOCKS             ( 1                                     ), // write clk same source of read clk
-//     .USE_ADV_FEATURES           ( "0A08"                                )
-// )encode_to_aurora_fifo_inst (
-//     .wr_clk_i                   ( pmt_clk_i                             ),
-//     .rst_i                      ( encode_fifo_wrst                      ), // synchronous to wr_clk
-//     .wr_en_i                    ( pmt_encode_vld_i                      ),
-//     .wr_data_i                  ( pmt_encode_data_i                     ),
-//     .fifo_full_o                ( encode_tx_full                        ),
-//     .fifo_almost_full_o         ( encode_tx_almost_full                 ),
 
-//     .rd_clk_i                   ( user_clk                              ),
-//     .rd_en_i                    ( encode_tx_en                          ),
-//     .fifo_rd_data_o             ( encode_tx_data                        ),
-//     .fifo_empty_o               ( encode_tx_empty                       ),
-//     .fifo_almost_empty_o        ( encode_tx_almost_empty                ),
-//     .fifo_prog_empty_o          ( encode_tx_prog_empty                  )
-// );
 wire fbc_fifo_wrst;
 widen_enable #(
-    .WIDEN_TYPE                 ( 1                             ),  // 1 = posedge lock
-    .WIDEN_NUM                  ( 15                            )
+    .WIDEN_TYPE                 ( 1                                                 ),  // 1 = posedge lock
+    .WIDEN_NUM                  ( 15                                                )
 )fbc_fifo_rst_inst(
-    .clk_i                      ( fbc_clk_i                     ),
-    .rst_i                      ( 0                             ),
+    .clk_i                      ( fbc_clk_i                                         ),
+    .rst_i                      ( 0                                                 ),
 
-    .src_signal_i               ( pmt_start_en_i                ),
-    .dest_signal_o              ( fbc_fifo_wrst                 ) 
+    .src_signal_i               ( pmt_start_en_i                                    ),
+    .dest_signal_o              ( fbc_fifo_wrst                                     ) 
 );
 
 cache_rd_fifo fbc_to_aurora_fifo_inst(
-    .rst                        ( fbc_fifo_wrst || aurora_fbc_end_o),
-    .wr_clk                     ( fbc_clk_i                     ),
-    .rd_clk                     ( user_clk                      ),
-    .din                        ( fbc_data_i                    ),
-    .wr_en                      ( fbc_vld_i                     ),
-    .rd_en                      ( aurora_fbc_en                 ),
-    .dout                       ( aurora_fbc_data               ),
-    .full                       ( aurora_fbc_full               ),
-    .empty                      ( aurora_fbc_empty              ),
-    // .almost_empty               ( aurora_fbc_almost_empty       ),  // flag indicating 1 word from empty
-    .almost_full                ( aurora_fbc_almost_full        ),
-    .prog_empty                 ( aurora_fbc_prog_empty         ),
-    .wr_rst_busy                ( aurora_fbc_wr_rst_busy        ),  // output wire wr_rst_busy
-    .rd_rst_busy                ( aurora_fbc_rd_rst_busy        )   // output wire rd_rst_busy
+    .rst                        ( fbc_fifo_wrst || aurora_fbc_end_o                 ),
+    .wr_clk                     ( fbc_clk_i                                         ),
+    .rd_clk                     ( user_clk                                          ),
+    .din                        ( fbc_data_i                                        ),
+    .wr_en                      ( fbc_vld_i                                         ),
+    .rd_en                      ( aurora_fbc_en                                     ),
+    .dout                       ( aurora_fbc_data                                   ),
+    .full                       ( aurora_fbc_full                                   ),
+    .empty                      ( aurora_fbc_empty                                  ),
+    .almost_empty               ( aurora_fbc_almost_empty                           ),  // flag indicating 1 word from empty
+    .almost_full                ( aurora_fbc_almost_full                            ),
+    .prog_empty                 ( aurora_fbc_prog_empty                             ),
+    .wr_rst_busy                ( aurora_fbc_wr_rst_busy                            ),  // output wire wr_rst_busy
+    .rd_rst_busy                ( aurora_fbc_rd_rst_busy                            )   // output wire rd_rst_busy
 );
-// xpm_async_fifo #(
-//     .ECC_MODE                   ( "no_ecc"                              ),
-//     .FIFO_MEMORY_TYPE           ( "block"                               ), // "auto" "block" "distributed"
-//     .READ_MODE                  ( "fwft"                                ),
-//     .FIFO_WRITE_DEPTH           ( 2048                                  ),
-//     .PROG_EMPTY_THRESH          ( 1020                                  ),
-//     .WRITE_DATA_WIDTH           ( 64                                    ),
-//     .READ_DATA_WIDTH            ( 64                                    ),
-//     .RELATED_CLOCKS             ( 1                                     ), // write clk same source of read clk
-//     .USE_ADV_FEATURES           ( "0A08"                                )
-// )fbc_to_aurora_fifo_inst (
-//     .wr_clk_i                   ( fbc_clk_i                             ),
-//     .rst_i                      ( fbc_fifo_wrst                         ), // synchronous to wr_clk
-//     .wr_en_i                    ( fbc_vld_i                             ),
-//     .wr_data_i                  ( fbc_data_i                            ),
-//     .fifo_full_o                ( aurora_fbc_full                       ),
-//     .fifo_almost_full_o         ( aurora_fbc_almost_full                ),
 
-//     .rd_clk_i                   ( user_clk                              ),
-//     .rd_en_i                    ( aurora_fbc_en                         ),
-//     .fifo_rd_data_o             ( aurora_fbc_data                       ),
-//     .fifo_empty_o               ( aurora_fbc_empty                      ),
-//     .fifo_almost_empty_o        ( aurora_fbc_almost_empty               ),
-//     .fifo_prog_empty_o          ( aurora_fbc_prog_empty                 )
-// );
+
 
 aurora_64b66b_tx aurora_64b66b_tx_inst(
     // eds
@@ -718,20 +660,20 @@ xpm_cdc_single #(
     .src_in(eds_frame_en_i)      // 1-bit input: Input signal to be synchronized to dest_clk domain.
  );
 
- xpm_cdc_single #(
-    .DEST_SYNC_FF(2),   // DECIMAL; range: 2-10
-    .INIT_SYNC_FF(0),   // DECIMAL; 0=disable simulation init values, 1=enable simulation init values
-    .SIM_ASSERT_CHK(0), // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
-    .SRC_INPUT_REG(1)   // DECIMAL; 0=do not register input, 1=register input
- )
- eds_data_wr_en_inst (
-    .dest_out(eds_data_wr_en), // 1-bit output: src_in synchronized to the destination clock domain. This output is
-                         // registered.
+//  xpm_cdc_single #(
+//     .DEST_SYNC_FF(2),   // DECIMAL; range: 2-10
+//     .INIT_SYNC_FF(0),   // DECIMAL; 0=disable simulation init values, 1=enable simulation init values
+//     .SIM_ASSERT_CHK(0), // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
+//     .SRC_INPUT_REG(1)   // DECIMAL; 0=do not register input, 1=register input
+//  )
+//  eds_data_wr_en_inst (
+//     .dest_out(eds_data_wr_en), // 1-bit output: src_in synchronized to the destination clock domain. This output is
+//                          // registered.
 
-    .dest_clk(eds_clk_i), // 1-bit input: Clock signal for the destination clock domain.
-    .src_clk(pmt_clk_i),   // 1-bit input: optional; required when SRC_INPUT_REG = 1
-    .src_in(eds_frame_en_i)      // 1-bit input: Input signal to be synchronized to dest_clk domain.
- );
+//     .dest_clk(eds_clk_i), // 1-bit input: Clock signal for the destination clock domain.
+//     .src_clk(pmt_clk_i),   // 1-bit input: optional; required when SRC_INPUT_REG = 1
+//     .src_in(eds_frame_en_i)      // 1-bit input: Input signal to be synchronized to dest_clk domain.
+//  );
 
  xpm_cdc_single #(
     .DEST_SYNC_FF(2),   // DECIMAL; range: 2-10
@@ -802,7 +744,7 @@ xpm_cdc_single #(
     .src_clk(pmt_clk_i),   // 1-bit input: optional; required when SRC_INPUT_REG = 1
     .src_in(aurora_soft_rd_i)      // 1-bit input: Input signal to be synchronized to dest_clk domain.
  );
- 
+
  xpm_cdc_gray #(
     .DEST_SYNC_FF(2),          // DECIMAL; range: 2-10
     .INIT_SYNC_FF(0),          // DECIMAL; 0=disable simulation init values, 1=enable simulation init values
