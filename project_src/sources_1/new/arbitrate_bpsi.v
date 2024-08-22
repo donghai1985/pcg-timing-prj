@@ -360,7 +360,7 @@ xpm_sync_fifo #(
 )u_xpm_sync_fifo (
     .wr_clk_i               ( clk_i                                 ),
     .rst_i                  ( rst_i || FBC_out_fifo_rst_i           ), // synchronous to wr_clk
-    .wr_en_i                ( FBCr2_out_en_i                        ),
+    .wr_en_i                ( FBC_out_vld_d0                        ),
     .wr_data_i              ( {encode_w_i,encode_x_i}               ),
 
     .rd_en_i                ( fbc_encode_rd                         ),
