@@ -31,8 +31,8 @@ module encode_tx_drv #(
     input    wire                           rst_i                   ,
     input    wire                           clk_200m_i              ,
 
-    // input    wire                           pmt_scan_en_i           ,
-    input    wire   [32-1:0]                precise_encode_w_i      ,
+    input    wire                           track_trigger_i         ,
+    // input    wire   [32-1:0]                precise_encode_w_i      ,
 
     input    wire                           pmt_scan_cmd_sel_i      ,
     input    wire   [4-1:0]                 pmt_scan_cmd_i          ,
@@ -102,8 +102,8 @@ serial_tx #(
 //////////////////////////////////////////////////////////////////////////////////
 // *********** Logic Design
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-wire  encode_greater_flag   = precise_encode_w_i >= encode_zero_latch;
-wire  encode_less_flag      = precise_encode_w_i <= encode_zero_latch;
+// wire  encode_greater_flag   = precise_encode_w_i >= encode_zero_latch;
+// wire  encode_less_flag      = precise_encode_w_i <= encode_zero_latch;
 
 always @(posedge clk_i) begin
     if(rst_i)
@@ -115,14 +115,14 @@ always @(posedge clk_i) begin
 end
 
 always @(posedge clk_i) scan_state_d        <= #TCQ {scan_state_d[2:0],scan_state};
-always @(posedge clk_i) encode_less_flag_d  <= #TCQ encode_less_flag;
-always @(posedge clk_i) encode_zero_flag    <= #TCQ encode_less_flag_d && encode_greater_flag;
-always @(posedge clk_i) encode_zero_flag_d  <= #TCQ encode_zero_flag;
+// always @(posedge clk_i) encode_less_flag_d  <= #TCQ encode_less_flag;
+// always @(posedge clk_i) encode_zero_flag    <= #TCQ encode_less_flag_d && encode_greater_flag;
+// always @(posedge clk_i) encode_zero_flag_d  <= #TCQ encode_zero_flag;
 
-always @(posedge clk_i) begin
-    if(~scan_state_d[0] && scan_state)
-        encode_zero_latch <= #TCQ precise_encode_w_i;
-end
+// always @(posedge clk_i) begin
+//     if(~scan_state_d[0] && scan_state)
+//         encode_zero_latch <= #TCQ precise_encode_w_i;
+// end
 
 always @(posedge clk_i) begin
     if(~scan_state_d[0] && scan_state)begin
@@ -139,7 +139,7 @@ always @(posedge clk_i) begin
             tx_valid <= #TCQ 'd1;
             tx_data  <= #TCQ SYNC_WORD_SCAN_END;
     end
-    else if(encode_zero_flag && (~encode_zero_flag_d) && scan_state_d[3])begin
+    else if(track_trigger_i && scan_state_d[0])begin
         tx_valid <= #TCQ 'd1;
         tx_data  <= #TCQ SYNC_WORD_ENCODE;
     end

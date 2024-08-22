@@ -304,6 +304,7 @@ proc checkRequiredFiles { origin_dir} {
  "[file normalize "$origin_dir/project_src/sources_1/new/base/xpm_async_fifo.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/base/xpm_sync_fifo.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/new/mfpga_top.v"]"\
+ "[file normalize "$origin_dir/project_src/sources_1/new/track_zero_trigger.v"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/eds_to_aurora_fifo/eds_to_aurora_fifo.xci"]"\
  "[file normalize "$origin_dir/project_src/sources_1/coe/hmc7044_cfg.coe"]"\
  "[file normalize "$origin_dir/project_src/sources_1/ip/ddr3_mig/mig_a.prj"]"\
@@ -585,6 +586,7 @@ set files [list \
  [file normalize "${origin_dir}/project_src/sources_1/new/base/xpm_async_fifo.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/base/xpm_sync_fifo.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/new/mfpga_top.v"] \
+ [file normalize "${origin_dir}/project_src/sources_1/new/track_zero_trigger.v"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/eds_to_aurora_fifo/eds_to_aurora_fifo.xci"] \
  [file normalize "${origin_dir}/project_src/sources_1/coe/hmc7044_cfg.coe"] \
  [file normalize "${origin_dir}/project_src/sources_1/ip/ddr3_mig/mig_a.prj"] \

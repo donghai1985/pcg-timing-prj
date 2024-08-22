@@ -356,7 +356,7 @@ module mfpga_top(
 );
 
 genvar  i;
-parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.8.3  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
+parameter   [8*20-1:0]      VERSION     = "PCG_TimingM_v1.8.4  "; // 新旧timing板为机台级更新，ZP6 alpha & ZP3 beta使用旧板子
 
 
 wire                slave_tx_ack                    ;
@@ -371,6 +371,8 @@ wire    [3-1:0]     pmt_scan_cmd_sel                ;
 wire    [4-1:0]     pmt_scan_cmd                    ;
 wire    [2:0]       pmt_start_en                    ;
 wire    [2:0]       pmt_start_test_en               ;
+wire                track_trigger                   ;
+wire    [32-1:0]    track_index                     ;
 wire    [2:0]       pcie_pmt_end_en                 ;
 wire    [2:0]       aurora_fbc_end                  ;
 wire    [2:0]       pmt_master_cmd_parser           ;
@@ -1489,8 +1491,8 @@ arbitrate_bpsi #(
     .FBCr2_out_a_i                  ( FBCr2_out_a                   ),
     .FBCr2_out_b_i                  ( FBCr2_out_b                   ),
     // Enocde
-    .encode_w_i                     ( real_precise_encode_w                 ),
-    .encode_x_i                     ( {4'd0,real_precise_encode_x[31:4]}    ),
+    .encode_w_i                     ( {track_index[3:0],real_precise_encode_w[27:0]}),
+    .encode_x_i                     ( {4'd0,real_precise_encode_x[31:4]}            ),
     // background voltage. dark current * R
     .FBCi_bg_en_i                   ( FBCi_bg_en                    ),
     .FBCi_bg_a_i                    ( FBCi_bg_a                     ),
@@ -1981,6 +1983,19 @@ acc_demo_flag_trim acc_demo_flag_trim_inst(
     .acc_demo_trim_flag_o           ( acc_demo_trim_flag            )
 );
 
+track_zero_trigger track_zero_trigger_inst(
+    // clk & rst
+    .clk_i                          ( clk_100m                      ),
+    .rst_i                          ( rst_100m                      ),
+
+    .pmt_start_en_i                 ( |pmt_start_en                 ),
+    .precise_encode_w_i             ( real_precise_encode_w         ),
+
+    .track_trigger_o                ( track_trigger                 ),
+    .track_index_o                  ( track_index                   )
+
+);
+
 generate
     for(i=0;i<3;i=i+1)begin : PMT_SPI_ENCODE
         encode_tx_drv encode_tx_drv_inst(
@@ -1989,7 +2004,8 @@ generate
             .rst_i              ( rst_100m                                  ),
             .clk_200m_i         ( clk_200m                                  ),
 
-            .precise_encode_w_i ( real_precise_encode_w                     ),
+            .track_trigger_i    ( track_trigger                             ),
+            // .precise_encode_w_i ( real_precise_encode_w                     ),
 
             .pmt_scan_cmd_sel_i ( pmt_scan_cmd_sel[i]                       ),   // pmt sel
             .pmt_scan_cmd_i     ( pmt_scan_cmd                              ),   // bit[0]:scan start; bit[1]:scan test
